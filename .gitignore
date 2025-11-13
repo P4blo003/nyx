@@ -1,0 +1,119 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.manifest
+*.spec
+
+
+# =========================
+# Virtual environments
+# =========================
+venv/
+env/
+.venv/
+.env/
+
+# =========================
+# Jupyter Notebooks
+# =========================
+.ipynb_checkpoints/
+*.ipynb
+
+# =========================
+# Logs and databases
+# =========================
+*.log
+*.sqlite
+*.db
+*.db-journal
+
+# =========================
+# Transformers / LLMs
+# =========================
+# Hugging Face caches
+.cache/
+transformers_cache/
+datasets/
+tokenizers/
+*.pt
+*.bin
+*.ckpt
+*.h5
+*.msgpack
+
+# TensorBoard / ML logs
+runs/
+tb_logs/
+*.tfevents*
+
+# =========================
+# Data files
+# =========================
+data/
+*.csv
+*.tsv
+*.json
+*.parquet
+*.zip
+*.tar.gz
+
+# =========================
+# Documentation
+# =========================
+# Ignore temporary document files
+*.aux
+*.log
+*.toc
+*.out
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+
+# Ignore compiled PDFs (if generated from LaTeX or Markdown)
+*.pdf
+
+# =========================
+# OS / IDE
+# =========================
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# =========================
+# Other temporary files
+# =========================
+*.tmp
+*.swp
+*.bak
+*.old
+
+# =========================
+# GitHub Actions / CI
+# =========================
+.github/workflows/*.yml
