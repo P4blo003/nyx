@@ -94,4 +94,13 @@ print("PyTorch version: ", torch.__version__)
 print("CUDA available: ", torch.cuda.is_available())
 ```
 
+#### 4.2 Módulos.
+
+Una vez **[iniciado el entorno virtual](#1-preparación-del-entorno-virtual)** e **[instalado PyTorch](#41-pytorch)**, puede instalar las dependencias del proyecto mediante el fichero [requirements.txt](../../requirements.txt). Para ello simplemente ejecute el siguiente comando **con el entorno activo**.
+
+```bash
+# Instala las dependencias indicadas en el requirements.txt.
+pip install -r requirements.txt
+```
+
 ## Descripción
