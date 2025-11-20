@@ -77,3 +77,139 @@ def instance_contrastive_loss(
     # - Para z2 frente a z1: posición (B+i, i)
     # Promedia las dos luego promedia en el tiempo.
     return (logits[:, i, B + i - 1].mean() + logits[:, B + i, i].mean()) / 2
+
+def temporal_contrastive_loss(
+    z1:torch.Tensor,
+    z2:torch.Tensor
+) -> torch.Tensor:
+    """
+    Calcula la pérdida contrastiva temporal entre dos secuencias de embeddings.
+    Esta pérdida mide la similitud entre posiciones temporales correspondientes
+    de dos vistas z1 y z2, penalizando que timestamps incorrectos tengan mayor
+    que los correctos.
+
+    Args:
+        z1 (torch.Tensor): Primer conjunto de representaciones, con forma (B, T, C).
+        z2 (torch.Tensor): Segundo conjunto de representaciones, con forma (B, T, C).
+    
+    Returns:
+        torch.Tensor: Escalar con la pérdida temporal contrastiva.
+    """
+    # Obtiene el batch size (B) y longitud temporal (T) de las secuencias.
+    B:int = z1.size(0)
+    T:int = z1.size(1)
+
+    # Si solo hay un timestamp, no hay estructura temporal que comparar.
+    if T == 1: return z1.new_tensor(0.)
+
+    # Concatena en dimensión temporal ambas vistas.
+    z = torch.cat(
+        tensors=[z1, z2],
+        dim=1
+    )
+
+    # Matriz de similitud completa entre todas las posiciones temporales.
+    sim:torch.Tensor = torch.matmul(
+        input=z,
+        other=z.transpose(
+            dim0=1,
+            dim1=2
+        )
+    )
+
+    # Se elimina las diagonales porque representan autocomparación.
+    # Parte triangular inferior, excluyendo diagonal.
+    logits:torch.Tensor = torch.tril(
+        input=sim,
+        diagonal=-1
+    )[:, :, :-1]
+    # Parte triangular superior desplazada.
+    logits += torch.triu(
+        input=sim,
+        diagonal=1
+    )[:, :, 1:]
+
+    # Se aplica softmax negativo para convertir similitudes en pérdidas.ç
+    logits = -F.log_softmax(
+        input=logits,
+        dim=-1
+    )
+
+    # t = [0, 1, ..., T-1] para indexar pares temporales correspondientes.
+    t:torch.Tensor = torch.arange(
+        T,
+        device=z1.device
+    )
+
+    # Se promedian ambas direcciones para obtener simetría y estabilidad.
+    return (logits[:, t, T + t - 1].mean() + logits[:, T + t, t].mean()) / 2
+
+
+def hierarchical_contrastive_loss(
+    z1:torch.Tensor,
+    z2:torch.Tensor,
+    alpha:float = 0.5,
+    temporal_unit:int = 0
+) -> torch.Tensor:
+    """
+    Calcula la pérdida contrastiva jerárquica entre dos secuencias de embeddings.
+    Este procedimiento aplica pérdidas contrastivas en múltiples escalas temporales
+    reduciendo progresivamente la resolución mediante max-pooling.
+
+    Args:
+        z1 (torch.Tensor): Primer conjunto de representaciones, con forma (B, T, C).
+        z2 (torch.Tensor): Segundo conjunto de representaciones, con forma (B, T, C).
+        alpha (float): Peso de la pérdida contrastiva a nivel de instancia.
+            El peso de la pérdida a nivel temporal es (1- alpha).
+        temporal_unit (int): Profundidad mínima (número de escalas) a partir de la cual
+            activar la pérdida temporal.
+    
+    Returns:
+        torch.Tensor: Pérdida contrastiva promedio a lo largo de todos los niveles jerárquicos.
+    """
+    # Inicializa la péridda acumulada en el dispositivo adecuado.
+    loss = torch.tensor(0., device=z1.device)
+
+    # Contador del número de niveles jerárquivos aplicados.
+    d:int = 0
+
+    # Bucle que continua mientas las secuencias tnegan longitud > 1.
+    while z1.size(1) > 1:
+        
+        # Calcula la pérdida contrastiva a nivel de instancia.
+        if alpha != 0:
+            # Calcula la pérdida de instancia.
+            loss+= alpha * instance_contrastive_loss(
+                z1=z1,
+                z2=z2
+            )
+        
+        # Cuando la escala actual alcanza temporal_unit.
+        if d >= temporal_unit:
+            if 1 - alpha > 0:
+                # Calcula la pérdida temporal.
+                loss += (1 - alpha) * temporal_contrastive_loss(
+                    z1=z1,
+                    z2=z2
+                )
+        
+        # Incrementa el númer de niveles y aprocesados.
+        d += 1
+
+        # Reduce la longitud de la secuencia a la mitad mediante max-pooling.
+        z1 = F.max_pool1d(z1.transpose(1, 2), kernel_size=2).transpose(1, 2)
+        z2 = F.max_pool1d(z2.transpose(1, 2), kernel_size=2).transpose(1, 2)
+
+    # Si la secuencia se ha reducido a longitud 1.
+    if z1.size(1) == 1:
+        if alpha != 0:
+            # Calcula la pérdida de instancia.
+            loss+= alpha * instance_contrastive_loss(
+                z1=z1,
+                z2=z2
+            )
+        # Se cuenta este último nivel.
+        d+= 1
+
+    # Normalización final por el número de escalas aplicadas.
+    return loss / d
