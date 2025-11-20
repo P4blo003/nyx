@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 19/11/2025
-# Last edited: 19/11/2025
+# Last edited: 20/11/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -12,8 +12,6 @@
 # IMPORTS
 # ==============================
 
-# Estándar:
-from typing import List, Tuple, Callable, Optional
 # Externos:
 import torch
 import torch.nn.functional as F
@@ -225,3 +223,4 @@ class SameConv1dBlock(nn.Module):
         
         #  Suma la entrada/residual para la conexión residual.
         return x + residual
+

@@ -2,13 +2,14 @@
 
 # TS2Vec
 
----
-
 ![Python](https://img.shields.io/badge/Python-3.13.5-blue)
 
----
-
 </div>
+
+## Contenidos
+
+- [Instalación y configuración inicial](#instalación-y-configuración-inicial)
+- [Descripción](#descripción)
 
 ## Instalación y configuración inicial.
 
@@ -92,3 +93,5 @@ import torch
 print("PyTorch version: ", torch.__version__)
 print("CUDA available: ", torch.cuda.is_available())
 ```
+
+## Descripción
