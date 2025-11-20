@@ -1,6 +1,6 @@
 <div align="center">
 
-# TS2Vec
+# TS2Vec | 🇪🇸 Español
 
 ![Python](https://img.shields.io/badge/Python-3.13.5-blue)
 
