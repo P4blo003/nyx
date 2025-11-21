@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 20/11/2025
+# Last edited: 21/11/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -21,8 +21,8 @@ from torch.optim import swa_utils
 from torch.utils.data import TensorDataset, DataLoader
 # Internos:
 from .encoder import TSEncoder
-from math.loss import hierarchical_contrastive_loss
-from .math.utils import split_with_nan, take_per_row, centerize_vary_length_series
+from .math.loss import hierarchical_contrastive_loss
+from .math.utils import split_with_nan, take_per_row
 
 
 # ==============================

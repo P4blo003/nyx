@@ -1,3 +1,14 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 20/11/2025
+# Last edited: 21/11/2025
+# ==========================================================================================
+
+
+# ==============================
+# FICHEROS & DIRECTORIOS
+# ==============================
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -213,4 +224,7 @@ marimo/_lsp/
 __marimo__/
 
 # Streamlit
-.streamlit/secrets.toml
+.streamlit/secrets.tom
+
+# IA models.
+*.pt
