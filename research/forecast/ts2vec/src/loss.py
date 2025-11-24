@@ -166,7 +166,7 @@ def hierarchical_contrastive_loss(
     
     Returns:
         torch.Tensor: Pérdida contrastiva promedio a lo largo de todos los niveles jerárquicos.
-    """
+    """    
     # Inicializa la pérdida acumulada en el dispositivo adecuado.
     loss = torch.tensor(0., device=z1.device)
 
@@ -186,7 +186,7 @@ def hierarchical_contrastive_loss(
         
         # Cuando la escala actual alcanza temporal_unit.
         if d >= temporal_unit:
-            if 1 - alpha > 0:
+            if 1 - alpha !=0:
                 # Calcula la pérdida temporal.
                 loss += (1 - alpha) * temporal_contrastive_loss(
                     z1=z1,

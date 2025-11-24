@@ -20,9 +20,9 @@ import torch
 from torch.optim import swa_utils
 from torch.utils.data import TensorDataset, DataLoader
 # Internos:
-from .encoder import TSEncoder
-from .math.loss import hierarchical_contrastive_loss
-from .math.utils import split_with_nan, take_per_row, centerize_vary_length_series
+from encoder import TSEncoder
+from loss import hierarchical_contrastive_loss
+from utils import split_with_nan, take_per_row, centerize_vary_length_series
 
 
 # ==============================
@@ -171,9 +171,9 @@ class TS2Vec:
                 axis=0
             )
         
-        # TODO: Detecta si hay timestamps completamente faltantes al inicio o al final.
+        # Detecta si hay timestamps completamente faltantes al inicio o al final.
         temporal_missing = np.isnan(train_data).all(axis=-1).any(axis=0)
-        if temporal_missing[0] or temporal_missing[1]:                                  # type: ignore
+        if temporal_missing[0] or temporal_missing[-1]:                                 # type: ignore
             train_data = centerize_vary_length_series(x=train_data)
 
         # Elimina series o instancias completamente NaN.
@@ -232,23 +232,20 @@ class TS2Vec:
                 # Calcula la longitud de la serie temporal del batch.
                 ts_length:int = x.size(1)
 
-                # TODO: Define recortes aleatorios para la pérdida contrastiva jerárquica.
+                # Define recortes aleatorios para la pérdida contrastiva jerárquica.
                 crop_length:int = np.random.randint(
                     low=2 ** (self.temporal_unit + 1),
                     high=ts_length + 1
                 )
                 crop_left:int = np.random.randint(low=ts_length - crop_length + 1)
                 crop_right:int = crop_left + crop_length
-                crop_e_left:int = np.random.randint(
-                    low=crop_right,
-                    high=ts_length + 1
-                )
+                crop_e_left:int = np.random.randint(low=crop_left + 1)
                 crop_e_right:int = np.random.randint(
                     low=crop_right,
                     high=ts_length + 1
                 )
                 crop_offset = np.random.randint(
-                    low=-crop_left,
+                    low=-crop_e_left,
                     high=ts_length - crop_e_right + 1,
                     size=x.size(0)
                 )
@@ -259,11 +256,11 @@ class TS2Vec:
                 # Aplica la red a la primera vista recortada de la serie.
                 out_1 = self._net(take_per_row(
                         A=x,
-                        indx=crop_offset + crop_left, 
+                        indx=crop_offset + crop_e_left, 
                         num_elements=crop_right - crop_e_left
                     )
                 )
-                out_1 = out_1[:, -crop_length]
+                out_1 = out_1[:, -crop_length:]
 
                 # Aplica la red a la segunda vista recortada
                 out_2 = self._net(take_per_row(

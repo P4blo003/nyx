@@ -18,9 +18,9 @@ from typing import List
 import torch
 from torch import nn
 # Internos:
-from .conv import SameConv1dBlock
-from .math.mask import MaskMode
-from .math.mask import generate_binomial_mask, generate_continuous_mask
+from conv import SameConv1dBlock
+from mask import MaskMode
+from mask import generate_binomial_mask, generate_continuous_mask
 
 
 # ==============================
