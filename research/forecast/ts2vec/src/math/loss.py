@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 20/11/2025
+# Last edited: 24/11/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -26,7 +26,7 @@ def instance_contrastive_loss(
     z2:torch.Tensor
 ) -> torch.Tensor:
     """
-    Calcula la pérdida contrastiva por instancia. Compara representaciones `` y `` para maximizar su similitud
+    Calcula la pérdida contrastiva por instancia. Compara representaciones `z1` y `z2` para maximizar su similitud
     y minimizar la similitud con el resto de ejemplos.
 
     Args:
@@ -36,7 +36,7 @@ def instance_contrastive_loss(
     Returns:
         torch.Tensor: Escalar con la pérdida contrastiva promedio sobre pares positivos. Valores más
             bajos implican que las representaciones de la misma instancia son más similares que las representaciones
-            entre instacias distintas.
+            entre instancias distintas.
     """
     # Obtiene el tamaño del batch (número de secuencias).
     B:int = z1.size(0)
@@ -129,7 +129,7 @@ def temporal_contrastive_loss(
         diagonal=1
     )[:, :, 1:]
 
-    # Se aplica softmax negativo para convertir similitudes en pérdidas.ç
+    # Se aplica softmax negativo para convertir similitudes en pérdidas.
     logits = -F.log_softmax(
         input=logits,
         dim=-1
@@ -167,13 +167,13 @@ def hierarchical_contrastive_loss(
     Returns:
         torch.Tensor: Pérdida contrastiva promedio a lo largo de todos los niveles jerárquicos.
     """
-    # Inicializa la péridda acumulada en el dispositivo adecuado.
+    # Inicializa la pérdida acumulada en el dispositivo adecuado.
     loss = torch.tensor(0., device=z1.device)
 
-    # Contador del número de niveles jerárquivos aplicados.
+    # Contador del número de niveles jerárquicos aplicados.
     d:int = 0
 
-    # Bucle que continua mientas las secuencias tnegan longitud > 1.
+    # Bucle que continua mientras las secuencias tengan longitud > 1.
     while z1.size(1) > 1:
         
         # Calcula la pérdida contrastiva a nivel de instancia.
@@ -193,7 +193,7 @@ def hierarchical_contrastive_loss(
                     z2=z2
                 )
         
-        # Incrementa el númer de niveles y aprocesados.
+        # Incrementa el número de niveles procesados.
         d += 1
 
         # Reduce la longitud de la secuencia a la mitad mediante max-pooling.

@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 20/11/2025
+# Last edited: 24/11/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -34,7 +34,7 @@ def pad_with_nan(
 
     Args:
         array (np.ndarray): Array de entrada de tipo float16, float32 o float64.
-        target_length (int): Longitud deseada a lo largo del eje especifciado.
+        target_length (int): Longitud deseada a lo largo del eje especificado.
         axis (int): Eje a lo largo del cual se realizará el padding.
         both_side (bool): True para repartir el padding en ambos lados y False para
             añadir los NaNs al final.
@@ -87,7 +87,7 @@ def split_with_nan(
         axis (int): Eje a lo largo del cual dividir el array.
     
     Returns:
-        List[np.ndarray]: Lista de arrays, cada uno con u npadding de NaNs si es
+        List[np.ndarray]: Lista de arrays, cada uno con un padding de NaNs si es
             necesario para igualar la longitud de todas las secciones.
     """
     # Comprueba que el tipo del array sea correcto.
@@ -100,10 +100,10 @@ def split_with_nan(
         axis=axis
     )
 
-    # Obtiene la longitud de la primera sección como referencia para le padding.
+    # Obtiene la longitud de la primera sección como referencia para el padding.
     target_length = arrs[0].shape[axis]
 
-    # Recorre cada sección y aplica padidng con NaNs para igualar la longitud.
+    # Recorre cada sección y aplica padding con NaNs para igualar la longitud.
     for i in range(len(arrs)):
         # Aplica padding.
         arrs[i] = pad_with_nan(
@@ -127,7 +127,7 @@ def take_per_row(
     Args:
         A (np.ndarray|torch.Tensor): Matriz 2D de la que se extraen valores.
         indx (np.ndarray|torch.Tensor): Índices iniciales (uno por fila) desde 
-            donde comenzar a extraer `num_elemens` elementos.
+            donde comenzar a extraer `num_elements` elementos.
         num_elements (int): Número de elementos consecutivos a extraer a partir 
             de cada índice.
 
@@ -142,8 +142,8 @@ def take_per_row(
     return A[torch.arange(all_index.shape[0])[:, None], all_index]
 
 def centerize_vary_length_series(
-        x:torch.Tensor
-) -> torch.Tensor:
+        x:np.ndarray
+) -> np.ndarray:
     """
     Centra series temporales con longitudes variables desplazando cada serie para
     que la parte válida (no NaN) quede centrada en el eje temporal.
@@ -155,7 +155,7 @@ def centerize_vary_length_series(
     Returns:
         np.ndarray: El mismo tensor, pero con cada serie centrada temporalmente.
     """
-    # Busca para cada serie, el primer timestap que no es NaN.
+    # Busca para cada serie, el primer timestep que no es NaN.
     prefix_zeros:np.ndarray = np.argmax(
         a=~np.isnan(x).all(axis=-1),
         axis=1
@@ -180,7 +180,7 @@ def centerize_vary_length_series(
     offset[offset < 0] += x.shape[1]
 
     # Ajusta la matriz de índices temporales restando el offset de cada serie.
-    # Genera un indezado circular que desplaza la parte válida al centro.
+    # Genera un indexado circular que desplaza la parte válida al centro.
     column_indices = column_indices - offset[:, np.newaxis]
 
     # Devuelve por reindexado.

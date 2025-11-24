@@ -11,13 +11,13 @@
 - [Instalación y configuración inicial](#instalación-y-configuración-inicial)
 - [Descripción](#descripción)
 
-## Instalación y configuración inicial.
+## Instalación y configuración inicial
 
-TS2Vec requiere un entorno correctamente aislado y configurado para asegurar compatibilidad con sus dependencias, estabilidad durante las fases de entrenamiento y soporte optimizado para GPU. A continuación se detalla el procedimiento recomendado para reparar el entorno virtual y establecer la base técnica necesaria para ejecutaar el modelo.
+TS2Vec requiere un entorno correctamente aislado y configurado para asegurar compatibilidad con sus dependencias, estabilidad durante las fases de entrenamiento y soporte optimizado para GPU. A continuación se detalla el procedimiento recomendado para reparar el entorno virtual y establecer la base técnica necesaria para ejecutar el modelo.
 
 ### 1. Preparación del entorno virtual.
 
-La creación de un entorno virtual es esencial para evitar conflicto entre dependencias del sistema y las específicas del proyecto. Se recomienda emplear **venv**(incluido en Python>= 3.3) o **virtualenv** para aislar las librerías.
+La creación de un entorno virtual es esencial para evitar conflicto entre dependencias del sistema y las específicas del proyecto. Se recomienda emplear **venv** (incluido en Python>= 3.3) o **virtualenv** para aislar las librerías.
 
 ```bash
 # Crea el entorno virtual.
@@ -27,7 +27,7 @@ python -m venv venv
 Este comando genera el entorno aislado denominado **venv** que actuará como espacio de ejecución independiente. 
 
 ```bash
-# Activa el entorno virtual en entornos linux/maxOS.
+# Activa el entorno virtual en entornos Linux/macOS.
 source venv/bin/activate
 ```
 
@@ -49,7 +49,7 @@ python -m pip install --upgrade pip setuptools wheel
 
 Esta actualización garantiza compatibilidad con paquetes compilados, distribución de binarios y optimizaciones de instalación para librerías con componentes nativos como [PyTorch](https://pytorch.org/).
 
-### 3. Verifica la versión dee Python del entorno.
+### 3. Verifica la versión de Python del entorno.
 
 Para asegurarse de que el entorno esté utilizando la versión correcta (Python 3.13.5).
 
@@ -80,7 +80,7 @@ En la parte superior saldrá la información de CUDA. Una vez se sepa la versió
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
 ```
 
-En caso de no disponer de GPU, instalé la versión CPU-only.
+En caso de no disponer de GPU, instale la versión CPU-only.
 ```bash
 # Instala PyTorch. Versión CPU-only
 pip install torch torchvision torchaudio

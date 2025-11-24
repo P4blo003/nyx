@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 20/11/2025
+# Last edited: 24/11/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -45,11 +45,11 @@ def generate_binomial_mask(
     p:float = 0.5
 ) -> torch.Tensor:
     """
-    Genéra una mácara booleana aleatoria según una distribución binomial (Bernoulli)
+    Genera una máscara booleana aleatoria según una distribución binomial (Bernoulli)
     con probabilidad `p`.
     
     Args:
-        B (int): Número de secuencias / ejemplos en el bacth (batch size).
+        B (int): Número de secuencias / ejemplos en el batch (batch size).
         T (int): Longitud temporal de cada secuencia (número de timesteps).
         p (float): Probabilidad de que la máscara sea True en cada posición.
     
@@ -58,7 +58,7 @@ def generate_binomial_mask(
             Se emplea para enmascarar pasos temporales en modelos de series temporales.
     """
     # Genera una matriz numpy (B, T) con 0/1 siendo una distribución binomial con n=1.
-    # Convierte el aray numpy a un tensor PyTorh y lo transofrma a booleano.
+    # Convierte el array numpy a un tensor PyTorch y lo transforma a booleano.
     return torch.from_numpy(np.random.binomial(
             n=1,
             p=p,
@@ -73,11 +73,11 @@ def generate_continuous_mask(
     l:int|float = 0.1    
 ) -> torch.Tensor:
     """
-    Genera una máscara booleana que enmascara segmetnos continuos. Cada secuencia del
-    bacth tendrá `n` segmentos enmanscarados de longitud `l` cada uno.
+    Genera una máscara booleana que enmascara segmentos continuos. Cada secuencia del
+    batch tendrá `n` segmentos enmascarados de longitud `l` cada uno.
 
     Args:
-        B (int): Número de secuencias / ejemplos en el bacth (batch size).
+        B (int): Número de secuencias / ejemplos en el batch (batch size).
         T (int): Longitud temporal de cada secuencia (número de timesteps).
         n (int): Número de segmentos a enmascarar por secuencia.
             - Si es un `int` se interpreta como número de bloques.
@@ -87,7 +87,7 @@ def generate_continuous_mask(
             - Si es un `float` se interpreta como una fracción de `T`.
     
     Returns:
-        torch.Tensor: Mácara boolenaa de forma `(B, T)` con `False` en las posiciones enmascaradas
+        torch.Tensor: Máscara booleana de forma `(B, T)` con `False` en las posiciones enmascaradas
             (segmentos continuos generados aleatoriamente) y `True` en las restantes.
     """
     # Inicializa la máscara completamente verdadera (sin enmascaramiento).
@@ -99,7 +99,7 @@ def generate_continuous_mask(
 
     # Si n es float, calcula el número de segmentos.
     if isinstance(n, float): n = int(n * T)
-    # Se asegura de que almenos haya un segmento y como mucho T//2.
+    # Se asegura de que al menos haya un segmento y como mucho T//2.
     n = max(min(n, T // 2), 1)
 
     # Si l es float, calcula el número de timestamps por segmento.
@@ -107,7 +107,7 @@ def generate_continuous_mask(
     # Al menos 1 timestep debe tener falso para que haya efecto de enmascaramiento.
     l = max(l, 1)
 
-    # Para cada secuencia del bacth, dibuja n segmentos enmascarados.
+    # Para cada secuencia del batch, dibuja n segmentos enmascarados.
     for i in range(B):
         for _ in range(n):
             # Elige aleatoriamente un punto del inicio entre [0, T-L]

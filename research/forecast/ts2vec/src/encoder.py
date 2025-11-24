@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 20/11/2025
+# Last edited: 24/11/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -49,7 +49,7 @@ class SameConv1dEncoder(nn.Module):
             in_channels (int): Número de canales de entrada de la convolución. Por ejemplo, en el caso de una
                 serie temporal multivariada con 3 features, `in_channels`=3.
             channels (List[int]): Listado que contiene los números de canales de salida.
-            kernerl_size (int): Tamaño del filtro de la convolución. Controla cuántos pasos temporales se consideran
+            kernel_size (int): Tamaño del filtro de la convolución. Controla cuántos pasos temporales se consideran
                 en cada operación convolucional. Afecta directamente al `receptive_field`, es decir, el rango temporal
                 de observación de cada salida.
         """
@@ -83,7 +83,7 @@ class SameConv1dEncoder(nn.Module):
         Returns:
             torch.Tensor: Tensor de salida con la misma longitud temporal que la entrada.
         """
-        # Aplia la red de capas.
+        # Aplica la red de capas.
         return self.net(x)
 
 class TSEncoder(nn.Module):
@@ -130,7 +130,7 @@ class TSEncoder(nn.Module):
             out_features=hidden_dims
         )
 
-        # Inicializ el encoder convolucional.
+        # Inicializa el encoder convolucional.
         self.feature_extractor:SameConv1dEncoder = SameConv1dEncoder(
             in_channels=hidden_dims,
             channels=[hidden_dims]*depth + [output_dims],
@@ -157,7 +157,7 @@ class TSEncoder(nn.Module):
         Returns:
             Embeddings de salida con forma (B, T, output_dims), donde cada timestep ha sido procesado.
         """
-        # Genera una máscara para valores NaN: marca los timesteps que no tienen NaNs en niguna característica.
+        # Genera una máscara para valores NaN: marca los timesteps que no tienen NaNs en ninguna característica.
         nan_mask:torch.Tensor = ~x.isnan().any(dim=-1)
 
         # Para los timesteps con NaN, se pone la entrada a 0 antes del procesamiento.
@@ -184,7 +184,7 @@ class TSEncoder(nn.Module):
             # Caso BINOMIAL.
             case MaskMode.BINOMIAL:
                 # Enmascara valores aleatorios.
-                x = generate_binomial_mask(
+                mask = generate_binomial_mask(
                     B=x.size(0),
                     T=x.size(1)  
                 ).to(device=x.device)
@@ -192,7 +192,7 @@ class TSEncoder(nn.Module):
             # Caso CONTINUOUS.
             case MaskMode.CONTINUOUS:
                 # Enmascara valores continuos.
-                x = generate_continuous_mask(
+                mask = generate_continuous_mask(
                     B=x.size(0),
                     T=x.size(1)  
                 ).to(device=x.device)
@@ -220,7 +220,7 @@ class TSEncoder(nn.Module):
                     fill_value=True, 
                     dtype=torch.bool
                 )
-                # Solo enmascára el último.
+                # Solo enmascara el último.
                 mask[:, -1] = False
 
             # Caso ALL_TRUE.
@@ -242,7 +242,7 @@ class TSEncoder(nn.Module):
             # Aplica la máscara.
             x[~mask] = 0
 
-        # Preprara la convolución: Intercambia dimensiones para que Conv1d trabaje sobre el eje temporal.
+        # Prepara la convolución: Intercambia dimensiones para que Conv1d trabaje sobre el eje temporal.
         x = x.transpose(1, 2)       # Cambia a: (B, output_dims, T)
         # Aplica el encoder convolucional y el dropout.
         x = self.repr_dropout(self.feature_extractor(x))

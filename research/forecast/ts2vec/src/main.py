@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 21/11/2025
+# Last edited: 24/11/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -22,7 +22,7 @@ from torch.utils.data import TensorDataset, DataLoader
 # Internos:
 from .encoder import TSEncoder
 from .math.loss import hierarchical_contrastive_loss
-from .math.utils import split_with_nan, take_per_row
+from .math.utils import split_with_nan, take_per_row, centerize_vary_length_series
 
 
 # ==============================
@@ -59,13 +59,13 @@ class TS2Vec:
             input_dims (int): La dimensión del input. Para series temporales univariantes, este
                 valor debe ser 1.
             output_dims (int): La dimensión de la representación.
-            hidden_dims (int): La dimesión oculta del encoder.
+            hidden_dims (int): La dimensión oculta del encoder.
             depth (int): El número de bloques residuales del encoder.
             device (int): Dispositivo de ejecución.
-            learning_rate(float): El ratio de aprendizaje.
+            learning_rate (float): El ratio de aprendizaje.
             batch_size (int): El tamaño del batch.
             max_train_length (int): La máxima longitud de la secuencia para entrenamiento. Secuencias mayores
-                que este valor seran separadas en subsecuencias donde cada una tendrá una longitud menor que
+                que este valor serán separadas en subsecuencias donde cada una tendrá una longitud menor que
                 `max_train_length`.
             temporal_unit (int): La unidad mínima para realizar contraste temporal. Este parámetro ayuda a reducir el coste
                 de tiempo y memoria para secuencias muy largas.
@@ -74,7 +74,7 @@ class TS2Vec:
         """
         # Inicializa las propiedades.
         self.device:str = device
-        self.learning_rage:float = learning_rate
+        self.learning_rate:float = learning_rate
         self.batch_size:int = batch_size
         self.max_train_length:int|None = max_train_length
         self.temporal_unit:int = temporal_unit
@@ -151,7 +151,7 @@ class TS2Vec:
         Returns:
             List[float]: Lista de losses promedio por época.
         """
-        # Verifica que los datos de enetrenamiento sean un array 3D.
+        # Verifica que los datos de entrenamiento sean un array 3D.
         assert train_data.ndim == 3
 
         # Establece el número de iteraciones por defecto.
@@ -161,7 +161,7 @@ class TS2Vec:
         if self.max_train_length is not None:
             # Separa el conjunto de datos.
             sections:int = train_data.shape[1] // self.max_train_length
-            # Si hay más de una sección, se concadenan.
+            # Si hay más de una sección, se concatenan.
             if sections >= 2: train_data = np.concatenate(
                 split_with_nan(
                     x=train_data,
@@ -172,8 +172,12 @@ class TS2Vec:
             )
         
         # TODO: Detecta si hay timestamps completamente faltantes al inicio o al final.
+        temporal_missing = np.isnan(train_data).all(axis=-1).any(axis=0)
+        if temporal_missing[0] or temporal_missing[1]:                                  # type: ignore
+            train_data = centerize_vary_length_series(x=train_data)
 
-        # TODO: Elimina series o instancias completamente NaN.
+        # Elimina series o instancias completamente NaN.
+        train_data = train_data[~np.isnan(train_data).all(axis=2).all(axis=1)]          # type: ignore
 
         # Convierte los datos en un TensorDataset de PyTorch.
         train_dataset:TensorDataset = TensorDataset(torch.from_numpy(train_data).to(torch.float))
@@ -187,7 +191,7 @@ class TS2Vec:
         # Inicializa el optimizador AdamW para entrenar la red.
         optimizer:torch.optim.AdamW = torch.optim.AdamW(
             self._net.parameters(),
-            lr=self.learning_rage
+            lr=self.learning_rate
         )
 
         # Listado para almacenar el loss promedio por época.
@@ -205,7 +209,7 @@ class TS2Vec:
             # Bandera para interrumpir el entrenamiento si se alcanzan iteraciones máximas.
             interrupted:bool = False
 
-            # Búcle por batch.
+            # Bucle por batch.
             for batch in train_loader:
                 # Termina si alcanza el número máximo de iteraciones.
                 if n_iters is not None and self.n_iters >= n_iters:

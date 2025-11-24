@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 19/11/2025
-# Last edited: 20/11/2025
+# Last edited: 24/11/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -46,11 +46,11 @@ def calculate_receptive_field(
 
 class SameConv1d(nn.Module):
     """
-    Capa de convolución 1D con paadding 'same' quee garantiza que la salida tenga la misma longitud
+    Capa de convolución 1D con padding 'same' que garantiza que la salida tenga la misma longitud
     temporal que la entrada, independientemente del tamaño del kernel o la dilatación.
 
     Esta capa es útil para redes de series temporales donde la longitud de la secuencia debe mantenerse
-    a lo largo de múltiples convolucionees, como en TS2Vec.
+    a lo largo de múltiples convoluciones, como en TS2Vec.
     """
     # ---- Default ---- #
 
@@ -64,7 +64,7 @@ class SameConv1d(nn.Module):
         bias:bool = True
     ) -> None:
         """
-        Inicializa la capa convolicional 1D.
+        Inicializa la capa convolucional 1D.
 
         Args:
             in_channels (int): Número de canales de entrada de la convolución. Por ejemplo, en el caso de una
@@ -72,7 +72,7 @@ class SameConv1d(nn.Module):
             out_channels (int): Número de canales de salida de la convolución. Suele coincidir con `in_channels` 
                 para mantener dimensionalidad de embedding, pero puede ser distinto si se desea cambiar el tamaño
                 de los embeddings.
-            kernerl_size (int): Tamaño del filtro de la convolución. Controla cuántos pasos temporales se consideran
+            kernel_size (int): Tamaño del filtro de la convolución. Controla cuántos pasos temporales se consideran
                 en cada operación convolucional. Afecta directamente al `receptive_field`, es decir, el rango temporal
                 de observación de cada salida.
             dilation (int): Dilatación de la convolución, es decir, el espaciado entre los elementos del kernel.
@@ -218,7 +218,7 @@ class SameConv1dBlock(nn.Module):
         x = self.conv1(x)
         # Aplica la función de activación antes de la segunda capa.
         x = F.gelu(x)
-        # Aplica la segundaa capa convolucional.
+        # Aplica la segunda capa convolucional.
         x = self.conv2(x)
         
         #  Suma la entrada/residual para la conexión residual.
