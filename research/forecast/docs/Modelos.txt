@@ -1,0 +1,6 @@
+- TS2Vec: https://github.com/zhihanyue/ts2vec
+- Chronos: https://github.com/amazon-science/chronos-forecasting
+- Merlion: https://github.com/salesforce/Merlion
+- Darts: https://github.com/unit8co/darts
+- Kats: https://github.com/facebookresearch/Kats
+- MTAD-GAT: https://github.com/ML4ITS/mtad-gat-pytorch
