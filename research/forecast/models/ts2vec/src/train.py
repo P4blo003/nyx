@@ -26,11 +26,12 @@ from main import TS2Vec
 # CONSTANCES
 # ==============================
 
-DEFAULT_BATCH_SIZE:int = 64
+DEFAULT_BATCH_SIZE:int = 4
 DEFAULT_LEARNING_RATE:float = 0.001
 DEFAULT_REPR_DIMS:int = 320
 DEFAULT_ITERS:int = 2500
-DEFAULT_EPOCHS:int = 75
+DEFAULT_EPOCHS:int = 100
+DEFAUL_MAX_LENGTH:int = 1024
 DEFAULT_NAME:str = 'embedder'
 
 
@@ -100,6 +101,12 @@ def manage_arguments() -> Namespace:
         type=bool,
         default=True,
         help="Si se generará información adicional con ficheros y gráficas."
+    )
+    parser.add_argument(
+        '--max-train-length',
+        type=int,
+        default=DEFAUL_MAX_LENGTH,
+        help=f"Máxima longitud del entrenamiento. Por defecto es {DEFAUL_MAX_LENGTH}."
     )
 
     # Retorna los argumentos.
@@ -181,6 +188,7 @@ if __name__ == "__main__":
             output_dims=args.repr_dims,
             learning_rate=args.learning_rate,
             batch_size=args.batch_size,
+            max_train_length=args.max_train_length
         )
 
         # Calcula el tiempo inicial.
