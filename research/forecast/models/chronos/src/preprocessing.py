@@ -54,7 +54,7 @@ def get_time_features(
 class Preprocessor:
     """
     Clase encargada de preprocesar los datasets para convertirlos en un
-    array de numpy válidos para TS2Vec.
+    array de numpy válidos para Chronos.
     """
     # ---- Default ---- #
 
@@ -63,27 +63,23 @@ class Preprocessor:
         df:pl.DataFrame,
         timestamp_column:str = "Timestamp",
         timestamp_format:str = "%Y-%m-%d %H:%M:%S",
-        categorical_columns:List[str]|None = None
+        categorical_columns:List[str]|None = None,
+        make_timestamp_features:bool = False
     ):
         """
         Peprocesa el DataFrame y lo convierte en un array de numpy válido para
-        TS2Vec.
+        Chronos.
 
         Args:
             df (polars.DataFrame): DataFrame a procesar.
             timestamp_column (str): Nombre de la columna temporal.
             timestamp_format (str): Formato de la fecha de `timestamp_column`.
             categorical_columns (List[str]|None) = Lista con las columnas categóricas.
+            mak_timestamp_features (bool): True si se deben crear características a partir
+                de `timestamp_column`.
         """
         # Ordena a partir de la columna.
         df = df.sort(by=timestamp_column).with_columns(pl.col(timestamp_column).str.to_datetime(timestamp_format))
-        
-        # Genera caracteristicas temporales en función del timestamp.
-        ts_features:np.ndarray = get_time_features(
-            df=df,
-            timestamp_column=timestamp_column
-        )
-        num_ts_features:int = ts_features.shape[-1]
 
         # One-Hot de variables categóricas.
         if categorical_columns is not None:
@@ -117,17 +113,30 @@ class Preprocessor:
         # Añade una dimensión (que representa el batch).
         data = np.expand_dims(data, 0)  # (1, n_timestamps, n_features)
 
-        # Comprueba si hay características temporales que añadir.
-        if num_ts_features > 0:
-            # Genera el scaler empleando datos de entrenamiento.
-            ts_scaler:StandardScaler = StandardScaler().fit(ts_features[train_slice])
-            # Añade una dimensión a las características temporales.
-            ts_features_scaled:np.ndarray = np.expand_dims(ts_scaler.transform(ts_features), 0)
-            # Normaliza los datos solo con información del entrenamiento.
-            data = np.concatenate([np.repeat(ts_features_scaled, data.shape[0], axis=0), data], axis=-1)
+        # Comprueba si se quier añadir características temporales.
+        if make_timestamp_features:
+
+            # Genera caracteristicas temporales en función del timestamp.
+            ts_features:np.ndarray = get_time_features(
+                df=df,
+                timestamp_column=timestamp_column
+            )
+            num_ts_features:int = ts_features.shape[-1]
+
+            # Comprueba si hay características que añadir.
+            if num_ts_features > 0:
+                # Genera el scaler empleando datos de entrenamiento.
+                ts_scaler:StandardScaler = StandardScaler().fit(ts_features[train_slice])
+                # Añade una dimensión a las características temporales.
+                ts_features_scaled:np.ndarray = np.expand_dims(ts_scaler.transform(ts_features), 0)
+                # Normaliza los datos solo con información del entrenamiento.
+                data = np.concatenate([np.repeat(ts_features_scaled, data.shape[0], axis=0), data], axis=-1)
 
         # Horizontes de predicción [24h (1 día), 48h (2 días), 96h (4 días), 288h (12 días), 672h (28 días)].
         pred_lens:List[int] = [24, 48, 96, 288, 672]
+
+        # Transpone el data para que sea válido para Chronos.
+        data = np.transpose(data, (0, 2, 1))
 
         # Retorna los valores obtenidos.
         return data, train_slice, valid_slice, test_slice, scaler, pred_lens

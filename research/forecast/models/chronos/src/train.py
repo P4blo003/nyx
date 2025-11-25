@@ -1,6 +1,6 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 24/11/2025
+# Created: 25/11/2025
 # Last edited: 25/11/2025
 # ==========================================================================================
 
@@ -16,10 +16,10 @@ from argparse import ArgumentParser, Namespace
 # Externos:
 import polars as pl
 import numpy as np
+from chronos import Chronos2Pipeline
 # Internos:
 import console
 from preprocessing import Preprocessor
-from main import TS2Vec
 
 
 # ==============================
@@ -31,6 +31,8 @@ DEFAULT_LEARNING_RATE:float = 0.001
 DEFAULT_REPR_DIMS:int = 320
 DEFAULT_ITERS:int = 2500
 DEFAULT_EPOCHS:int = 75
+DEFAULT_PREDICTION_LENGTH:int = 96
+DEFAULT_MIN_PAST:int = 256
 DEFAULT_NAME:str = 'embedder'
 
 
@@ -101,6 +103,18 @@ def manage_arguments() -> Namespace:
         default=True,
         help="Si se generará información adicional con ficheros y gráficas."
     )
+    parser.add_argument(
+        '--min-past',
+        type=int,
+        default=DEFAULT_MIN_PAST,
+        help="Número de pasos que el modelo usará como unpit para predecir."
+    )
+    parser.add_argument(
+        '--prediction-length',
+        type=int,
+        default=DEFAULT_MIN_PAST,
+        help="Número de pasos que el modelo debe predecir hacia delante."
+    )
 
     # Retorna los argumentos.
     return parser.parse_args()
@@ -143,9 +157,9 @@ if __name__ == "__main__":
             categorical_columns=['WS', 'DW', 'LT']
         )
         # Genera los conujuntos para el modelo.
-        x_train:np.ndarray = data[:, train_slice, :]
-        x_valid:np.ndarray = data[:, valid_slice, :]
-        x_test:np.ndarray = data[:, test_slice, :]
+        x_train:np.ndarray = data[:, :, train_slice]
+        x_valid:np.ndarray = data[:, :, valid_slice]
+        x_test:np.ndarray = data[:, :, test_slice]
 
         # Imprime información de ejecución.
         console.info(text="Preprocesamiento finalizado.")
@@ -175,23 +189,20 @@ if __name__ == "__main__":
             spacing_down=1
         )
 
-        # Inicializa el modelo.
-        model:TS2Vec = TS2Vec(
-            input_dims=x_train.shape[-1],
-            output_dims=args.repr_dims,
-            learning_rate=args.learning_rate,
-            batch_size=args.batch_size,
-        )
+        # Crea el modelo.
+        model:Chronos2Pipeline = Chronos2Pipeline.from_pretrained("amazon/chronos-2", device_map="cuda")
 
         # Calcula el tiempo inicial.
         start:float = time.time()
 
-        # Ejecuta el entrenamiento.
+        # Entrena el modelo.
         model.fit(
-            train_data=x_train,
-            n_epochs=args.epochs,
-            n_iters=args.iters,
-            verbose=True
+            inputs=x_train,
+            prediction_length=args.prediction_length,
+            validation_inputs=x_valid,
+            learning_rate=args.learning_rate,
+            batch_size=args.batch_size,
+            min_past=args.min_past
         )
 
         # Obtiene el tiempo de entrenamiento.
