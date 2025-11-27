@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 25/11/2025
+# Last edited: 27/11/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -17,12 +17,14 @@ from typing import Callable, List
 # Externos:
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch.optim import swa_utils
 from torch.utils.data import TensorDataset, DataLoader
 # Internos:
 from encoder import TSEncoder
+from mask import MaskMode
 from loss import hierarchical_contrastive_loss
-from utils import split_with_nan, take_per_row, centerize_vary_length_series
+from utils import split_with_nan, take_per_row, centerize_vary_length_series, torch_pad_nan
 
 
 # ==============================
@@ -96,6 +98,81 @@ class TS2Vec:
     
 
     # ---- Métodos ---- #
+
+    def __eval_with_pooling(
+        self,
+        x:torch.Tensor,
+        mask:torch.Tensor|None,
+        encoding_window:str|int|None = None,
+        slicing:slice|None = None
+    ) -> torch.Tensor:
+        """
+        Evalúa la red TS2Vec sobre un batch de datos y aplica pooling temporal para
+        obtener embeddings representativos según la ventana especificada.
+        """
+        # Se envía el tensor a la GPU si aplica y se usa masl si existe.
+        out:torch.Tensor = self.net(x.to(self.device, non_blocking=True), mask)
+
+        # Comprueba si pooling de ventana fija.
+        if isinstance(encoding_window, int):
+            # Max pooling con ventana de tamaño fijo.
+            out = F.max_pool1d(
+                out.transpose(1, 2),
+                kernel_size=encoding_window,
+                stride=1,
+                padding=encoding_window // 2
+            ).transpose(1, 2)
+
+            # Ajusta la ventana si es par.
+            if encoding_window % 2 == 0: out = out[:, :-1]
+
+            # Comprueba si se indica slicing.
+            if slicing is not None: out = out[:, slicing]
+        
+        # Comprueba si pooling sobre toda la serie.
+        elif encoding_window == "full_series":
+            # Compruebas si se indica slicing.
+            if slicing is not None: out = out[:, slicing]
+
+            # Maxpooling sobre la dimensión temporal completa.
+            out = F.max_pool1d(
+                out.transpose(1, 2),
+                kernel_size=out.size(1)
+            ).transpose(1, 2)
+
+        # Comprueba si pooling multiescala.
+        elif encoding_window == "multiscale":
+            # Lista donde se almacenan los embeddings a distintas escalas.
+            reprs:List = []
+            # Índice de escala.
+            p:int = 0
+
+            # 1 << p = 2 ** p
+            while (1 << p) + 1 < out.size(1):
+                t_out = F.max_pool1d(
+                    out.transpose(1, 2),
+                    kernel_size=(1 << (p + 1)) + 1,  # ventana creciente: 3,5,9,17,...
+                    stride=1,
+                    padding=1 << p
+                ).transpose(1, 2)
+
+                # Compruebas si se indica slicing.
+                if slicing is not None: out = out[:, slicing]
+
+                # Añade el embedding de esta escala.
+                reprs.append(t_out)
+                p+=1
+            
+            # Concatena embeddings de todas las escalas en la última dimensión
+            out = torch.cat(reprs, dim=-1)
+        
+        # Sin pooling.
+        else:
+            # Comprueba si se indica slicing.
+            if slicing is not None: out = out[:, slicing]
+        
+        # Retorna el tensoren cpu.
+        return out.cpu()
 
     def save(
         self,

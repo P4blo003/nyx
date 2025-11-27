@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 25/11/2025
-# Last edited: 25/11/2025
+# Last edited: 27/11/2025
 # ==========================================================================================
 
 
@@ -61,6 +61,7 @@ class Preprocessor:
     def __call__(
         self,
         df:pl.DataFrame,
+        train_size:float,
         timestamp_column:str = "Timestamp",
         timestamp_format:str = "%Y-%m-%d %H:%M:%S",
         categorical_columns:List[str]|None = None
@@ -71,6 +72,7 @@ class Preprocessor:
 
         Args:
             df (polars.DataFrame): DataFrame a procesar.
+            train_size (float): Porcentaje del dataset empleado para el entrenamiento.
             timestamp_column (str): Nombre de la columna temporal.
             timestamp_format (str): Formato de la fecha de `timestamp_column`.
             categorical_columns (List[str]|None) = Lista con las columnas categóricas.
@@ -105,9 +107,9 @@ class Preprocessor:
         # Obtiene el tamaño del array. (Aquí data tiene la forma (n_timestamps, n_features)).
         n:int = data.shape[0]                           # Obtiene el número de timestamps (n_timestamps).
         # Separa en entrenamiento/validación/test
-        train_slice:slice = slice(None, int(0.6 * n))
-        valid_slice:slice = slice(int(0.6 * n), int(0.8 * n))
-        test_slice:slice = slice(int(0.8 * n), None)
+        train_slice:slice = slice(None, int(train_size * n))
+        valid_slice:slice = slice(int(train_size * n), int(((1 - train_size) / 2 + train_size) * n))
+        test_slice:slice = slice(int(((1 - train_size) / 2 + train_size) * n), None)
 
         # Genera el scaler empleando datos solo de entrenamiento.
         scaler:StandardScaler = StandardScaler().fit(data[train_slice])

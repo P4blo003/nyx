@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 24/11/2025
+# Last edited: 27/11/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -185,3 +185,45 @@ def centerize_vary_length_series(
 
     # Devuelve por reindexado.
     return x[rows, column_indices]
+
+def torch_pad_nan(
+    arr: torch.Tensor,
+    left:int = 0,
+    right:int = 0,
+    dim:int = 0
+):
+    """
+    Añde padding de NaN a un tensor a lo largo de la dimensión
+    especificada.
+
+    Args:
+        arr (torch.Tensor): Tensor de entrada que hay que rellenar.
+        left (int): Número de elementos NaN a añadir al inicio de la dimensión.
+        right (int): Número de elementos NaN a añadir al final de la dimensión.
+        dim (int): Dimensión a lo largo de la cual se realiza el padding.
+    
+    Returns:
+        torch.Tensor: Tensor con padding de NaN añadido.
+    """
+    # Si requiere padding al principio.
+    if left > 0:
+        # Copia la forma original.
+        padshape:List = list(arr.shape)
+        # Cambia la longitud de la dimensión que vamos a rellenar.
+        padshape[dim] = left
+        # Crea un array lleno d NanS con la forma de padding y lo
+        # concatena al inicio del tensor original.
+        arr = torch.cat((torch.full(padshape, np.nan), arr), dim=dim)
+    
+    # Si requiere padding al final.
+    if right > 0:
+        # Copia la forma original.
+        padshape:List = list(arr.shape)
+        # Cambia la longitud de la dimensión que vamos a rellenar.
+        padshape[dim] = right
+        # Crea un array lleno d NanS con la forma de padding y lo
+        # concatena al inicio del tensor original.
+        arr = torch.cat((arr, torch.full(padshape, np.nan)), dim=dim)
+    
+    # Retorna el tensor.
+    return arr
