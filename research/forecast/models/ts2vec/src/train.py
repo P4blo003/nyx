@@ -27,7 +27,6 @@ import dataset
 import plotter
 from ts2vec import TS2Vec
 from models import TrainingData
-from eval.anomaly_detection import AnomalyDetectorEvaluation
 
 
 # ==============================
@@ -150,7 +149,7 @@ if __name__ == "__main__":
         # Imprime información.
         print("Inicializando recursos ...")
 
-        # Inicializ el dispositivo de ejecución.
+        # Inicializa el dispositivo de ejecución.
         device:List[torch.device]|torch.device = dl.init_dl_program(
             device_name=args.gpu,
             seed=args.seed,
@@ -253,18 +252,6 @@ if __name__ == "__main__":
             values=losses,
             file_path=f"{os.path.join(training_dir, "losses.jpg")}"
         )
-
-
-        # ---- Evaluación ---- #
-
-        # Inicializa el evaluador.
-        anomaly_evaluator:AnomalyDetectorEvaluation = AnomalyDetectorEvaluation()
-
-        # Imprime información.
-        print("Evaluando para detección de anomalías ...")
-
-        # Imprime información.
-        print("Evaluación completada.")
 
     # Si ocurre algún error.
     except Exception as ex:

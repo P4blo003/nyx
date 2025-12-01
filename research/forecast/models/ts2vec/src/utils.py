@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 27/11/2025
+# Last edited: 01/12/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -192,7 +192,7 @@ def torch_pad_nan(
     dim:int = 0
 ):
     """
-    Añde padding de NaN a un tensor a lo largo de la dimensión
+    Añade padding de NaN a un tensor a lo largo de la dimensión
     especificada.
 
     Args:
@@ -210,7 +210,7 @@ def torch_pad_nan(
         padshape:List = list(arr.shape)
         # Cambia la longitud de la dimensión que vamos a rellenar.
         padshape[dim] = left
-        # Crea un array lleno d NanS con la forma de padding y lo
+        # Crea un array lleno d NaNs con la forma de padding y lo
         # concatena al inicio del tensor original.
         arr = torch.cat((torch.full(padshape, np.nan), arr), dim=dim)
     

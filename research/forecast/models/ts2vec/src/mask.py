@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 201/12/2025
+# Last edited: 01/12/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -28,8 +28,8 @@ class MaskMode(Enum):
     Modo de enmascaramiento.
 
     Attributes:
-        BINOMIAL (str): Mácara booleana aleatoria según una distribución binomial.
-        CONTINUOUS (str): Mácara booleana que enmascara segmentos continuos.
+        BINOMIAL (str): Máscara booleana aleatoria según una distribución binomial.
+        CONTINUOUS (str): Máscara booleana que enmascara segmentos continuos.
         ALL_TRUE (str): No enmascára ningún elemento.
         ALL_FALSE (str): Enmascara todos los elementos.
         MASK_LAST (str): Enmascara el último elemento. 

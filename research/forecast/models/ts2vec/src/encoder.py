@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 27/11/2025
+# Last edited: 01/12/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -112,7 +112,7 @@ class TSEncoder(nn.Module):
             depth (int): Profundidad del encoder convolucional.
             mask_mode (MaskMode): Modo de enmascaramiento.
             kernel_size (int): Tamaño del kernel de las capas convolucionales.
-            dropout_p (float): Probabilidad de que cada elemento sea puesto a "cero"
+            dropout_p (float): Probabilidad de que cada elemento sea anulado (puesto a "cero")
                 durante el entrenamiento.
         """
         # Constructor de nn.Module.

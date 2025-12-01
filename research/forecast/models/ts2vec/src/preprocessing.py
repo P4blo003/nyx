@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 25/11/2025
-# Last edited: 27/11/2025
+# Last edited: 01/12/2025
 # ==========================================================================================
 
 
@@ -26,7 +26,7 @@ def get_time_features(
     timestamp_column:str
 ) -> np.ndarray:
     """
-    Extrae características de tiempod e la columna timestamp y devuelve un array
+    Extrae características de tiempo de la columna timestamp y devuelve un array
     de numpy con ellas.
 
     Args:
@@ -80,7 +80,7 @@ class Preprocessor:
         # Ordena a partir de la columna.
         df = df.sort(by=timestamp_column).with_columns(pl.col(timestamp_column).str.to_datetime(timestamp_format))
         
-        # Genera caracteristicas temporales en función del timestamp.
+        # Genera características temporales en función del timestamp.
         ts_features:np.ndarray = get_time_features(
             df=df,
             timestamp_column=timestamp_column
@@ -100,7 +100,7 @@ class Preprocessor:
                 # Hace join a partir de la columna de timestamp.
                 df = df.join(dummies, on=timestamp_column).drop(col)
 
-        # Convierte a nunmpy (todas las columnas menos la de timestamp).
+        # Convierte a numpy (todas las columnas menos la de timestamp).
         final_cols:List[str] = [c for c in df.columns if c != timestamp_column]
         data:np.ndarray = df.select(final_cols).to_numpy()
 

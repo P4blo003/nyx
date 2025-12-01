@@ -121,7 +121,7 @@ class TS2Vec:
         Returns:
             torch.Tensor:
         """
-        # Se envía el tensor a la GPU si aplica y se usa masl si existe.
+        # Se envía el tensor a la GPU si aplica y se usa mask si existe.
         out:torch.Tensor = self.net(x.to(self.device, non_blocking=True), mask.value if mask is not None else None)
 
         # Comprueba si pooling de ventana fija.
@@ -429,8 +429,8 @@ class TS2Vec:
             torch.Tensor: Embeddings generados, en CPU.
         """
         # Verifica que el modelo ya está entrenado o cargado antes de codificar.
-        assert self.net is not None, "Porfavor, entrena o carga un modelo primero."
-        # Asegura que la enrada tiene la forma (bacth, time, features).
+        assert self.net is not None, "Por favor, entrena o carga un modelo primero."
+        # Asegura que la entrada tiene la forma (batch, time, features).
         assert data.ndim == 3
 
         # Si no se especifica batch_size, se utiliza el mismo que durante el entrenamiento.
@@ -479,14 +479,14 @@ class TS2Vec:
                         right:int = i + sliding_length + (sliding_padding if not causal else 0)
 
                         # Recorta la ventana y añade padding con NaN donde sea necesario.
-                        x_slindding = torch_pad_nan(
+                        x_sliding = torch_pad_nan(
                             arr=x[:, max(left, 0):min(right, ts_length)],
                             left=-left if left < 0 else 0,
                             right=right-ts_length if right > ts_length else 0,
                             dim=1
                         )
 
-                        # Caso espacial (n_samples < batch_size). Se acumula hasta llenar un batch.
+                        # Caso especial (n_samples < batch_size). Se acumula hasta llenar un batch.
                         if n_samples < batch_size:
                             # Si al añadir el nuevo batch se supera batch_size, se evalúa lo acumulado.
                             if calc_buffer_length + n_samples > batch_size:
@@ -506,18 +506,18 @@ class TS2Vec:
                                 calc_buffer_length = 0
                             
                             # Añade los valores.
-                            calc_buffer.append(x_slindding)
+                            calc_buffer.append(x_sliding)
                             calc_buffer_length += n_samples
                         
                         # Caso normal (Se evalúa directamente cada ventana deslizante).
                         else:
                             out:torch.Tensor = self.__eval_with_pooling(
-                                x=x_slindding,
+                                x=x_sliding,
                                 mask=mask,
                                 slicing=slice(sliding_padding, sliding_padding+sliding_length),
                                 encoding_window=encoding_window
                             )
-                            # Alade los valores.
+                            # Añade los valores.
                             reprs.append(out)
                     
                     # Tras el bucle, si quedan ventanas acumuladas sin evaluar, se procesan.
@@ -553,7 +553,7 @@ class TS2Vec:
                         encoding_window=encoding_window
                     )
 
-                    # Si la ventana es 'full_series', elimina la demensión temporal (1).
+                    # Si la ventana es 'full_series', elimina la dimensión temporal (1).
                     if encoding_window == 'full_series': out = out.squeeze(1)
                 
                 # Añade el embedding procesado del batch al buffer general.

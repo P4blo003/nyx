@@ -37,7 +37,7 @@ def get_range_proba(
     Ajusta las predicciones de anomalías considerando un delay permitido.
 
     Args:
-        predict (): Array con predicciones curdas del modelo.
+        predict (np.ndarray): Array con predicciones crudas del modelo.
         label (np.ndarray): Array con etiquetas reales, indicando intervalos de anomalía.
         delay (int): Número máximo de pasos de tolerancia para aceptar que el modelo
             detectó un intervalo.
@@ -51,7 +51,7 @@ def get_range_proba(
     # Determina si la secuencia empieza dentro de un segmento de anomalía.
     is_anomaly:bool = label[0] == 0
 
-    # Hace una copua de las predicciones originales para modificarlas sin alterar el input.
+    # Hace una copia de las predicciones originales para modificarlas sin alterar el input.
     new_predict:np.ndarray = np.array(predict)
 
     # Almacena la posición inicial del segmento actual.
@@ -66,7 +66,7 @@ def get_range_proba(
             if 1 in predict[pos:min(pos + delay + 1, sp)]:
                 # Se marca todo el intervalo real como detectado.
                 new_predict[pos:sp] = 1
-            # Si el modelo no detecto nada dentro del rango.
+            # Si el modelo no detectó nada dentro del rango.
             else:
                 # Se marca como no detectado.
                 new_predict[pos: sp] = 0
@@ -86,7 +86,7 @@ def get_range_proba(
         if 1 in predict[pos:min(pos + delay + 1, sp)]:
             # Se marca todo el intervalo real como detectado.
             new_predict[pos:sp] = 1
-        # Si el modelo no detecto nada dentro del rango.
+        # Si el modelo no detectó nada dentro del rango.
         else:
             # Se marca como no detectado.
             new_predict[pos: sp] = 0
@@ -257,7 +257,7 @@ def eval_anomaly_detection(
         all_test_timestamps ():
         delay (int):
     """
-    # Varriables para almacenar las representaciones.
+    # Variables para almacenar las representaciones.
     all_train_repr:Dict = {}
     all_test_repr:Dict = {}
     all_train_repr_wom:Dict = {}        # Sin máscara.
@@ -340,7 +340,7 @@ def eval_anomaly_detection(
         for i in range(len(test_res)):
             if i >= delay and test_res[i-delay:i].sum() >= 1: test_res[i] = 0
         
-        # Se almacenan los resultados, las etiquetas reales y los timestmaps.
+        # Se almacenan los resultados, las etiquetas reales y los timestamps.
         res_log.append(test_res)
         labels_log.append(test_labels)
         timestamps_log.append(test_timestamps)

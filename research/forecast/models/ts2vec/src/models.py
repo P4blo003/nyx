@@ -72,7 +72,7 @@ class TrainingData(BaseModel):
 
         Args:
             file_path (str): Ruta donde almacenar el archivo.
-            include_metadata (bool): Incluir metadátos.
+            include_metadata (bool): Incluir metadatos.
         Returns:
             str: Representación JSON del objeto.
         """

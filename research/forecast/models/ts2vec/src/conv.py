@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 19/11/2025
-# Last edited: 24/11/2025
+# Last edited: 01/12/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -159,7 +159,7 @@ class SameConv1dBlock(nn.Module):
             out_channels (int): Número de canales de salida de la convolución. Suele coincidir con `in_channels` 
                 para mantener dimensionalidad de embedding, pero puede ser distinto si se desea cambiar el tamaño
                 de los embeddings.
-            kernerl_size (int): Tamaño del filtro de la convolución. Controla cuántos pasos temporales se consideran
+            kernel_size (int): Tamaño del filtro de la convolución. Controla cuántos pasos temporales se consideran
                 en cada operación convolucional. Afecta directamente al `receptive_field`, es decir, el rango temporal
                 de observación de cada salida.
             dilation (int): Dilatación de la convolución, es decir, el espaciado entre los elementos del kernel.
