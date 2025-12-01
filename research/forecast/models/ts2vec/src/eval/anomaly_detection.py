@@ -2,6 +2,9 @@
 # Author: Pablo González García.
 # Created: 01/12/2025
 # Last edited: 01/12/2025
+#
+# Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
+# de TS2Vec (https://github.com/zhihanyue/ts2vec).
 # ==========================================================================================
 
 
