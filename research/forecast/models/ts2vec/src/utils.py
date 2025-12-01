@@ -71,7 +71,6 @@ def pad_with_nan(
         constant_values=np.nan
     )
 
-
 def split_with_nan(
     x:np.ndarray,
     sections:int,

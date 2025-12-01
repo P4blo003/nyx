@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 27/11/2025
+# Last edited: 01/12/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -46,7 +46,7 @@ class TS2Vec:
         output_dims:int,
         hidden_dims:int = 64,
         depth:int = 10,
-        device:str = 'cuda',
+        device:str = 'cuda:0',
         learning_rate:float = 0.001,
         batch_size:int = 16,
         max_train_length:int|None = None,
@@ -76,6 +76,8 @@ class TS2Vec:
         """
         # Inicializa las propiedades.
         self.device:str = device
+        self.hidden_dims:int = hidden_dims
+        self.depth:int = depth
         self.learning_rate:float = learning_rate
         self.batch_size:int = batch_size
         self.max_train_length:int|None = max_train_length
@@ -102,16 +104,25 @@ class TS2Vec:
     def __eval_with_pooling(
         self,
         x:torch.Tensor,
-        mask:torch.Tensor|None,
+        mask:MaskMode,
         encoding_window:str|int|None = None,
         slicing:slice|None = None
     ) -> torch.Tensor:
         """
         Evalúa la red TS2Vec sobre un batch de datos y aplica pooling temporal para
         obtener embeddings representativos según la ventana especificada.
+
+        Args:
+            x (torch.Tensor):
+            mask (str|None):
+            encoding_window (str|int|None):
+            slicing (slice|None):
+        
+        Returns:
+            torch.Tensor:
         """
         # Se envía el tensor a la GPU si aplica y se usa masl si existe.
-        out:torch.Tensor = self.net(x.to(self.device, non_blocking=True), mask)
+        out:torch.Tensor = self.net(x.to(self.device, non_blocking=True), mask.value)
 
         # Comprueba si pooling de ventana fija.
         if isinstance(encoding_window, int):
@@ -157,7 +168,7 @@ class TS2Vec:
                 ).transpose(1, 2)
 
                 # Compruebas si se indica slicing.
-                if slicing is not None: out = out[:, slicing]
+                if slicing is not None: t_out = t_out[:, slicing]
 
                 # Añade el embedding de esta escala.
                 reprs.append(t_out)
@@ -171,7 +182,7 @@ class TS2Vec:
             # Comprueba si se indica slicing.
             if slicing is not None: out = out[:, slicing]
         
-        # Retorna el tensoren cpu.
+        # Retorna el tensor en cpu.
         return out.cpu()
 
     def save(
@@ -391,3 +402,168 @@ class TS2Vec:
         
         # Returns.
         return loss_log
+
+    def encode(
+        self,
+        data:np.ndarray,
+        mask:MaskMode,
+        encoding_window:str|int|None = None,
+        causal:bool = False,
+        sliding_length = None,
+        sliding_padding:int = 0,
+        batch_size:int|None = None
+    ):
+        """
+        Genera embeddings de ls datos de entrada usando TS2Vec.
+
+        Args:
+            data (numpy.ndarray): Serie temporal en formato (batch, time, features).
+            mask (MaskMode): Másacara para indicar timesteps válidos.
+            encoding_window (str|int|None): Modo de extracción de embeddings.
+            causal (bool): True si se aplica codificación causal (solo usa el pasado).
+            sliding_length (int|None): Longitud de ventana para procesado por sliding window.
+            slinding_padding (int|None): Relleno aplicado en la ventana deslizante.
+            batch_size (int|None): Tamaño del batch para slinding window.
+        
+        Returns:
+            torch.Tensor: Embeddings generados, en CPU.
+        """
+        # Verifica que el modelo ya está entrenado o cargado antes de codificar.
+        assert self.net is not None, "Porfavor, entrena o carga un modelo primero."
+        # Asegura que la enrada tiene la forma (bacth, time, features).
+        assert data.ndim == 3
+
+        # Si no se especifica batch_size, se utiliza el mismo que durante el entrenamiento.
+        if batch_size is None: batch_size = self.batch_size
+
+        # Extrae el número de instancias y longitud temporal de la entrada.
+        n_samples, ts_length, _ = data.shape
+
+        # Guarda el estado original del modelo para restaurarlo después.
+        oririginal_training:bool = self.net.training
+        # Coloca el modelo en modo evaluación para evitar dropout, batchnorm, etc.
+        self.net.eval()
+
+        # Crea un dataset tensorial a partir del array de entrada.
+        dataset:TensorDataset = TensorDataset(torch.from_numpy(data).to(torch.float))
+        # Crea un loader para procesar la entrada en batches.
+        loader:DataLoader = DataLoader(
+            dataset=dataset,
+            batch_size=batch_size
+        )
+
+        # Desactiva el cálculo del gradiente para acelarar y reducir memoria.
+        with torch.no_grad():
+            # Variable para almacenar la salida.
+            output:List = []
+
+            # Iteración por batches sobre la serie temporal completa.
+            for batch in loader:
+                # Obtiene el primer elemento.
+                x = batch[0]
+
+                # Si se activa slinding window, se procesarán ventanas solapadas.
+                if sliding_length is not None:
+                    # Variable para almacenar las representaciones.
+                    reprs:List[torch.Tensor] = []
+
+                    # Acumula ventanas antes de evaluarlas.
+                    calc_buffer:List = []
+                    # Longitud total acumulada.
+                    calc_buffer_length:int = 0
+                    
+                    # Recorre toda la serie en pasos de slinding_length.
+                    for i in range(0, ts_length, sliding_length):
+                        # Determina la ventana deslizante (extendida por padding).
+                        left:int = i - sliding_padding
+                        right:int = i + sliding_length + (sliding_padding if not causal else 0)
+
+                        # Recorta la ventana y añade padding con NaN donde sea necesario.
+                        x_slindding = torch_pad_nan(
+                            arr=x[:, max(left, 0):min(right, ts_length)],
+                            left=-left if left < 0 else 0,
+                            right=right-ts_length if right > ts_length else 0,
+                            dim=1
+                        )
+
+                        # Caso espacial (n_samples < batch_size). Se acumula hasta llenar un batch.
+                        if n_samples < batch_size:
+                            # Si al añadir el nuevo batch se supera batch_size, se evalúa lo acumulado.
+                            if calc_buffer_length + n_samples > batch_size:
+                                out:torch.Tensor = self.__eval_with_pooling(
+                                    x=torch.cat(
+                                        tensors=calc_buffer,
+                                        dim=0
+                                    ),
+                                    mask=mask,
+                                    slicing=slice(sliding_padding, sliding_padding + sliding_length),
+                                    encoding_window=encoding_window
+                                )
+                                # Divide la salida en bloques de tamaño n_samples.
+                                reprs += (torch.split(out, n_samples))
+                                # Reinicia los valores.
+                                calc_buffer = []
+                                calc_buffer_length = 0
+                            
+                            # Añade los valores.
+                            calc_buffer.append(x_slindding)
+                            calc_buffer_length += n_samples
+                        
+                        # Caso normal (Se evalúa directamente cada ventana deslizante).
+                        else:
+                            out:torch.Tensor = self.__eval_with_pooling(
+                                x=x_slindding,
+                                mask=mask,
+                                slicing=slice(sliding_padding, sliding_padding+sliding_length),
+                                encoding_window=encoding_window
+                            )
+                            # Alade los valores.
+                            reprs.append(out)
+                    
+                    # Tras el bucle, si quedan ventanas acumuladas sin evaluar, se procesan.
+                    if n_samples < batch_size and calc_buffer_length > 0:
+                        out:torch.Tensor = self.__eval_with_pooling(
+                            x=torch.cat(calc_buffer, dim=0),
+                            mask=mask,
+                            slicing=slice(sliding_padding, sliding_padding+sliding_length),
+                            encoding_window=encoding_window
+                        )
+                        # Divide la salida en bloques de tamaño n_samples.
+                        reprs += (torch.split(out, n_samples))
+                        # Reinicia los valores.
+                        calc_buffer = []
+                        calc_buffer_length = 0
+                    
+                    # Concatena todas las ventanas en la dimensión temporal.
+                    out:torch.Tensor = torch.cat(reprs, dim=1)
+
+                    # Si se pide 'full_series', realiza max-pooling sobre la longitud temporal.
+                    if encoding_window == 'full_series':
+                        out = F.max_pool1d(
+                            input=out.transpose(1,2).contiguous(),
+                            kernel_size=out.size(1)
+                        ).squeeze(1)
+                
+                # Caso sin slinding window.
+                else:
+                    # Evalúa la representación base aplicando la ventana indicada.
+                    out:torch.Tensor = self.__eval_with_pooling(
+                        x=x,
+                        mask=mask,
+                        encoding_window=encoding_window
+                    )
+
+                    # Si la ventana es 'full_series', elimina la demensión temporal (1).
+                    if encoding_window == 'full_series': out = out.squeeze(1)
+                
+                # Añade el embedding procesado del batch al buffer general.
+                output.append(out)
+            
+            # Concatena los embeddings de todos los batches en la dimensión batch.
+            output_tensor:torch.Tensor = torch.cat(output, dim=0)
+        
+        # Restaura el estado de entrenamiento original del modelo.
+        self.net.train(oririginal_training)
+
+        # Devuelve el embedding final en formato numpy.
+        return output_tensor.numpy()
