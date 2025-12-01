@@ -228,3 +228,4 @@ __marimo__/
 
 # IA models.
 *.pt
+*.pkl

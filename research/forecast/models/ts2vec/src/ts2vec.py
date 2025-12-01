@@ -104,7 +104,7 @@ class TS2Vec:
     def __eval_with_pooling(
         self,
         x:torch.Tensor,
-        mask:MaskMode,
+        mask:MaskMode|None,
         encoding_window:str|int|None = None,
         slicing:slice|None = None
     ) -> torch.Tensor:
@@ -122,7 +122,7 @@ class TS2Vec:
             torch.Tensor:
         """
         # Se envía el tensor a la GPU si aplica y se usa masl si existe.
-        out:torch.Tensor = self.net(x.to(self.device, non_blocking=True), mask.value)
+        out:torch.Tensor = self.net(x.to(self.device, non_blocking=True), mask.value if mask is not None else None)
 
         # Comprueba si pooling de ventana fija.
         if isinstance(encoding_window, int):
@@ -406,7 +406,7 @@ class TS2Vec:
     def encode(
         self,
         data:np.ndarray,
-        mask:MaskMode,
+        mask:MaskMode|None = None,
         encoding_window:str|int|None = None,
         causal:bool = False,
         sliding_length = None,
