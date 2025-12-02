@@ -19,8 +19,7 @@ import torch
 from torch import nn
 # Internos:
 from conv import SameConv1dBlock
-from mask import MaskMode
-from mask import generate_binomial_mask, generate_continuous_mask
+from mask import MaskGenerator, AllTrueMaskGenerator
 
 
 # ==============================
@@ -98,7 +97,7 @@ class TSEncoder(nn.Module):
         output_dims:int,
         hidden_dims:int = 64,
         depth:int = 10,
-        mask_mode:MaskMode|None = MaskMode.BINOMIAL,
+        mask_generator:MaskGenerator|None = None,
         kernel_size:int = 3,
         dropout_p:float = 0.1
     ) -> None:
@@ -110,7 +109,7 @@ class TSEncoder(nn.Module):
             output_dims (int): Dimensión del embedding de salida por timestep.
             hidden_dims (int): Número de neuronas ocultas.
             depth (int): Profundidad del encoder convolucional.
-            mask_mode (MaskMode): Modo de enmascaramiento.
+            mask_generator (MaskGenerator|None): Generador de la máscara.
             kernel_size (int): Tamaño del kernel de las capas convolucionales.
             dropout_p (float): Probabilidad de que cada elemento sea anulado (puesto a "cero")
                 durante el entrenamiento.
@@ -122,7 +121,7 @@ class TSEncoder(nn.Module):
         self.input_dims:int = input_dims
         self.output_dims:int = output_dims
         self.hidden_dims:int = hidden_dims
-        self.mask_mode:MaskMode|None = mask_mode
+        self.mask_generator:MaskGenerator|None = mask_generator
 
         # Inicializa una capa lineal para proyectar las características de entrada.
         self.input_fc:nn.Linear = nn.Linear(
@@ -146,14 +145,15 @@ class TSEncoder(nn.Module):
     def forward(
         self,
         x:torch.Tensor,
-        mask_mode:MaskMode|None = None
+        mask_generator:MaskGenerator|None = None
     ) -> torch.Tensor:
         """
         Ejecuta el encoder.
 
         Args:
             x (torch.Tensor): Tensor de entrada de forma (batch, channels, sequence_length).
-        
+            mask_generator (MaskGenerator): Generador de la máscara.
+
         Returns:
             Embeddings de salida con forma (B, T, output_dims), donde cada timestep ha sido procesado.
         """
@@ -167,73 +167,23 @@ class TSEncoder(nn.Module):
         x = self.input_fc(x)
 
         # Decide que máscara usar si no se ha proporcionado.
-        if mask_mode is None:
+        if mask_generator is None:
             # Comprueba si está en entrenamiento y se haya pasado máscara en el constructor.
-            if self.training and self.mask_mode is not None:
+            if self.training and self.mask_generator is not None:
                 # Establece el valor asignado.
-                mask_mode = self.mask_mode
+                mask_generator = self.mask_generator
             # En caso de que no se este entrenando o no se haya pasado máscara en el constructor.
             else:
                 # Establece máscara por defecto.
-                mask_mode = MaskMode.ALL_TRUE
+                mask_generator = AllTrueMaskGenerator(
+                    b=x.size(0),
+                    t=x.size(1)
+                )
         
         # Variable para almacenar la máscara.
         mask:torch.Tensor|None = None
-        # Match case para máscara.
-        match(mask_mode):
-            # Caso BINOMIAL.
-            case MaskMode.BINOMIAL:
-                # Enmascara valores aleatorios.
-                mask = generate_binomial_mask(
-                    B=x.size(0),
-                    T=x.size(1)  
-                ).to(device=x.device)
-
-            # Caso CONTINUOUS.
-            case MaskMode.CONTINUOUS:
-                # Enmascara valores continuos.
-                mask = generate_continuous_mask(
-                    B=x.size(0),
-                    T=x.size(1)  
-                ).to(device=x.device)
-
-            # Caso ALL_FALSE.
-            case MaskMode.ALL_FALSE:
-                # Enmascara todo los valores.
-                mask = x.new_full(
-                    size=(
-                        x.size(0),
-                        x.size(1)
-                    ), 
-                    fill_value=False, 
-                    dtype=torch.bool
-                )
-
-            # Caso MASK_LAST.
-            case MaskMode.MASK_LAST:
-                # No enmascara ningún valor.
-                mask = x.new_full(
-                    size=(
-                        x.size(0),
-                        x.size(1)
-                    ), 
-                    fill_value=True, 
-                    dtype=torch.bool
-                )
-                # Solo enmascara el último.
-                mask[:, -1] = False
-
-            # Caso ALL_TRUE.
-            case MaskMode.ALL_TRUE:
-                # No enmascara ningún valor.
-                mask = x.new_full(
-                    size=(
-                        x.size(0),
-                        x.size(1)
-                    ), 
-                    fill_value=True, 
-                    dtype=torch.bool
-                )
+        # Genera la máscara.
+        mask = mask_generator.generate().to(device=x.device)
         
         # Comprueba que se haya creado la máscara.
         if mask is not None: 

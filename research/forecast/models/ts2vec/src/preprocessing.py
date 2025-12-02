@@ -132,4 +132,4 @@ class Preprocessor:
         pred_lens:List[int] = [24, 48, 96, 288, 672]
 
         # Retorna los valores obtenidos.
-        return data, train_slice, valid_slice, test_slice, scaler, pred_lens
+        return data, train_slice, valid_slice, test_slice, scaler, pred_lens, num_ts_features

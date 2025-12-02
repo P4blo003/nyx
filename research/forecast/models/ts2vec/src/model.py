@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 01/12/2025
+# Last edited: 02/12/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -18,18 +18,19 @@ from typing import Callable, List
 import numpy as np
 import torch
 import torch.nn.functional as F
+from torch import nn
 from torch.optim import swa_utils
 from torch.utils.data import TensorDataset, DataLoader
 # Internos:
+from mask import MaskGenerator
 from encoder import TSEncoder
-from mask import MaskMode
 from loss import hierarchical_contrastive_loss
 from utils import split_with_nan, take_per_row, centerize_vary_length_series, torch_pad_nan
 
 
 # ==============================
 # CLASES
-# ==============================
+# ============================== 
 
 class TS2Vec:
     """
@@ -104,7 +105,7 @@ class TS2Vec:
     def __eval_with_pooling(
         self,
         x:torch.Tensor,
-        mask:MaskMode|None,
+        mask_generator:MaskGenerator|None,
         encoding_window:str|int|None = None,
         slicing:slice|None = None
     ) -> torch.Tensor:
@@ -114,7 +115,7 @@ class TS2Vec:
 
         Args:
             x (torch.Tensor):
-            mask (str|None):
+            mask_generator (MaskGenerator|None): Generador de la máscara
             encoding_window (str|int|None):
             slicing (slice|None):
         
@@ -122,7 +123,7 @@ class TS2Vec:
             torch.Tensor:
         """
         # Se envía el tensor a la GPU si aplica y se usa mask si existe.
-        out:torch.Tensor = self.net(x.to(self.device, non_blocking=True), mask.value if mask is not None else None)
+        out:torch.Tensor = self.net(x.to(self.device, non_blocking=True), mask_generator if mask_generator is not None else None)
 
         # Comprueba si pooling de ventana fija.
         if isinstance(encoding_window, int):
@@ -380,7 +381,7 @@ class TS2Vec:
                 # Callback opcional después de cada iteración.
                 if self.after_iter_callback is not None:
                     # Ejecuta el callback.
-                    self.after_iter_callback(self, loss.item())
+                    self.after_iter_callback(self.n_iters, loss.item())
             
             # Termina completamente si ha sido interrumpido por alcanzar el máximo de iteraciones.
             if interrupted: break
@@ -389,16 +390,16 @@ class TS2Vec:
             cum_loss /= n_epoch_iters
             loss_log.append(cum_loss)
 
-            # Imprime loss si verbose=True.
-            if verbose: print(f"Epoch |{self.n_epochs}:\tloss={cum_loss}")
-
             # Incrementa el contador de épocas.
             self.n_epochs += 1
+            
+            # Imprime loss si verbose=True.
+            if verbose: print(f"Epoch |{self.n_epochs}:\tloss={cum_loss}")
 
             # Callback opcional después de cada época.
             if self.after_epoch_callback is not None:
                     # Ejecuta el callback.
-                    self.after_epoch_callback(self, cum_loss)
+                    self.after_epoch_callback(cum_loss)
         
         # Returns.
         return loss_log
@@ -406,7 +407,7 @@ class TS2Vec:
     def encode(
         self,
         data:np.ndarray,
-        mask:MaskMode|None = None,
+        mask_generator:MaskGenerator|None,
         encoding_window:str|int|None = None,
         causal:bool = False,
         sliding_length = None,
@@ -418,7 +419,7 @@ class TS2Vec:
 
         Args:
             data (numpy.ndarray): Serie temporal en formato (batch, time, features).
-            mask (MaskMode): Másacara para indicar timesteps válidos.
+            mask_generator (MaskGenerator|None): Generador de la máscara.
             encoding_window (str|int|None): Modo de extracción de embeddings.
             causal (bool): True si se aplica codificación causal (solo usa el pasado).
             sliding_length (int|None): Longitud de ventana para procesado por sliding window.
@@ -495,7 +496,7 @@ class TS2Vec:
                                         tensors=calc_buffer,
                                         dim=0
                                     ),
-                                    mask=mask,
+                                    mask_generator=mask_generator,
                                     slicing=slice(sliding_padding, sliding_padding + sliding_length),
                                     encoding_window=encoding_window
                                 )
@@ -513,7 +514,7 @@ class TS2Vec:
                         else:
                             out:torch.Tensor = self.__eval_with_pooling(
                                 x=x_sliding,
-                                mask=mask,
+                                mask_generator=mask_generator,
                                 slicing=slice(sliding_padding, sliding_padding+sliding_length),
                                 encoding_window=encoding_window
                             )
@@ -524,7 +525,7 @@ class TS2Vec:
                     if n_samples < batch_size and calc_buffer_length > 0:
                         out:torch.Tensor = self.__eval_with_pooling(
                             x=torch.cat(calc_buffer, dim=0),
-                            mask=mask,
+                            mask_generator=mask_generator,
                             slicing=slice(sliding_padding, sliding_padding+sliding_length),
                             encoding_window=encoding_window
                         )
@@ -549,7 +550,7 @@ class TS2Vec:
                     # Evalúa la representación base aplicando la ventana indicada.
                     out:torch.Tensor = self.__eval_with_pooling(
                         x=x,
-                        mask=mask,
+                        mask_generator=mask_generator,
                         encoding_window=encoding_window
                     )
 

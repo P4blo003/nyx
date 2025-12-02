@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 01/12/2025
-# Last edited: 01/12/2025
+# Last edited: 02/12/2025
 # ==========================================================================================
 
 
@@ -10,8 +10,10 @@
 # ==============================
 
 # Estándar:
+from abc import ABC
+from abc import abstractmethod
 from pathlib import Path
-from typing import List
+from typing import Any
 # Externos:
 import polars as pl
 # Internos:
@@ -19,47 +21,80 @@ from preprocessing import Preprocessor
 
 
 # ==============================
-# FUNCIONES
+# CLASES
 # ==============================
 
-def load_csv(
-    dataset:str|Path,
-    separator:str = ',',
-    has_header:bool = False,
-    timestamp_column:str = "Timestamp",
-    timestamp_format:str = "%Y-%m-%d %H:%M:%S",
-    categorical_columns:List[str]|None = None
-):
+class DatasetLoader(ABC):
     """
-    Carga el fichero CSV y lo preprocesa.
+    Clase absracta para cargadores de datasets.
+    """
+    # ---- Default ---- #
 
-    Args:
-        dataset (str|Path): Ruta del fichero a cargar.
-        separator (str): Separador empleado en el dataset.
-        has_header (bool): True si incluye cabecera y False en caso contrario.
-        timestamp_column (str): Nombre de la columna temporal.
-        timestamp_format (str): Formato de la columna temporal.
-        categorical_columns (List[str]|None): Lista de las columnas categóricas.
+    def __init__(
+        self,
+        url:str|Path
+    ) -> None:
+        """
+        Inicializa el cargador de datos.
+
+        Args:
+            file (str|Path): Ruta al fichero a cargar.
+        """
+        # Inicializa las propiedades.
+        self.url:Path = Path(url)
     
-    Returns:
-        Datos preprocesados y separados.
+
+    # ---- Métodos ---- #
+
+    @abstractmethod
+    def load(self) -> Any:
+        """
+        Carga los datos desde la url y los procesa.
+        """
+        pass
+
+class SIECDatasetLoader(DatasetLoader):
     """
-    # Carga el csv en un DataFrame de polars.
-    df:pl.DataFrame = pl.read_csv(
-        source=dataset,
-        has_header=has_header,
-        separator=separator,
-        infer_schema_length=1000
-    )
+    Cargador de datos para el CSV `Steel Industry Energy Consumption`.
+    """
+    # ---- Atributos ---- #
 
-    # Genera el preprocesador.
-    preprocessor:Preprocessor = Preprocessor()
+    # Ruta al fichero.
+    DEFAULT_FILE_URL:str = r"data/raw/steel_industry_energy_consumption_dataset.csv"
 
-    # Retorna los datos preprocesados.
-    return preprocessor(
-        df=df,
-        train_size=0.6,
-        timestamp_column=timestamp_column,
-        timestamp_format=timestamp_format,
-        categorical_columns=categorical_columns
-    )
+
+    # ---- Default ---- #
+
+    def __init__(self) -> None:
+        """
+        Inicializa el cargador de datos.
+        """
+        # Constructor de DatasetLoader.
+        super().__init__(url=self.DEFAULT_FILE_URL)
+    
+
+    # ---- Métodos ---- #
+
+    def load(self):
+        """
+        Carga los datos desde la url y los procesa.
+        """
+        # Carga el csv en un DataFrame de polars.
+        df:pl.DataFrame = pl.read_csv(
+            source=self.url,
+            has_header=True,
+            separator=',',
+            infer_schema_length=1000
+        )
+
+        # Genera el preprocesador.
+        preprocessor:Preprocessor = Preprocessor()
+
+        # Retorna los datos preprocesados.
+        return preprocessor(
+            df=df,
+            train_size=0.6,
+            timestamp_column='Timestamp',
+            timestamp_format="%d/%m/%Y %H:%M",
+            categorical_columns=['WS', 'DW', 'LT']
+        )

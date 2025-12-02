@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/11/2025
-# Last edited: 01/12/2025
+# Last edited: 02/12/2025
 #
 # Algunas partes del código han sido tomadas y adaptadas del repositorio oficial
 # de TS2Vec (https://github.com/zhihanyue/ts2vec).
@@ -13,114 +13,285 @@
 # ==============================
 
 # Estándar:
-from enum import Enum
+from abc import ABC
+from abc import abstractmethod
 # Externos:
 import torch
 import numpy as np
 
 
 # ==============================
-# ENUMS
+# CLASES
 # ==============================
 
-class MaskMode(Enum):
+class MaskGenerator(ABC):
     """
-    Modo de enmascaramiento.
+    Clase abstracta base para generadores de máscaras.
 
-    Attributes:
-        BINOMIAL (str): Máscara booleana aleatoria según una distribución binomial.
-        CONTINUOUS (str): Máscara booleana que enmascara segmentos continuos.
-        ALL_TRUE (str): No enmascára ningún elemento.
-        ALL_FALSE (str): Enmascara todos los elementos.
-        MASK_LAST (str): Enmascara el último elemento. 
+    Define la interfaz que deben implementar todas las estrategias de enmascaramiento, lo que
+    permite desacoplar la lógica de generación de máscaras del modelo que las usa.
     """
-    # ---- Atributos ---- #
-    BINOMIAL    = 'binomial'
-    CONTINUOUS  = 'continuous'
-    ALL_TRUE    = 'all_true'
-    ALL_FALSE   = 'all_false'
-    MASK_LAST   = 'mask_last'
+    # ---- Métodos ---- #
 
+    @abstractmethod
+    def generate(self) -> torch.Tensor:
+        """
+        Genera una máscara booleana
 
-# ==============================
-# FUNCIONES
-# ==============================
+        Returns:
+            torch.Tensor: Mácara generada.
+        """
+        pass
 
-def generate_binomial_mask(
-    B:int,
-    T:int,
-    p:float = 0.5
-) -> torch.Tensor:
+class BinomialMaskGenerator(MaskGenerator):
     """
+    Generador de mácara binomial (Bernoulli).
+    
     Genera una máscara booleana aleatoria según una distribución binomial (Bernoulli)
     con probabilidad `p`.
-    
-    Args:
-        B (int): Número de secuencias / ejemplos en el batch (batch size).
-        T (int): Longitud temporal de cada secuencia (número de timesteps).
-        p (float): Probabilidad de que la máscara sea True en cada posición.
-    
-    Returns:
-        torch.Tensor: Tensor booleano de forma `(B, T)` con valores True o False.
-            Se emplea para enmascarar pasos temporales en modelos de series temporales.
     """
-    # Genera una matriz numpy (B, T) con 0/1 siendo una distribución binomial con n=1.
-    # Convierte el array numpy a un tensor PyTorch y lo transforma a booleano.
-    return torch.from_numpy(np.random.binomial(
+    # ---- Default ---- #
+
+    def __init__(
+        self,
+        b:int,
+        t:int,
+        p:float = 0.5
+    ) -> None:
+        """
+        Inicializa el generador binomial.
+
+        Args:
+            b (int): Número de secuencias / ejemplos en el batch (batch size).
+            t (int): Longitud temporal de cada secuencia (número de timestamps).
+            p (float): Probabilidad de que la máscara sea True en cada posición.
+        """
+        # Constructor de MaskGenerator.
+        super().__init__()
+
+        # Inicializa las propiedades.
+        self.b:int = b
+        self.t:int = t
+        self.p:float = p
+
+
+    # ---- Métodos ---- #
+
+    def generate(self) -> torch.Tensor:
+        """
+        Genera una máscara booleana aleatoria según una distribución binomial (Bernoulli)
+        con probabilidad `p`.
+        
+        Returns:
+            torch.Tensor: Tensor booleano de forma `(B, T)` con valores True o False.
+                Se emplea para enmascarar pasos temporales en modelos de series temporales.
+        """
+        # Genera la mácara binomial.
+        return torch.from_numpy(np.random.binomial(
             n=1,
-            p=p,
-            size=(B, T)
-        )
-    ).to(dtype=torch.bool)
+            p=self.p,
+            size=(self.b, self.t)
+        )).to(dtype=torch.bool)
 
-def generate_continuous_mask(
-    B:int,
-    T:int,
-    n:int|float = 5,
-    l:int|float = 0.1    
-) -> torch.Tensor:
+class ContinuousMaskGenerator(MaskGenerator):
     """
-    Genera una máscara booleana que enmascara segmentos continuos. Cada secuencia del
-    batch tendrá `n` segmentos enmascarados de longitud `l` cada uno.
+    Generador de mácara para tramos continuos.
 
-    Args:
-        B (int): Número de secuencias / ejemplos en el batch (batch size).
-        T (int): Longitud temporal de cada secuencia (número de timesteps).
-        n (int): Número de segmentos a enmascarar por secuencia.
-            - Si es un `int` se interpreta como número de bloques.
-            - Si es un `float` se interpreta como una fracción de `T`.
-        l (int|float): Longitud de cada segmento enmascarado.
-            - Si es un `int` se interpreta como número de timestamps a enmascarar por bloque.
-            - Si es un `float` se interpreta como una fracción de `T`.
+    Enmascara segmentos contiguos de tiempo, útil para obligar al model a aprender
+    dependencias a largo plazo.
+    """
+    # ---- Default ---- #
+
+    def __init__(
+        self,
+        b:int,
+        t:int,
+        n:int|float = 5,
+        l:int|float = 0.1
+    ) -> None:
+        """
+        Inicializa el generador binomial.
+
+        Args:
+            b (int): Número de secuencias / ejemplos en el batch (batch size).
+            t (int): Longitud temporal de cada secuencia (número de timestamps).
+            n (int|float): Número de segmentos a enmascarar por secuencia.
+                - Si es un `int`, se interpreta como número de bloques.
+                - Si es un `float`, se interpreta como una fracción de `t`.
+            l (int|float): Longitud de cada segmento enmascarado.
+                - Si es un `int`, se interpreta como número de timestamps a enmascarar por bloque.
+                - Si es un `float`, se interpreta como una fracción de `t`.
+        """
+        # Constructor de MaskGenerator.
+        super().__init__()
+
+        # Inicializa las propiedades.
+        self.b:int = b
+        self.t:int = t
+        self.n:int|float = n
+        self.l:int|float = l
     
-    Returns:
-        torch.Tensor: Máscara booleana de forma `(B, T)` con `False` en las posiciones enmascaradas
+
+    # ---- Métodos ---- #
+
+    def generate(self) -> torch.Tensor:
+        """
+        Genera una máscara booleana que enmascara segmentos continuos. Cada secuencia del
+        batch tendrá `n` segmentos enmascarados de longitud `l` cada uno.
+
+        Returns:
+            torch.Tensor: Máscara booleana de forma `(B, T)` con `False` en las posiciones enmascaradas
             (segmentos continuos generados aleatoriamente) y `True` en las restantes.
+        """
+        # Iniciailiza la máscara completamente verdadera (sin enmascaramiento).
+        res:torch.Tensor = torch.full(
+            size=(self.b, self.t),
+            fill_value=True,
+            dtype=torch.bool
+        )
+
+        # Si n es un float, calcula el número de segmentos.
+        self.n = int(self.n * self.t) if isinstance(self.n, float) else self.n
+        # Se asegura de que al menos haya un segmento y como mucho t//2.
+        self.n = max(min(self.n, self.t // 2), 1)
+
+        # Si l es float, calcula el número de timestamps por segmento.
+        self.l = int(self.l * self.t) if isinstance(self.l, float) else self.l
+        # Se asegura de que al menos haya 1 timestamp falso.
+        self.l = max(self.l, 1)
+
+        # Itera sobre las secuencias del batch.
+        for i in range(self.b):
+            for _ in range(self.n):
+                # Elige aleatoriamiente un punto del inicio entre [0, t-l].
+                t = np.random.randint(int(self.t - self.l + 1))
+                # Marca un bloque de longitud l como enmascarado.
+                res[i, t:t+self.l] = False
+        
+        return res
+
+class AllFalseMaskGenerator(MaskGenerator):
     """
-    # Inicializa la máscara completamente verdadera (sin enmascaramiento).
-    res = torch.full(
-        size=(B, T),
-        fill_value=True,
-        dtype=torch.bool
-    )
+    Generador de mácara completa. Enmascara todas las posiciones.
+    """
+    # ---- Default ---- #
 
-    # Si n es float, calcula el número de segmentos.
-    if isinstance(n, float): n = int(n * T)
-    # Se asegura de que al menos haya un segmento y como mucho T//2.
-    n = max(min(n, T // 2), 1)
+    def __init__(
+        self,
+        b:int,
+        t:int
+    ) -> None:
+        """
+        Inicializa el generador de todo falsos.
 
-    # Si l es float, calcula el número de timestamps por segmento.
-    if isinstance(l, float): l = int(l * T)
-    # Al menos 1 timestep debe tener falso para que haya efecto de enmascaramiento.
-    l = max(l, 1)
+        Args:
+            b (int): Número de secuencias / ejemplos en el batch (batch size).
+            t (int): Longitud temporal de cada secuencia (número de timestamps).
+        """
+        # Constructor de MaskGenerator.
+        super().__init__()
 
-    # Para cada secuencia del batch, dibuja n segmentos enmascarados.
-    for i in range(B):
-        for _ in range(n):
-            # Elige aleatoriamente un punto del inicio entre [0, T-L]
-            t = np.random.randint(T - l + 1)
-            # Marca un bloque de longitud l como enmascarado.
-            res[i, t:t + l] = False
+        # Inicializa las propiedades.
+        self.b:int = b
+        self.t:int = t
 
-    # Returns.
-    return res
+
+    # ---- Métodos ---- #
+
+    def generate(self) -> torch.Tensor:
+        """
+        Genera una máscara booleana que enmascara todos los valores.
+
+        Returns:
+            torch.Tensor: Máscara booleana de forma `(B, T)` con `False` en todas las posiciones.
+        """
+        # Retorna la máscara generada.
+        return torch.full(
+            size=(self.b, self.t),
+            fill_value=False,
+            dtype=torch.bool
+        )
+
+class AllTrueMaskGenerator(MaskGenerator):
+    """
+    Generador de mácara vacía. No enmacara ninguna posición.
+    """
+    # ---- Default ---- #
+
+    def __init__(
+        self,
+        b:int,
+        t:int
+    ) -> None:
+        """
+        Inicializa el generador de todo falsos.
+
+        Args:
+            b (int): Número de secuencias / ejemplos en el batch (batch size).
+            t (int): Longitud temporal de cada secuencia (número de timestamps).
+        """
+        # Constructor de MaskGenerator.
+        super().__init__()
+
+        # Inicializa las propiedades.
+        self.b:int = b
+        self.t:int = t
+
+
+    # ---- Métodos ---- #
+
+    def generate(self) -> torch.Tensor:
+        """
+        Genera una máscara booleana no enmascara ningún valor.
+
+        Returns:
+            torch.Tensor: Máscara booleana de forma `(B, T)` con `True` en todas las posiciones.
+        """
+        # Retorna la máscara generada.
+        return torch.full(
+            size=(self.b, self.t),
+            fill_value=True,
+            dtype=torch.bool
+        )
+
+class LastMaskGenerator(MaskGenerator):
+    """
+    Generador de mácara. Enmascara el último elemento de la máscara.
+    """
+    # ---- Default ---- #
+
+    def __init__(
+        self,
+        b:int,
+        t:int
+    ) -> None:
+        """
+        Inicializa el generador de todo falsos.
+
+        Args:
+            b (int): Número de secuencias / ejemplos en el batch (batch size).
+            t (int): Longitud temporal de cada secuencia (número de timestamps).
+        """
+        # Constructor de MaskGenerator.
+        super().__init__()
+
+        # Inicializa las propiedades.
+        self.b:int = b
+        self.t:int = t
+
+
+    # ---- Métodos ---- #
+
+    def generate(self) -> torch.Tensor:
+        """
+        Genera una máscara booleana que enmascara todos los valores.
+
+        Returns:
+            torch.Tensor: Máscara booleana de forma `(B, T)` con `False` en todas las posiciones.
+        """
+        # Genera la mácara sin enmascaramiento.
+        mask:torch.Tensor = AllTrueMaskGenerator(b=self.b, t=self.t).generate()
+        # Establece el último elemento como enmascarado.
+        mask[:, -1] = False
+        # Retorna la máscara.
+        return mask
