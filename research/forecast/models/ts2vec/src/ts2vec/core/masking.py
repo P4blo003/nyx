@@ -175,3 +175,35 @@ class ContinuousMaskGenerator(MaskGenerator):
                 result[i, t:t+self.l] = False
         
         return result
+
+class AllTrueMaskGenerator(MaskGenerator):
+    """
+    Generador de máscaras vacías. Estas máscaras no enmascaran ningún
+    elemento.
+    """
+    # ---- Default ---- #
+
+    def __init__(self, b: int, t: int) -> None:
+        """
+        Inicializa el generador de mácaras vacías.
+
+        Args:
+            b (int): Número de series.
+            t (int): Longitud de las series.
+        """
+        # Constructor de MaskGenerator.
+        super().__init__(b=b, t=t)
+    
+
+    # ---- Métodos ---- #
+
+    def generate(self) -> torch.Tensor:
+        """
+        Genera una máscara booleana que no enmascara ningún segmento.
+
+        Returns:
+            torch.Tensor: Máscara booleana de forma `(b,t)` con `True` en todos los elementos
+                (no se enmascara ninguno).
+        """
+        # Genera la máscara vacía.
+        return torch.full((self.b, self.t), fill_value=True, dtype=torch.bool)

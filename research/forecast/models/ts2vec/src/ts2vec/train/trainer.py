@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 03/12/2025
-# Last edited: 03/12/2025
+# Last edited: 04/12/2025
 # ==========================================================================================
 
 
@@ -18,6 +18,8 @@ from torch import optim
 from torch.utils.data import DataLoader
 # Internos:
 from .utils import take_per_row
+from ..core.loss import hierarchical_contrastive_loss
+from ..core.encoder import SWAEncoder
 
 
 # ==============================
@@ -33,6 +35,7 @@ class TS2VecTrainer:
 
     def __init__(
         self,
+        model:SWAEncoder,
         optimizer:optim.Optimizer,
         device:str = 'cuda'
     ) -> None:
@@ -40,10 +43,12 @@ class TS2VecTrainer:
         Inicializa el entrenador.
 
         Args:
+            model (SWAEncoder): Modelo a entrenar.
             optimizer (optim.Optimizer): Optimizador del entrenamiento.
             device (str): Dispositivo de ejecución. Puede ser `cpu` o `cuda`.
         """
         # Inicializa las propiedades.
+        self.model:SWAEncoder = model
         self.optimizer:optim.Optimizer = optimizer
         self.device:str = device
         self.n_iters:int = 0
@@ -61,7 +66,7 @@ class TS2VecTrainer:
         after_epoch_callback:Callable|None = None,
         after_iter_callback:Callable|None = None,
         verbose:bool = False
-    ):
+    ) -> List[float]:
         """
         Entrena el modelo.
 
@@ -75,6 +80,9 @@ class TS2VecTrainer:
             after_iter_callback (Callable|None): Función a ejecutar tras completar
                 una iteración.
             verbose (bool): Si es True, se muestra información al terminar cada época.
+        
+        Returns:
+            List[float]: Lista con las pérdidas obtenidas para cada época.
         """
         # Listado para almacenar las losses del entrenamiento.
         losses:List[float] = []
@@ -102,7 +110,7 @@ class TS2VecTrainer:
                 x:torch.Tensor = batch[0]
 
                 # Envía los datos al dispositivo.
-                x.to(device=self.device)
+                x = x.to(device=self.device)
 
                 # Calcula la longitud de la serie temporal.
                 ts_l:int = x.shape[1]
@@ -120,7 +128,7 @@ class TS2VecTrainer:
                     high=ts_l + 1
                 )
                 crop_offset:np.ndarray = np.random.randint(
-                    low=crop_e_left,
+                    low=-crop_e_left,
                     high=ts_l - crop_e_right + 1,
                     size=x.size(dim=0)
                 )
@@ -128,20 +136,48 @@ class TS2VecTrainer:
                 # Reinicia los gradientes del optimizador.
                 self.optimizer.zero_grad()
 
-                # TODO: Aplica la red a la primera y segunda vista.
+                # Aplica la red a la primera y segunda vista.
+                out1:torch.Tensor = self.model(
+                    take_per_row(
+                        A=x,
+                        indx=crop_offset + crop_e_left,
+                        num_elements=crop_right - crop_e_left
+                    )
+                )[:, -crop_length:]
+                out2:torch.Tensor = self.model(
+                    take_per_row(
+                        A=x,
+                        indx=crop_offset + crop_left,
+                        num_elements=crop_e_right - crop_left
+                    )
+                )[:, :crop_length]
 
-                # TODO: Calcúla la pérdida contrastiva.
+                # Calcúla la pérdida contrastiva.
+                loss:torch.Tensor = hierarchical_contrastive_loss(
+                    z1=out1,
+                    z2=out2,
+                    temporal_unit=temporal_unit
+                )
 
-                # TODO: Backpropagation para el gradiente.
+                # Backpropagation para el gradiente.
+                loss.backward()
+                self.optimizer.step()
+                # Actualiza los parámetros del modelo.
+                self.model.update()
 
+                # Acumula la loss.
+                cum_loss += loss.item()
 
                 # Incrementa el número de iteraciones.
                 self.n_iters += 1
                 n_epoch_iters += 1
 
                 # Callback opcional despúes de cada iteración.
-                if after_iter_callback is not None: after_iter_callback(self.n_iters)
+                if after_iter_callback is not None: after_iter_callback(self.n_iters, cum_loss)
 
+            # Termina completamente si se han alcanzado el número de iteraciones.
+            if interrupted: break
+            
             # Calcula el loss promedio de la época.
             cum_loss /= n_epoch_iters
             losses.append(cum_loss)
@@ -150,10 +186,9 @@ class TS2VecTrainer:
             self.n_epochs += 1
 
             # Callback opcional después de cada época.
-            if after_epoch_callback is not None: after_epoch_callback(self.n_epochs)
+            if after_epoch_callback is not None: after_epoch_callback(self.n_epochs, cum_loss)
 
             # Imprime si verbose es True.
-            if verbose: print(f"Epoch {self.n_epochs}")
-
-            # Termina completamente si se han alcanzado el número de iteraciones.
-            if interrupted: break
+            if verbose: print(f"Epoch {self.n_epochs}:\tLoss: {cum_loss}")
+        
+        return losses
