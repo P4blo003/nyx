@@ -14,8 +14,8 @@ import torch
 from torch import nn
 from torch import optim
 # Internos:
-from .backbone import SameConv1DSequence
-from .masking import MaskGenerator, BinomialMaskGenerator, AllTrueMaskGenerator
+from core.backbone import SameConv1DSequence
+from core.masking import MaskGenerator, BinomialMaskGenerator, AllTrueMaskGenerator
 
 
 # ==============================
@@ -58,6 +58,7 @@ class TSEncoder(nn.Module):
         self.input_dim:int = input_dim
         self.output_dim:int = output_dim
         self.hidden_dim:int = hidden_dim
+        self.mask_gen:MaskGenerator|None = None
 
         # Inicializa la capa convolucional.
         self.input_fc:nn.Linear = nn.Linear(
@@ -110,10 +111,14 @@ class TSEncoder(nn.Module):
         if mask_gen is None:
             # Si está entrenando, la máscara empleada será Binomail por defecto.
             # en caso de no estar entrenando, no se enmascara.
-            mask_gen = BinomialMaskGenerator(b=x.size(0), t=x.size(1)) if self.training else AllTrueMaskGenerator(b=x.size(0), t=x.size(1))
-        
+            self.mask_gen = BinomialMaskGenerator(b=x.size(0), t=x.size(1)) if self.training else AllTrueMaskGenerator(b=x.size(0), t=x.size(1))
+        # Si se ha pasado la máscara a emplear.
+        else:
+            self.mask_gen = mask_gen
+
         # Genera la máscara y la envía al mismo dispositivo que los datos.
-        mask = mask_gen.generate().to(device=x.device)
+        mask = self.mask_gen.generate().to(device=x.device)
+
         # Asegura que cualquier valor NaN sea excluido de la parte visible.
         mask &= nan_mask
         # Establece los valores elegidos para ser ocultados como 0.
@@ -152,40 +157,14 @@ class SWAEncoder(nn.Module):
 
         # Inicializa las propiedades.
         self.device:str = device
-        self._net:nn.Module = encoder.to(device=self.device)
+        self.core:nn.Module = encoder.to(device=self.device)
 
         # Inicializa la versión promediada (SWA) que se usa para la inferencia.
-        self.net:optim.swa_utils.AveragedModel = optim.swa_utils.AveragedModel(model=self._net)
-        self.net.update_parameters(self._net)
+        self.optimEncoder:optim.swa_utils.AveragedModel = optim.swa_utils.AveragedModel(model=self.core)
+        self.optimEncoder.update_parameters(self.core)
     
 
     # ---- Métodos ---- #
-
-    def __eval_with_pooling(
-        self,
-        x:torch.Tensor,
-        mask_generator:MaskGenerator|None,
-        encoding_window:str|int|None = None,
-        slicing:slice|None = None
-    ) -> torch.Tensor:
-        """
-        Evalúa la red sobre un batch de datos y aplica pooling temporal para obtener
-        los embeddings representativos según la ventana especificada.
-
-        Args:
-            x (np.ndarray): Tensor de datos de entrada con la forma de (batch_size, timesteps, features).
-            mask_generator (MaskGenerator): Generador de la máscara.
-            encoding_window (str|int|None): Estrategia de pooling temporal a aplicar.
-                - `int`: APlica max pooling con una ventana de tamaño fijo.
-                - `str:"full_series"`: Aplica max pooling sobre toda la serie temporal.
-                - `str:"multiscale"`: Aplica max pooling jerárquico a diferntes escalas.
-                - `None`: No se aplica pooling.
-            slicing (slice|None): Objeto `slice` opcional para seleccionar un rango
-                específico de timesteps después del pooling.
-
-        Returns:
-            torch.Tensor: Tensor de embeddings procesados, listo para su uso posterior.
-        """
 
     def forward(
         self,
@@ -202,8 +181,8 @@ class SWAEncoder(nn.Module):
             torch.Tensor: Tensor de salida tras aplicar el encoder con la
                 forma (batch_size, timesteps, output_dim).
         """
-        # 
-        return self._net(x)
+        # Ejecuta el encoder sobre el input.
+        return self.core(x)
     
     def update(
         self
@@ -212,4 +191,4 @@ class SWAEncoder(nn.Module):
         Actualiza los parámetros del modelo.
         """
         # Actualiza los parámetros.
-        self.net.update_parameters(self._net)
+        self.optimEncoder.update_parameters(self.core)

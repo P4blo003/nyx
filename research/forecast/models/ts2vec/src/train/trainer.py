@@ -17,9 +17,9 @@ import torch
 from torch import optim
 from torch.utils.data import DataLoader
 # Internos:
-from .utils import take_per_row
-from ..core.loss import hierarchical_contrastive_loss
-from ..core.encoder import SWAEncoder
+from train.utils import take_per_row
+from train.loss import hierarchical_contrastive_loss
+from core.encoder import SWAEncoder
 
 
 # ==============================
