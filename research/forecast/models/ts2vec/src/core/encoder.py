@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 03/12/2025
-# Last edited: 03/12/2025
+# Last edited: 04/12/2025
 # ==========================================================================================
 
 
@@ -12,8 +12,10 @@
 # Externos:
 import torch
 from torch import nn
+from torch import optim
 # Internos:
-from .backbone import SameConv1DSequence
+from core.backbone import SameConv1DSequence
+from core.masking import MaskGenerator, BinomialMaskGenerator, AllTrueMaskGenerator
 
 
 # ==============================
@@ -31,8 +33,8 @@ class TSEncoder(nn.Module):
         self,
         input_dim:int,
         output_dim:int,
-        hidden_dim:int,
-        depth:int,
+        hidden_dim:int = 64,
+        depth:int = 10,
         kernel_size:int = 3,
         dropout:float = 0.1
     ) -> None:
@@ -56,6 +58,7 @@ class TSEncoder(nn.Module):
         self.input_dim:int = input_dim
         self.output_dim:int = output_dim
         self.hidden_dim:int = hidden_dim
+        self.mask_gen:MaskGenerator|None = None
 
         # Inicializa la capa convolucional.
         self.input_fc:nn.Linear = nn.Linear(
@@ -65,7 +68,7 @@ class TSEncoder(nn.Module):
 
         # Inicializa la secuencia de bloques convolucionales.
         self.sequence:SameConv1DSequence = SameConv1DSequence(
-            input_dim=self.input_dim,
+            input_dim=self.hidden_dim,
             channels=[self.hidden_dim] * depth + [self.output_dim],
             kernel_size=kernel_size
         )
@@ -78,7 +81,8 @@ class TSEncoder(nn.Module):
 
     def forward(
         self,
-        x:torch.Tensor
+        x:torch.Tensor,
+        mask_gen:MaskGenerator|None = None
     ) -> torch.Tensor:
         """
         Ejecuta el pipeline completo del encoder.
@@ -86,6 +90,7 @@ class TSEncoder(nn.Module):
         Args:
             x (torch.Tensor): Tensor de entrada con la forma
                 (batch_size, timestamps, features).
+            mask_gen (MaskGenerator): Generador de la máscara.
             
         Returns:
             torch.Tensor: Tensor de salida tras aplicar el encoder con la
@@ -102,6 +107,23 @@ class TSEncoder(nn.Module):
         # Realiza la proyección inicial.
         x = self.input_fc(x)
 
+        # Inicializa el generador en caso de que no se haya pasado.
+        if mask_gen is None:
+            # Si está entrenando, la máscara empleada será Binomail por defecto.
+            # en caso de no estar entrenando, no se enmascara.
+            self.mask_gen = BinomialMaskGenerator(b=x.size(0), t=x.size(1)) if self.training else AllTrueMaskGenerator(b=x.size(0), t=x.size(1))
+        # Si se ha pasado la máscara a emplear.
+        else:
+            self.mask_gen = mask_gen
+
+        # Genera la máscara y la envía al mismo dispositivo que los datos.
+        mask = self.mask_gen.generate().to(device=x.device)
+
+        # Asegura que cualquier valor NaN sea excluido de la parte visible.
+        mask &= nan_mask
+        # Establece los valores elegidos para ser ocultados como 0.
+        x[~mask] = 0
+
         # Cambia la forma de x a (batch_size, output_dim, timesteps).
         x = x.transpose(1, 2)       
         # Aplica el encoder convolucional y el dropout.
@@ -110,3 +132,63 @@ class TSEncoder(nn.Module):
         x = x.transpose(1, 2)
 
         return x
+
+class SWAEncoder(nn.Module):
+    """
+    Contenedor que gestiona el TSEncoder activo y su versión SWA. Permite
+    al trainer tratar a la instancia como un único modelo.
+    """
+    # ---- Default ---- #
+
+    def __init__(
+        self,
+        encoder:nn.Module,
+        device:str = 'cuda'
+    ) -> None:
+        """
+        Inicializa el contenedor.
+
+        Args:
+            encoder (nn.Module): Encoder del modelo.
+            device (str): Dispositivo de ejecución. Puede ser `cpu` o `cuda`.
+        """
+        # Constructor de nn.Module.
+        super().__init__()
+
+        # Inicializa las propiedades.
+        self.device:str = device
+        self.core:nn.Module = encoder.to(device=self.device)
+
+        # Inicializa la versión promediada (SWA) que se usa para la inferencia.
+        self.optimEncoder:optim.swa_utils.AveragedModel = optim.swa_utils.AveragedModel(model=self.core)
+        self.optimEncoder.update_parameters(self.core)
+    
+
+    # ---- Métodos ---- #
+
+    def forward(
+        self,
+        x:torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Ejectua el encoder.
+
+        Args:
+        x (torch.Tensor): Tensor de entrada con la forma
+            (batch_size, timestamps, features).
+
+        Returns:
+            torch.Tensor: Tensor de salida tras aplicar el encoder con la
+                forma (batch_size, timesteps, output_dim).
+        """
+        # Ejecuta el encoder sobre el input.
+        return self.core(x)
+    
+    def update(
+        self
+    ) -> None:
+        """
+        Actualiza los parámetros del modelo.
+        """
+        # Actualiza los parámetros.
+        self.optimEncoder.update_parameters(self.core)

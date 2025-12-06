@@ -175,3 +175,101 @@ class ContinuousMaskGenerator(MaskGenerator):
                 result[i, t:t+self.l] = False
         
         return result
+
+class AllTrueMaskGenerator(MaskGenerator):
+    """
+    Generador de máscaras vacías. Estas máscaras no enmascaran ningún
+    elemento.
+    """
+    # ---- Default ---- #
+
+    def __init__(self, b: int, t: int) -> None:
+        """
+        Inicializa el generador de mácaras vacías.
+
+        Args:
+            b (int): Número de series.
+            t (int): Longitud de las series.
+        """
+        # Constructor de MaskGenerator.
+        super().__init__(b=b, t=t)
+    
+
+    # ---- Métodos ---- #
+
+    def generate(self) -> torch.Tensor:
+        """
+        Genera una máscara booleana que no enmascara ningún segmento.
+
+        Returns:
+            torch.Tensor: Máscara booleana de forma `(b,t)` con `True` en todos los elementos
+                (no se enmascara ninguno).
+        """
+        # Genera la máscara vacía.
+        return torch.full((self.b, self.t), fill_value=True, dtype=torch.bool)
+
+class AllFalseMaskGenerator(MaskGenerator):
+    """
+    Generador de máscaras vacías. Estas máscaras enmascaran todos los
+    elementos.
+    """
+    # ---- Default ---- #
+
+    def __init__(self, b: int, t: int) -> None:
+        """
+        Inicializa el generador de mácaras completas.
+
+        Args:
+            b (int): Número de series.
+            t (int): Longitud de las series.
+        """
+        # Constructor de MaskGenerator.
+        super().__init__(b=b, t=t)
+    
+
+    # ---- Métodos ---- #
+
+    def generate(self) -> torch.Tensor:
+        """
+        Genera una máscara booleana que enmascara todos los elementos.
+
+        Returns:
+            torch.Tensor: Máscara booleana de forma `(b,t)` con `False` en todos los elementos
+                (se enmascaran todos los elementos).
+        """
+        # Genera la máscara vacía.
+        return torch.full((self.b, self.t), fill_value=False, dtype=torch.bool)
+
+class OnlyLastMaskGenerator(MaskGenerator):
+    """
+    Generador de máscaras vacías. Estas máscaras enmascaran solo el
+    último elemento.
+    """
+    # ---- Default ---- #
+
+    def __init__(self, b: int, t: int) -> None:
+        """
+        Inicializa el generador de mácaras.
+
+        Args:
+            b (int): Número de series.
+            t (int): Longitud de las series.
+        """
+        # Constructor de MaskGenerator.
+        super().__init__(b=b, t=t)
+    
+
+    # ---- Métodos ---- #
+
+    def generate(self) -> torch.Tensor:
+        """
+        Genera una máscara booleana que enmascara el último elemento.
+
+        Returns:
+            torch.Tensor: Máscara booleana de forma `(b,t)` con `False` en el último elemento.
+        """
+        # Genera la máscara vacía.
+        mask:torch.Tensor = torch.full((self.b, self.t), fill_value=True, dtype=torch.bool)
+        # Enmascara el último elemento.
+        mask[:, -1] = False
+        return mask
