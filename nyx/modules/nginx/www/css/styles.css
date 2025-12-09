@@ -1,0 +1,1307 @@
+/* ============================================
+   SYSTEMA NYX - Variables Cosmicas
+   ============================================ */
+
+:root {
+    /* Núcleo Primordial - Paleta Nyx */
+    --nyx-void: #0A0B14;
+    --nyx-abyss: #101426;
+    --nyx-twilight: #1A1F3A;
+    --nyx-midnight: #242947;
+    
+    /* Nebulosas - Acéntos */
+    --nebula-purple: #5C4D7D;
+    --nebula-blue: #3A4E7B;
+    --nebula-teal: #10A37F;
+    --nebula-violet: #7B4D7D;
+    
+    /* Estrellas - Brillos */
+    --star-bright: #E8EAFF;
+    --star-dim: #A0A4C0;
+    --star-faint: #6B708C;
+    
+    /* Efectos Especiales */
+    --shadow-cosmic: 0 4px 20px rgba(10, 11, 20, 0.8);
+    --shadow-nebula: 0 8px 32px rgba(92, 77, 125, 0.3);
+    --shadow-constellation: 0 2px 8px rgba(232, 234, 255, 0.1);
+    
+    /* Gradientes Celestes */
+    --gradient-nyx: linear-gradient(135deg, var(--nyx-void) 0%, var(--nyx-abyss) 100%);
+    --gradient-nebula: linear-gradient(135deg, var(--nebula-purple) 0%, var(--nebula-blue) 100%);
+    --gradient-stars: radial-gradient(circle at 50% 50%, 
+        rgba(232, 234, 255, 0.1) 0%, 
+        transparent 50%);
+    
+    /* Transiciones Temporales */
+    --transition-eclipse: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-comet: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-pulsar: 2s infinite alternate ease-in-out;
+    
+    /* Bordes Cósmicos */
+    --radius-moon: 24px;
+    --radius-star: 12px;
+    --radius-cloud: 8px;
+    
+    /* Espaciado Galáctico */
+    --space-vast: 32px;
+    --space-large: 24px;
+    --space-medium: 16px;
+    --space-small: 12px;
+    --space-tiny: 8px;
+}
+
+/* ============================================
+   Fundamentos - Estructura Cósmica
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--gradient-nyx);
+    color: var(--star-bright);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        var(--gradient-stars),
+        radial-gradient(circle at 20% 30%, rgba(92, 77, 125, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(58, 78, 123, 0.1) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.nyx-app {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* ============================================
+   Noche Eterna - Sidebar
+   ============================================ */
+
+.nyx-sidebar {
+    width: 280px;
+    background: rgba(16, 20, 38, 0.95);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(58, 78, 123, 0.3);
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-large);
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+    transition: transform var(--transition-eclipse);
+}
+
+.nyx-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-medium) 0;
+    margin-bottom: var(--space-large);
+    border-bottom: 1px solid rgba(92, 77, 125, 0.3);
+}
+
+.logo-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--gradient-nebula);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: var(--star-bright);
+    margin-bottom: var(--space-small);
+    box-shadow: var(--shadow-nebula);
+}
+
+.logo-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--star-bright), var(--nebula-teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+}
+
+.logo-subtitle {
+    font-size: 12px;
+    color: var(--star-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.nyx-new-chat {
+    background: var(--gradient-nebula);
+    border: none;
+    border-radius: var(--radius-star);
+    padding: var(--space-medium);
+    color: var(--star-bright);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-small);
+    cursor: pointer;
+    transition: all var(--transition-eclipse);
+    margin-bottom: var(--space-large);
+    box-shadow: var(--shadow-nebula);
+}
+
+.nyx-new-chat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(92, 77, 125, 0.4);
+}
+
+.nyx-new-chat:active {
+    transform: translateY(0);
+}
+
+.conversation-pantheon {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+    font-size: 14px;
+    color: var(--star-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: var(--space-medium);
+    padding-bottom: var(--space-small);
+    border-bottom: 1px solid rgba(92, 77, 125, 0.2);
+}
+
+.conversation-list {
+    list-style: none;
+}
+
+.conversation-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+    padding: var(--space-small) var(--space-medium);
+    border-radius: var(--radius-cloud);
+    cursor: pointer;
+    transition: all var(--transition-eclipse);
+    margin-bottom: 4px;
+    position: relative;
+}
+
+.conversation-item:hover {
+    background: rgba(92, 77, 125, 0.1);
+}
+
+.conversation-item.active {
+    background: rgba(16, 163, 127, 0.1);
+    border-left: 3px solid var(--nebula-teal);
+}
+
+.conversation-item i {
+    color: var(--nebula-teal);
+    font-size: 14px;
+}
+
+.conversation-name {
+    flex: 1;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.conversation-delete {
+    opacity: 0;
+    background: none;
+    border: none;
+    color: var(--star-faint);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all var(--transition-eclipse);
+}
+
+.conversation-item:hover .conversation-delete {
+    opacity: 1;
+}
+
+.conversation-delete:hover {
+    color: var(--star-bright);
+    background: rgba(235, 87, 87, 0.2);
+}
+
+.nyx-altar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--space-medium);
+    border-top: 1px solid rgba(92, 77, 125, 0.3);
+    margin-top: var(--space-large);
+}
+
+.altar-btn {
+    background: none;
+    border: none;
+    color: var(--star-dim);
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+    cursor: pointer;
+    padding: var(--space-small);
+    border-radius: var(--radius-cloud);
+    transition: all var(--transition-eclipse);
+}
+
+.altar-btn:hover {
+    color: var(--star-bright);
+    background: rgba(92, 77, 125, 0.2);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    position: relative;
+}
+
+.avatar-initials {
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-nebula);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--star-bright);
+}
+
+.avatar-status {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background: var(--nebula-teal);
+    border: 2px solid var(--nyx-abyss);
+    border-radius: 50%;
+}
+
+/* ============================================
+   Cielo Nocturno - Área Principal
+   ============================================ */
+
+.nyx-main {
+    flex: 1;
+    margin-left: 280px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Cúpula Celeste - Header */
+.nyx-dome {
+    background: rgba(26, 31, 58, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(58, 78, 123, 0.3);
+    padding: var(--space-medium) var(--space-large);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.dome-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-large);
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--star-dim);
+    cursor: pointer;
+    padding: var(--space-small);
+    border-radius: var(--radius-cloud);
+    transition: all var(--transition-eclipse);
+}
+
+.menu-toggle:hover {
+    color: var(--star-bright);
+    background: rgba(92, 77, 125, 0.2);
+}
+
+.current-conversation h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    background: linear-gradient(135deg, var(--star-bright), var(--nebula-teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.connection-oracle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+}
+
+.connection-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.connection-status.connected {
+    background: var(--nebula-teal);
+    box-shadow: 0 0 12px rgba(16, 163, 127, 0.5);
+    animation: pulsar var(--transition-pulsar);
+}
+
+.connection-status.connecting {
+    background: var(--nebula-blue);
+    box-shadow: 0 0 12px rgba(58, 78, 123, 0.5);
+    animation: pulsar var(--transition-pulsar);
+}
+
+.connection-status.disconnected {
+    background: #EB5757;
+    box-shadow: 0 0 12px rgba(235, 87, 87, 0.5);
+}
+
+@keyframes pulsar {
+    from { opacity: 0.5; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1.1); }
+}
+
+.dome-right {
+    display: flex;
+    gap: var(--space-small);
+}
+
+.dome-action {
+    background: rgba(92, 77, 125, 0.2);
+    border: 1px solid rgba(92, 77, 125, 0.4);
+    border-radius: var(--radius-star);
+    padding: var(--space-small) var(--space-medium);
+    color: var(--star-dim);
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+    cursor: pointer;
+    transition: all var(--transition-eclipse);
+}
+
+.dome-action:hover {
+    background: rgba(92, 77, 125, 0.3);
+    color: var(--star-bright);
+    border-color: var(--nebula-purple);
+}
+
+/* Vía Láctea - Área de Mensajes */
+.milky-way {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-large);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-large);
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(92, 77, 125, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(58, 78, 123, 0.05) 0%, transparent 50%);
+}
+
+.cosmic-message {
+    display: flex;
+    gap: var(--space-medium);
+    max-width: 800px;
+    animation: messageAppear 0.5s var(--transition-eclipse);
+}
+
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cosmic-message.welcome {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.cosmic-avatar {
+    width: 48px;
+    height: 48px;
+}
+
+.avatar-constellation {
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-nebula);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--star-bright);
+    box-shadow: var(--shadow-nebula);
+}
+
+.cosmic-content {
+    flex: 1;
+}
+
+.cosmic-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-medium);
+    margin-bottom: var(--space-small);
+}
+
+.sender-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--nebula-teal);
+}
+
+.message-time {
+    font-size: 12px;
+    color: var(--star-faint);
+}
+
+.cosmic-text {
+    background: rgba(16, 20, 38, 0.8);
+    border-radius: var(--radius-moon);
+    padding: var(--space-large);
+    border: 1px solid rgba(92, 77, 125, 0.3);
+    box-shadow: var(--shadow-cosmic);
+}
+
+.cosmic-text p {
+    line-height: 1.6;
+    margin-bottom: var(--space-medium);
+}
+
+.cosmic-text p:last-child {
+    margin-bottom: 0;
+}
+
+.cosmic-text em {
+    font-style: italic;
+    color: var(--star-dim);
+}
+
+.oracle-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-medium);
+    margin: var(--space-large) 0;
+}
+
+.oracle-card {
+    background: rgba(26, 31, 58, 0.8);
+    border: 1px solid rgba(92, 77, 125, 0.3);
+    border-radius: var(--radius-star);
+    padding: var(--space-medium);
+    transition: all var(--transition-eclipse);
+}
+
+.oracle-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--nebula-teal);
+    box-shadow: var(--shadow-nebula);
+}
+
+.oracle-card i {
+    font-size: 24px;
+    color: var(--nebula-teal);
+    margin-bottom: var(--space-small);
+}
+
+.oracle-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--star-bright);
+}
+
+.oracle-card p {
+    font-size: 12px;
+    color: var(--star-dim);
+    margin-bottom: 0;
+}
+
+.invocation {
+    font-style: italic;
+    text-align: center;
+    color: var(--nebula-teal) !important;
+    font-size: 16px;
+    margin-top: var(--space-large) !important;
+}
+
+/* Mensaje de usuario */
+.cosmic-message.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.cosmic-message.user .cosmic-text {
+    background: rgba(16, 163, 127, 0.1);
+    border-color: rgba(16, 163, 127, 0.3);
+    border-top-right-radius: 4px;
+}
+
+.cosmic-message.user .sender-name {
+    color: var(--star-bright);
+}
+
+.cosmic-message.user .avatar-constellation {
+    background: rgba(16, 163, 127, 0.2);
+    color: var(--nebula-teal);
+}
+
+/* Mensaje de Nyx */
+.cosmic-message.nyx {
+    align-self: flex-start;
+}
+
+.cosmic-message.nyx .cosmic-text {
+    border-top-left-radius: 4px;
+}
+
+/* Ecos Nocturnos - Typing Indicator */
+.night-echoes {
+    display: none;
+    align-items: center;
+    gap: var(--space-medium);
+    padding: 0 var(--space-large) var(--space-large);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all var(--transition-eclipse);
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.night-echoes.visible {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.echo-avatar {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-pulsar {
+    width: 32px;
+    height: 32px;
+    background: var(--nebula-teal);
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: echoPulse 1.5s infinite ease-in-out;
+}
+
+@keyframes echoPulse {
+    0%, 100% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1); opacity: 1; }
+}
+
+.echo-content {
+    flex: 1;
+}
+
+.echo-name {
+    display: block;
+    font-size: 14px;
+    color: var(--star-dim);
+    margin-bottom: var(--space-small);
+}
+
+.echo-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.echo-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--nebula-teal);
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: echoDots 1.4s infinite ease-in-out;
+}
+
+.echo-dot:nth-child(1) { animation-delay: -0.32s; }
+.echo-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes echoDots {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+/* Portal Nocturno - Input */
+.night-portal {
+    background: rgba(16, 20, 38, 0.8);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(58, 78, 123, 0.3);
+    padding: var(--space-large);
+}
+
+.portal-form {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.portal-wrapper {
+    display: flex;
+    gap: var(--space-medium);
+    align-items: flex-end;
+    background: rgba(26, 31, 58, 0.8);
+    border: 1px solid rgba(92, 77, 125, 0.4);
+    border-radius: var(--radius-moon);
+    padding: var(--space-medium);
+    transition: all var(--transition-eclipse);
+}
+
+.portal-wrapper:focus-within {
+    border-color: var(--nebula-teal);
+    box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+}
+
+.portal-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-small);
+}
+
+.portal-action {
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: 1px solid rgba(92, 77, 125, 0.4);
+    border-radius: var(--radius-cloud);
+    color: var(--star-dim);
+    cursor: pointer;
+    transition: all var(--transition-eclipse);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.portal-action:hover {
+    color: var(--star-bright);
+    border-color: var(--nebula-purple);
+    background: rgba(92, 77, 125, 0.2);
+}
+
+.portal-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--star-bright);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 40px;
+    max-height: 200px;
+    resize: none;
+    outline: none;
+    padding: var(--space-small) 0;
+}
+
+.portal-input::placeholder {
+    color: var(--star-faint);
+}
+
+.portal-aside {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-small);
+}
+
+.oracle-select {
+    background: rgba(16, 20, 38, 0.8);
+    border: 1px solid rgba(92, 77, 125, 0.4);
+    border-radius: var(--radius-cloud);
+    color: var(--star-bright);
+    padding: var(--space-small) var(--space-medium);
+    font-size: 12px;
+    cursor: pointer;
+    min-width: 140px;
+    transition: all var(--transition-eclipse);
+}
+
+.oracle-select:hover {
+    border-color: var(--nebula-purple);
+}
+
+.portal-send {
+    width: 48px;
+    height: 48px;
+    background: var(--gradient-nebula);
+    border: none;
+    border-radius: var(--radius-star);
+    color: var(--star-bright);
+    cursor: pointer;
+    transition: all var(--transition-eclipse);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.portal-send:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-nebula);
+}
+
+.portal-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.portal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--space-medium);
+    font-size: 12px;
+    color: var(--star-faint);
+}
+
+.portal-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+}
+
+.portal-stats {
+    display: flex;
+    gap: var(--space-large);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+}
+
+/* ============================================
+   Nebulosa de Notificaciones
+   ============================================ */
+
+.nyx-nebula {
+    position: fixed;
+    bottom: var(--space-large);
+    right: var(--space-large);
+    background: rgba(26, 31, 58, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(92, 77, 125, 0.4);
+    border-radius: var(--radius-star);
+    padding: var(--space-medium) var(--space-large);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all var(--transition-comet);
+    z-index: 1000;
+    max-width: 400px;
+    box-shadow: var(--shadow-nebula);
+}
+
+.nyx-nebula.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* ============================================
+   Templo de Configuración - Modal
+   ============================================ */
+
+.nyx-temple {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 11, 20, 0.9);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-eclipse);
+}
+
+.nyx-temple[hidden] {
+    display: none;
+}
+
+.nyx-temple.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.temple-content {
+    background: var(--gradient-nyx);
+    border: 1px solid rgba(92, 77, 125, 0.4);
+    border-radius: var(--radius-moon);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: var(--shadow-cosmic);
+    animation: templeAppear 0.5s var(--transition-eclipse);
+}
+
+@keyframes templeAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.temple-header {
+    background: rgba(26, 31, 58, 0.8);
+    padding: var(--space-large);
+    border-bottom: 1px solid rgba(92, 77, 125, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.temple-header h2 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+    font-size: 20px;
+    background: linear-gradient(135deg, var(--star-bright), var(--nebula-teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.temple-close {
+    background: none;
+    border: none;
+    color: var(--star-dim);
+    cursor: pointer;
+    padding: var(--space-small);
+    border-radius: var(--radius-cloud);
+    transition: all var(--transition-eclipse);
+}
+
+.temple-close:hover {
+    color: var(--star-bright);
+    background: rgba(92, 77, 125, 0.2);
+}
+
+.temple-body {
+    padding: var(--space-large);
+    overflow-y: auto;
+    max-height: 60vh;
+}
+
+.temple-section {
+    margin-bottom: var(--space-vast);
+}
+
+.temple-section h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+    font-size: 16px;
+    margin-bottom: var(--space-medium);
+    color: var(--star-bright);
+    padding-bottom: var(--space-small);
+    border-bottom: 1px solid rgba(92, 77, 125, 0.2);
+}
+
+.ritual-item {
+    margin-bottom: var(--space-medium);
+}
+
+.ritual-item label {
+    display: block;
+    font-size: 14px;
+    color: var(--star-dim);
+    margin-bottom: var(--space-small);
+}
+
+.ritual-input-group {
+    display: flex;
+    gap: var(--space-small);
+    margin-bottom: 4px;
+}
+
+.ritual-input-group input {
+    flex: 1;
+    background: rgba(16, 20, 38, 0.8);
+    border: 1px solid rgba(92, 77, 125, 0.4);
+    border-radius: var(--radius-cloud);
+    color: var(--star-bright);
+    padding: var(--space-small) var(--space-medium);
+    font-family: inherit;
+    transition: all var(--transition-eclipse);
+}
+
+.ritual-input-group input:focus {
+    outline: none;
+    border-color: var(--nebula-teal);
+    box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+}
+
+.ritual-test {
+    background: rgba(92, 77, 125, 0.2);
+    border: 1px solid rgba(92, 77, 125, 0.4);
+    border-radius: var(--radius-cloud);
+    color: var(--star-dim);
+    padding: var(--space-small) var(--space-medium);
+    cursor: pointer;
+    transition: all var(--transition-eclipse);
+    white-space: nowrap;
+}
+
+.ritual-test:hover {
+    background: rgba(92, 77, 125, 0.3);
+    color: var(--star-bright);
+}
+
+.ritual-checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--star-bright);
+}
+
+.ritual-checkbox input[type="checkbox"] {
+    display: none;
+}
+
+.checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(92, 77, 125, 0.6);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-eclipse);
+}
+
+.checkmark::after {
+    content: '✓';
+    color: var(--nebula-teal);
+    font-size: 14px;
+    opacity: 0;
+    transform: scale(0);
+    transition: all var(--transition-eclipse);
+}
+
+.ritual-checkbox input:checked + .checkmark {
+    border-color: var(--nebula-teal);
+    background: rgba(16, 163, 127, 0.1);
+}
+
+.ritual-checkbox input:checked + .checkmark::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.ritual-item input[type="range"] {
+    width: 100%;
+    height: 6px;
+    background: rgba(16, 20, 38, 0.8);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    margin: var(--space-small) 0;
+}
+
+.ritual-item input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--nebula-teal);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(16, 163, 127, 0.5);
+}
+
+.ritual-item output {
+    display: block;
+    text-align: center;
+    font-size: 14px;
+    color: var(--nebula-teal);
+    font-weight: 500;
+}
+
+.temple-footer {
+    padding: var(--space-large);
+    border-top: 1px solid rgba(92, 77, 125, 0.3);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-medium);
+}
+
+.ritual-btn {
+    padding: var(--space-small) var(--space-large);
+    border-radius: var(--radius-star);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-eclipse);
+    display: flex;
+    align-items: center;
+    gap: var(--space-small);
+}
+
+.ritual-btn.primary {
+    background: var(--gradient-nebula);
+    border: none;
+    color: var(--star-bright);
+}
+
+.ritual-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-nebula);
+}
+
+.ritual-btn.secondary {
+    background: rgba(92, 77, 125, 0.2);
+    border: 1px solid rgba(92, 77, 125, 0.4);
+    color: var(--star-dim);
+}
+
+.ritual-btn.secondary:hover {
+    background: rgba(92, 77, 125, 0.3);
+    color: var(--star-bright);
+    border-color: var(--nebula-purple);
+}
+
+/* ============================================
+   Responsividad - Orden Cósmico
+   ============================================ */
+
+@media (max-width: 1200px) {
+    .nyx-sidebar {
+        transform: translateX(-100%);
+        position: fixed;
+    }
+    
+    .nyx-sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .nyx-main {
+        margin-left: 0;
+    }
+    
+    .menu-toggle {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --space-vast: 24px;
+        --space-large: 20px;
+        --space-medium: 16px;
+        --space-small: 12px;
+    }
+    
+    .nyx-sidebar {
+        width: 100%;
+        max-width: 320px;
+    }
+    
+    .dome-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-small);
+    }
+    
+    .dome-right {
+        flex-direction: column;
+    }
+    
+    .portal-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .portal-controls {
+        flex-direction: row;
+    }
+    
+    .portal-aside {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .oracle-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .portal-footer {
+        flex-direction: column;
+        gap: var(--space-small);
+        align-items: flex-start;
+    }
+    
+    .portal-stats {
+        gap: var(--space-medium);
+    }
+}
+
+/* ============================================
+   Accesibilidad - Llamados del Oráculo
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+:focus-visible {
+    outline: 2px solid var(--nebula-teal);
+    outline-offset: 2px;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ============================================
+   Estados Especiales - Fenómenos Nocturnos
+   ============================================ */
+
+/* Aurora Boreal para modo éxito */
+.cosmic-text.success {
+    border-color: rgba(16, 163, 127, 0.5);
+    background: linear-gradient(135deg, 
+        rgba(16, 20, 38, 0.8) 0%, 
+        rgba(16, 163, 127, 0.1) 100%);
+}
+
+/* Eclipse para modo error */
+.cosmic-text.error {
+    border-color: rgba(235, 87, 87, 0.5);
+    background: linear-gradient(135deg, 
+        rgba(16, 20, 38, 0.8) 0%, 
+        rgba(235, 87, 87, 0.1) 100%);
+}
+
+/* Lluvia de estrellas para modo información */
+.cosmic-text.info {
+    border-color: rgba(58, 78, 123, 0.5);
+    background: linear-gradient(135deg, 
+        rgba(16, 20, 38, 0.8) 0%, 
+        rgba(58, 78, 123, 0.1) 100%);
+}
+
+/* ============================================
+   Utilidades - Fragmentos de Estrellas
+   ============================================ */
+
+.scrollbar-stars::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollbar-stars::-webkit-scrollbar-track {
+    background: rgba(16, 20, 38, 0.8);
+    border-radius: 4px;
+}
+
+.scrollbar-stars::-webkit-scrollbar-thumb {
+    background: rgba(92, 77, 125, 0.5);
+    border-radius: 4px;
+}
+
+.scrollbar-stars::-webkit-scrollbar-thumb:hover {
+    background: rgba(92, 77, 125, 0.7);
+}
+
+.text-glow {
+    text-shadow: 0 0 10px rgba(232, 234, 255, 0.3);
+}
+
+.border-nebula {
+    border-image: linear-gradient(135deg, var(--nebula-purple), var(--nebula-blue)) 1;
+}
+
+/* ============================================
+   Animaciones de Estrellas Fugaces
+   ============================================ */
+
+@keyframes shootingStar {
+    0% {
+        transform: translateX(-100px) translateY(-100px) rotate(45deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(100vw) translateY(100vh) rotate(45deg);
+        opacity: 0;
+    }
+}
+
+.shooting-star {
+    position: fixed;
+    width: 2px;
+    height: 100px;
+    background: linear-gradient(to bottom, transparent, var(--star-bright), transparent);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.star-1 { animation: shootingStar 3s linear infinite 0s; top: 10%; left: 10%; }
+.star-2 { animation: shootingStar 4s linear infinite 1s; top: 30%; left: 30%; }
+.star-3 { animation: shootingStar 5s linear infinite 2s; top: 50%; left: 50%; }
