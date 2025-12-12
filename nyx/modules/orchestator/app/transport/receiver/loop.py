@@ -9,9 +9,12 @@
 # IMPORTS
 # ==============================
 
-# Standard:
+# Standard: 
 import asyncio
 from contextlib import suppress
+# External:
+from fastapi import WebSocketDisconnect
+from websockets import ConnectionClosedOK
 # Internal:
 from core.events.bus import EventBus
 from core.interfaces.transport import IWebSocketConnection, IReceiverLoop
@@ -76,6 +79,15 @@ class ReceiveLoop(IReceiverLoop):
                         event="ws.message.received",
                         payload=message
                     )
+
+                # If the websocket is closed.
+                except (WebSocketDisconnect, ConnectionClosedOK):
+                    # Notify closed connection.
+                    await self._event_bus.publish(
+                        event="ws.close"
+                    )
+                    # Ends loop.
+                    break
                 
                 # If the task is cancelled.
                 except asyncio.CancelledError:
@@ -124,5 +136,5 @@ class ReceiveLoop(IReceiverLoop):
         if self._task:
             self._task.cancel()
             # Awaits for the task to finish.
-            with suppress(asyncio.CancelledError):
-                await self._task
+            # with suppress(asyncio.CancelledError):
+            await self._task

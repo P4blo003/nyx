@@ -10,7 +10,9 @@
 # ==============================
 
 # Standard:
-from typing import List
+import asyncio
+from typing import List, Any
+from contextlib import suppress
 # Internal:
 from core.events.bus import EventBus
 from core.interfaces.controller import IController
@@ -56,12 +58,21 @@ class ClientSession:
         self._receiver:IReceiverLoop|None = None
         self._sender:ISenderLoop|None = None
 
+        self._close_event:asyncio.Event = asyncio.Event()
+
         self._controllers:List[IController] = []
 
         self._initialized:bool = False
     
 
     # ---- Methods ---- #
+
+    async def notify_close(self, _:Any) -> None:
+        """
+        Notify close connection.
+        """
+        # Notify.
+        self._close_event.set()
 
     async def initialize(self) -> None:
         """
@@ -98,6 +109,13 @@ class ClientSession:
         # Starts transport layer.
         if self._receiver is not None: await self._receiver.start()
         if self._sender is not None: await self._sender.start()
+
+    async def wait(self) -> None:
+        """
+        Waits until close notification.
+        """
+        # Awaits until notification.
+        await self._close_event.wait()
     
     async def stop(self) -> None:
         """
@@ -113,4 +131,5 @@ class ClientSession:
         for controller in self._controllers: await controller.cleanup()
 
         # Close websocket connection.
-        await self._websocket.close()
+        with suppress(Exception):
+            await self._websocket.close()

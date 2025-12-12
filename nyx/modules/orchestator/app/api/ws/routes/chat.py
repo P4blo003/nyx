@@ -13,9 +13,11 @@
 import sys
 # External:
 from fastapi import APIRouter, WebSocket
+from websockets import ConnectionClosedOK
 # Internal:
 from session.client import ClientSession
 from transport.websocket.adapter import FastApiWebSocketAdapter
+from api.ws.dependencies import EVENT_BUS as event_bus
 
 
 # ==============================
@@ -66,7 +68,23 @@ async def chat(
     try:
         # Prints information.
         if websocket.client is not None: print(f"Connection from {websocket.client.host}:{websocket.client.port}")
- 
+
+        # Subscribes to close event.
+        await event_bus.subscribe(
+            event="app.close",
+            callback=session.notify_close
+        )
+
+        # Initializes, starts and awaits session.
+        await session.initialize()
+        await session.start()
+        await session.wait()
+
+    # To avoid show close message.
+    except ConnectionClosedOK:
+        # Pass
+        pass
+
     # If an unexpected error ocurred.
     except Exception as ex:
         # Prints information.
@@ -74,5 +92,10 @@ async def chat(
 
     # Executes finally.
     finally:
+        # Unsubscribe.
+        await event_bus.unsubscribe(
+            event="app.close",
+            callback=session.notify_close
+        )
         # Close the session.
         await session.stop()

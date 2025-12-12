@@ -11,7 +11,9 @@
 
 # Standard:
 import asyncio
-from contextlib import suppress
+# External:
+from fastapi import WebSocketDisconnect
+from websockets import ConnectionClosedOK
 # Internal:
 from core.events.bus import EventBus
 from core.interfaces.transport import IWebSocketConnection, ISenderLoop
@@ -98,6 +100,15 @@ class SenderLoop(ISenderLoop):
                     # No message received, continue loop.
                     continue
 
+                # If the websocket is closed.
+                except (WebSocketDisconnect, ConnectionClosedOK):
+                    # Notify closed connection.
+                    await self._event_bus.publish(
+                        event="ws.close"
+                    )
+                    # Ends loop.
+                    break
+
                 # If the task is cancelled.
                 except asyncio.CancelledError:
                     # Ends loop.
@@ -150,8 +161,14 @@ class SenderLoop(ISenderLoop):
         if self._task:
             self._task.cancel()
             # Awaits for the task to finish.
-            with suppress(asyncio.CancelledError):
-                await self._task
+            # with suppress(asyncio.CancelledError):
+            await self._task
+        
+        # Unsubscribe.
+        await self._event_bus.unsubscribe(
+            event="ws.send",
+            callback=self._handle_send_message
+        )
     
     async def enqueue_message(
         self,

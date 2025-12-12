@@ -9,8 +9,12 @@
 # IMPORTS
 # ==============================
 
+# Standard:
+import logging
 # External:
 import uvicorn
+# Internal:
+from core.logging import get_logger
 
 
 # ==============================
@@ -21,6 +25,9 @@ if __name__ == "__main__":
 
     # Try-Except to manage errors.
     try:
+        # Creates the logger.
+        logger:logging.Logger = get_logger(name="app")
+
         # Run uvicorn.
         uvicorn.run(
             "api.ws.main:app",

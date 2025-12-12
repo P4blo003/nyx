@@ -10,11 +10,14 @@
 # ==============================
 
 # Standard:
+import signal
+import asyncio
 from contextlib import asynccontextmanager
 # External:
 from fastapi import FastAPI
 # Internal:
 from api.ws.routes.chat import router as chat_router
+from api.ws.dependencies import EVENT_BUS as event_bus
 
 
 # ==============================
@@ -32,11 +35,33 @@ async def lifespan(app:FastAPI):
     # Prints information.
     print(f"Starting application ...")
 
+    # Gets current loop.
+    loop:asyncio.AbstractEventLoop = asyncio.get_running_loop()
+    # Gets original handler.
+    orig_handler = signal.getsignal(signalnum=signal.SIGINT)
+
+    # Add event bus to state.
+    app.state.event_bus = event_bus
+
+    # Function to handle Ctrl+C.
+    def handle_sigint(signum:int, frame) -> None:
+        # Notify close.
+        loop.create_task(app.state.event_bus.publish("app.close"))
+
+        # Checks if there is an original signal handler.
+        if callable(orig_handler):
+            # Calls the handler.
+            orig_handler(signum, frame)
+
+    # Add handler.
+    signal.signal(signalnum=signal.SIGINT, handler=handle_sigint)
+
     # Returns.
     yield
 
     # Prints information.
     print(f"App shutdown ...")
+
 
 # ==============================
 # CONSTANTS

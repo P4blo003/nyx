@@ -87,6 +87,26 @@ class EventBus:
             # Add the callback.
             self._subscribers[event].append(callback)
     
+    async def unsubscribe(
+        self,
+        event:str,
+        callback:Callable[[Any], Awaitable[None]]
+    ) -> None:
+        """
+        Unsubscribe a callback to an event type.
+
+        Args:
+            event (str): The event type to listen for.
+            callback (Callable[[Any], Awaitable[None]]): Async function to
+                call when event is published.
+        """
+        # Add the subscriber.
+        async with self._lock:
+            # Checks if the callback is in the list.
+            if callback in self._subscribers[event]:
+                # Remove the callback.
+                self._subscribers[event].remove(callback)
+    
     async def publish(
         self,
         event:str,
