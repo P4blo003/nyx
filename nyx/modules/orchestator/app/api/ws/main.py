@@ -32,9 +32,6 @@ async def lifespan(app:FastAPI):
     Yields:
         None.
     """
-    # Prints information.
-    print(f"Starting application ...")
-
     # Gets current loop.
     loop:asyncio.AbstractEventLoop = asyncio.get_running_loop()
     # Gets original handler.
@@ -58,9 +55,6 @@ async def lifespan(app:FastAPI):
 
     # Returns.
     yield
-
-    # Prints information.
-    print(f"App shutdown ...")
 
 
 # ==============================

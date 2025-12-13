@@ -66,9 +66,6 @@ async def chat(
 
     # Try-Except to manage errors.
     try:
-        # Prints information.
-        if websocket.client is not None: print(f"Connection from {websocket.client.host}:{websocket.client.port}")
-
         # Subscribes to close event.
         await event_bus.subscribe(
             event="app.close",
