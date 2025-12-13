@@ -39,7 +39,7 @@ def parse_args() -> Namespace:
     parser.add_argument(
         "--clients",
         type=int,
-        default=10,
+        default=1,
         help="Number of concurrent clients."
     )
 
@@ -56,8 +56,11 @@ async def run_client(uri:str, id:int) -> None:
         async with websockets.connect(uri=uri) as ws:
             # Prints information.
             print(f"[Client {id}] connected to {uri}")
-            # Awaits 10 seconds.
-            await asyncio.sleep(delay=15)
+            
+            # Main loop to send querys.
+            while True:
+                # Gets user input.
+                query:str = input(": ")
 
     # If and unexpected error ocurred.
     except Exception as ex:
