@@ -17,7 +17,7 @@ from websockets import ConnectionClosedOK
 # Internal:
 from session.client import ClientSession
 from transport.websocket.adapter import FastApiWebSocketAdapter
-from api.ws.dependencies import EVENT_BUS as event_bus
+from api.ws.dependencies import GLOBAL_EVENT_BUS as global_event_bus
 
 
 # ==============================
@@ -62,16 +62,13 @@ async def chat(
 
     # Initialize the WebSocket adapter and session.
     adapter:FastApiWebSocketAdapter = FastApiWebSocketAdapter(websocket=websocket)
-    session:ClientSession = ClientSession(websocket=adapter)
+    session:ClientSession = ClientSession(
+        websocket=adapter,
+        global_event_bus=global_event_bus
+    )
 
     # Try-Except to manage errors.
     try:
-        # Subscribes to close event.
-        await event_bus.subscribe(
-            event="app.close",
-            callback=session.notify_close
-        )
-
         # Initializes, starts and awaits session.
         await session.initialize()
         await session.start()
@@ -89,10 +86,5 @@ async def chat(
 
     # Executes finally.
     finally:
-        # Unsubscribe.
-        await event_bus.unsubscribe(
-            event="app.close",
-            callback=session.notify_close
-        )
         # Close the session.
         await session.stop()

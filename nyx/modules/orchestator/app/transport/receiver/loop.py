@@ -71,6 +71,7 @@ class ReceiveLoop(IReceiverLoop):
             while self._is_running:
                 # Try-Except to manage errors.
                 try:
+                    print("Iteration loop.")
                     # Gets the message from the WebSocket.
                     message:str = await self._websocket.receive()
 
@@ -82,6 +83,8 @@ class ReceiveLoop(IReceiverLoop):
 
                 # If the websocket is closed.
                 except (WebSocketDisconnect, ConnectionClosedOK):
+                    # Prints information.
+                    print("Websocket closed.")
                     # Notify closed connection.
                     await self._event_bus.publish(
                         event="ws.close"
@@ -91,11 +94,15 @@ class ReceiveLoop(IReceiverLoop):
                 
                 # If the task is cancelled.
                 except asyncio.CancelledError:
+                    # Prints information.
+                    print("Receiver task cancelled.")
                     # Ends loop.
                     break
 
                 # If an unexpected error ocurred.
                 except Exception as ex:
+                    # Prints information.
+                    print(f"Error in receiver: {ex}")
                     # Publish error.
                     await self._event_bus.publish(
                         event="ws.error",
@@ -106,10 +113,14 @@ class ReceiveLoop(IReceiverLoop):
             
         # If the task is cancelled.
         except asyncio.CancelledError:
+            # Prints information.
+            print("Receiver task cancelled.")
             pass
         
         # Executes finally.
         finally:
+            # Prints information.
+            print("Finally")
             self._is_running = False
             
     async def start(self) -> None:

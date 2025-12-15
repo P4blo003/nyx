@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 11/12/2025
-# Last edited: 11/12/2025
+# Created: 15/12/2025
+# Last edited: 15/12/2025
 # ==========================================================================================
 
 
@@ -9,12 +9,24 @@
 # IMPORTS
 # ==============================
 
+# External
+from pydantic import BaseModel
 # Internal:
-from core.events.bus import EventBus
+from dto.base import MessageType
 
 
 # ==============================
-# CONSTANTS
+# CLASSES
 # ==============================
 
-GLOBAL_EVENT_BUS:EventBus = EventBus()
+class ClientRequest(BaseModel):
+    """
+    
+    Attributes:
+        mtype (MessageType): Message's type.
+        content (str): Content of the message.
+    """
+    # ---- Attributes ---- #
+
+    mtype:MessageType
+    content:str

@@ -19,6 +19,7 @@ from core.interfaces.controller import IController
 from core.interfaces.transport import IWebSocketConnection, IReceiverLoop, ISenderLoop
 from transport.receiver.loop import ReceiveLoop
 from transport.sender.loop import SenderLoop
+from controllers.orchestrator import OrchestratorController
 
 
 # ==============================
@@ -40,6 +41,7 @@ class ClientSession:
     def __init__(
         self,
         websocket:IWebSocketConnection,
+        global_event_bus:EventBus,
         heartbeat_interval_seconds:float = 30.0
     ) -> None:
         """
@@ -53,6 +55,7 @@ class ClientSession:
         self._websocket:IWebSocketConnection = websocket
         self._heartbeat_interval_seconds:float = heartbeat_interval_seconds
 
+        self._global_event_bus:EventBus = global_event_bus
         self._event_bus:EventBus|None = None
 
         self._receiver:IReceiverLoop|None = None
@@ -84,6 +87,12 @@ class ClientSession:
         # Creates the event bus.
         self._event_bus = EventBus()
 
+        # Subscribes to end event.
+        await self._global_event_bus.subscribe(
+            event="app.close",
+            callback=self.notify_close
+        )
+
         # Create transport layer components.
         self._receiver = ReceiveLoop(
             websocket=self._websocket,
@@ -93,6 +102,9 @@ class ClientSession:
             websocket=self._websocket,
             event_bus=self._event_bus
         )
+
+        # Adds orchestrator controller.
+        self._controllers.append(OrchestratorController(event_bus=self._event_bus))
 
         self._initialized = True
     
@@ -105,6 +117,9 @@ class ClientSession:
         """
         # Checks if it's not initialized.
         if not self._initialized: return
+
+        # Initializes controllers.
+        for controller in self._controllers: await controller.initialize()
 
         # Starts transport layer.
         if self._receiver is not None: await self._receiver.start()
@@ -129,6 +144,16 @@ class ClientSession:
 
         # Cleanup controllers.
         for controller in self._controllers: await controller.cleanup()
+
+        # Unsubscribes to end event.
+        await self._global_event_bus.unsubscribe(
+            event="app.close",
+            callback=self.notify_close
+        )
+
+        # Close websocket connection.
+        with suppress(Exception):
+            await self._websocket.close()
 
         # Close websocket connection.
         with suppress(Exception):

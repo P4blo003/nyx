@@ -9,11 +9,14 @@
 # IMPORTS
 # ==============================
 
-# Standar:
+# Standard:
 import asyncio
 from argparse import Namespace, ArgumentParser
 # External:
 import websockets
+# Internal:
+from dto.base import MessageType
+from dto.request import ClientRequest
 
 
 # ==============================
@@ -58,9 +61,21 @@ async def run_client(uri:str, id:int) -> None:
             print(f"[Client {id}] connected to {uri}")
             
             # Main loop to send querys.
+            loop = asyncio.get_running_loop()
             while True:
-                # Gets user input.
-                query:str = input(": ")
+                # Gets user input in a separate thread to avoid blocking the loop.
+                query:str = await loop.run_in_executor(None, input, ": ")
+
+                # Creates the request.
+                request:ClientRequest = ClientRequest(
+                    mtype=MessageType.STREAM,
+                    content=query
+                )
+
+                # Sends the message.
+                await ws.send(message=request.model_dump_json())
+
+                print("Message sent.")
 
     # If and unexpected error ocurred.
     except Exception as ex:

@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 12/12/2025
-# Last edited: 12/12/2025
+# Created: 15/12/2025
+# Last edited: 15/12/2025
 # ==========================================================================================
 
 
@@ -9,12 +9,24 @@
 # IMPORTS
 # ==============================
 
+# External
+from pydantic import BaseModel
 # Internal:
-from core.logging.main import get_logger
+from dto.base import MessageType
 
 
 # ==============================
-# EXPORTS
+# CLASSES
 # ==============================
 
-__all__ = ["get_logger"]
+class ClientRequest(BaseModel):
+    """
+    
+    Attributes:
+        mtype (MessageType): Message's type.
+        content (str): Content of the message.
+    """
+    # ---- Attributes ---- #
+
+    mtype:MessageType
+    content:str

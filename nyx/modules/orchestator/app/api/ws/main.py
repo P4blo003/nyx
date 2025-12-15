@@ -17,7 +17,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 # Internal:
 from api.ws.routes.chat import router as chat_router
-from api.ws.dependencies import EVENT_BUS as event_bus
+from api.ws.dependencies import GLOBAL_EVENT_BUS as global_event_bus
 
 
 # ==============================
@@ -38,12 +38,12 @@ async def lifespan(app:FastAPI):
     orig_handler = signal.getsignal(signalnum=signal.SIGINT)
 
     # Add event bus to state.
-    app.state.event_bus = event_bus
+    app.state.global_event_bus = global_event_bus
 
     # Function to handle Ctrl+C.
     def handle_sigint(signum:int, frame) -> None:
         # Notify close.
-        loop.create_task(app.state.event_bus.publish("app.close"))
+        loop.create_task(app.state.global_event_bus.publish("app.close"))
 
         # Checks if there is an original signal handler.
         if callable(orig_handler):
