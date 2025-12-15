@@ -41,19 +41,17 @@ class ClientSession:
     def __init__(
         self,
         websocket:IWebSocketConnection,
-        global_event_bus:EventBus,
-        heartbeat_interval_seconds:float = 30.0
+        global_event_bus:EventBus
     ) -> None:
         """
         Initializes the client session.
         
         Args:
             websocket (IWebSocketConnection): WebSocket connection implementation.
-            heartbeat_interval_seconds (float): Seconds between heartbeats.
+            global_event_bus (EventBus): Global event bus of the process.
         """
         # Intialize the properties.
         self._websocket:IWebSocketConnection = websocket
-        self._heartbeat_interval_seconds:float = heartbeat_interval_seconds
 
         self._global_event_bus:EventBus = global_event_bus
         self._event_bus:EventBus|None = None

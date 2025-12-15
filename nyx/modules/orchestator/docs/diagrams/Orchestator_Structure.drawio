@@ -1,10 +1,10 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0" version="29.2.7">
   <diagram name="Página-1" id="NZCH-LRumxtHhWFJQ9LL">
-    <mxGraphModel dx="980" dy="543" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1715" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="Lgk_-svIyez5Hu4o1ar3-48" parent="1" style="swimlane;whiteSpace=wrap;html=1;" value="Orchestator" vertex="1">
+        <mxCell id="Lgk_-svIyez5Hu4o1ar3-48" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Orchestator" vertex="1">
           <mxGeometry height="570" width="760" x="40" y="80" as="geometry" />
         </mxCell>
         <mxCell id="Lgk_-svIyez5Hu4o1ar3-50" parent="Lgk_-svIyez5Hu4o1ar3-48" style="rounded=1;whiteSpace=wrap;html=1;" value="Uvicorn" vertex="1">
@@ -13,7 +13,7 @@
         <mxCell id="Lgk_-svIyez5Hu4o1ar3-51" parent="Lgk_-svIyez5Hu4o1ar3-48" style="swimlane;whiteSpace=wrap;html=1;" value="ClientSessions" vertex="1">
           <mxGeometry height="360" width="720" x="20" y="100" as="geometry" />
         </mxCell>
-        <mxCell id="Lgk_-svIyez5Hu4o1ar3-52" parent="Lgk_-svIyez5Hu4o1ar3-51" style="swimlane;whiteSpace=wrap;html=1;startSize=23;" value="ClientSession" vertex="1">
+        <mxCell id="Lgk_-svIyez5Hu4o1ar3-52" parent="Lgk_-svIyez5Hu4o1ar3-51" style="swimlane;whiteSpace=wrap;html=1;startSize=23;fillColor=#d5e8d4;strokeColor=#82b366;" value="ClientSession" vertex="1">
           <mxGeometry height="300" width="550" x="20" y="40" as="geometry">
             <mxRectangle height="30" width="110" x="20" y="40" as="alternateBounds" />
           </mxGeometry>
@@ -29,7 +29,7 @@
             <mxPoint x="70" y="81" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="Lgk_-svIyez5Hu4o1ar3-67" parent="Lgk_-svIyez5Hu4o1ar3-52" style="rounded=1;whiteSpace=wrap;html=1;" value="EventBus" vertex="1">
+        <mxCell id="Lgk_-svIyez5Hu4o1ar3-67" parent="Lgk_-svIyez5Hu4o1ar3-52" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="EventBus" vertex="1">
           <mxGeometry height="40" width="530" x="10" y="250" as="geometry" />
         </mxCell>
         <mxCell id="Lgk_-svIyez5Hu4o1ar3-68" edge="1" parent="Lgk_-svIyez5Hu4o1ar3-52" source="Lgk_-svIyez5Hu4o1ar3-62" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;strokeWidth=2;fillColor=#a20025;strokeColor=#CE270D;">
@@ -85,7 +85,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="Lgk_-svIyez5Hu4o1ar3-98" parent="Lgk_-svIyez5Hu4o1ar3-52" style="rounded=1;whiteSpace=wrap;html=1;" value="ChatController" vertex="1">
+        <mxCell id="Lgk_-svIyez5Hu4o1ar3-98" parent="Lgk_-svIyez5Hu4o1ar3-52" style="rounded=1;whiteSpace=wrap;html=1;" value="OrchestratorController" vertex="1">
           <mxGeometry height="98.81" width="150" x="380" y="41.19" as="geometry" />
         </mxCell>
         <mxCell id="Lgk_-svIyez5Hu4o1ar3-99" edge="1" parent="Lgk_-svIyez5Hu4o1ar3-52" source="Lgk_-svIyez5Hu4o1ar3-98" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.769;entryY=-0.079;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;strokeWidth=2;fillColor=#a20025;strokeColor=#CE270D;" target="Lgk_-svIyez5Hu4o1ar3-67">
@@ -114,7 +114,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="Lgk_-svIyez5Hu4o1ar3-53" parent="Lgk_-svIyez5Hu4o1ar3-51" style="rounded=1;whiteSpace=wrap;html=1;rotation=-90;" value="ClientSession" vertex="1">
+        <mxCell id="Lgk_-svIyez5Hu4o1ar3-53" parent="Lgk_-svIyez5Hu4o1ar3-51" style="rounded=1;whiteSpace=wrap;html=1;rotation=-90;fillColor=#d5e8d4;strokeColor=#82b366;" value="ClientSession" vertex="1">
           <mxGeometry height="56.52" width="291.2" x="530" y="151.74" as="geometry" />
         </mxCell>
         <mxCell id="Lgk_-svIyez5Hu4o1ar3-66" parent="Lgk_-svIyez5Hu4o1ar3-51" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;strokeWidth=1;fontSize=27;" value=". . ." vertex="1">
@@ -131,7 +131,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="Lgk_-svIyez5Hu4o1ar3-49" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="EventBus" vertex="1">
+        <mxCell id="Lgk_-svIyez5Hu4o1ar3-49" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="EventBus" vertex="1">
           <mxGeometry height="40" width="740" x="50" y="600" as="geometry" />
         </mxCell>
       </root>
