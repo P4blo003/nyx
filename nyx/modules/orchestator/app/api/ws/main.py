@@ -27,7 +27,7 @@ from api.ws.dependencies import EVENT_BUS as event_bus
 @asynccontextmanager
 async def lifespan(app:FastAPI):
     """
-    Lifespan context manaer for startup and shutdown events.
+    Lifespan context manager for startup and shutdown events.
 
     Yields:
         None.
