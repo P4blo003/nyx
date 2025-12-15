@@ -141,7 +141,7 @@ class SenderLoop(ISenderLoop):
 
         # Subscribe and send events.
         await self._event_bus.subscribe(
-            event="ws.send",
+            event="ws.sent",
             callback=self._handle_send_message
         )
 
@@ -166,7 +166,7 @@ class SenderLoop(ISenderLoop):
         
         # Unsubscribe.
         await self._event_bus.unsubscribe(
-            event="ws.send",
+            event="ws.sent",
             callback=self._handle_send_message
         )
     

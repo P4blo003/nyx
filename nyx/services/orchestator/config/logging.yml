@@ -1,0 +1,114 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 15/12/2025
+# Last edited: 15/12/2025
+# ==========================================================================================
+
+
+# ==============================
+# DEFAULT
+# ==============================
+
+version: 1
+disable_existing_loggers: false
+
+
+# ==============================
+# FORMATTERS
+# ==============================
+
+formatters:
+  # Simple formatter.
+  simple:
+    format: "%(asctime)s | %(levelname)s | %(message)s"
+    datefmt: "%d/%m/%Y %H:%M:%S"
+
+  # Normal formatter.
+  normal:
+    format: "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+    datefmt: "%d/%m/%Y %H:%M:%S"
+  
+  # Detailed formatter.
+  detailed:
+    format: "%(asctime)s | %(levelname)s | %(name)s | %(filename)s:%(lineno)d | %(message)s"
+    datefmt: "%d/%m/%Y %H:%M:%S"
+
+
+# ==============================
+# HANDLERS
+# ==============================
+
+handlers:
+  # Console handler.
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+
+  # Uvicorn handler.
+  uvicorn:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+
+  # Audit handler.
+  audit:
+    class: logging.handlers.RotatingFileHandler
+    level: INFO
+    formatter: normal
+    filename: "logs/audit.log"
+    maxBytes: 10485760          # 10MB
+    backupCount: 10
+    encoding: "utf-8"
+
+  # Error handler.
+  error:
+    class: logging.handlers.RotatingFileHandler
+    level: ERROR
+    formatter: detailed
+    filename: "logs/errors.log"
+    maxBytes: 10485760          # 10MB
+    backupCount: 10
+    encoding: "utf-8"
+
+  
+# ==============================
+# LOGGERS
+# ==============================
+
+# Root.
+root:
+  level: INFO
+  handlers: [console, audit]
+  propagate: false
+
+loggers:  
+  # Application logger.
+  app:
+    level: INFO
+    handlers: [console, audit, error]
+    propagate: false
+
+  # Sessions logger.
+  session:
+    level: DEBUG
+    handlers: [console, audit, error]
+    propagate: false
+
+  # Uvicorn logger.
+  uvicorn:
+    level: INFO
+    handlers: [uvicorn]
+    propagate: false
+  
+  # Transformer logger.
+  transformers:
+    level: WARNING
+    propagate: false
+  
+  # Torch logger.
+  torch:
+    level: WARNING
+    propagate: false

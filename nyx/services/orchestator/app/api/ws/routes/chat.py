@@ -18,6 +18,7 @@ from websockets import ConnectionClosedOK
 from session.client import ClientSession
 from transport.websocket.adapter import FastApiWebSocketAdapter
 from api.ws.dependencies import GLOBAL_EVENT_BUS as global_event_bus
+from api.ws.dependencies import LOGGER as logger
 
 
 # ==============================
@@ -35,7 +36,7 @@ try:
 # If an unexpected error ocurred.
 except Exception as ex:
     # Prints information.
-    print(f"Fatal error at {__name__}: {ex}")
+    logger.critical("Unable to create router for API Service", exc_info=True)
     # End the program.
     sys.exit(1000)
 
@@ -82,7 +83,7 @@ async def chat(
     # If an unexpected error ocurred.
     except Exception as ex:
         # Prints information.
-        print(f"Error handling request: {ex}")
+        logger.error(f"Error handling request", exc_info=True)
 
     # Executes finally.
     finally:

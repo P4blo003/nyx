@@ -62,9 +62,6 @@ class OrchestratorController(IController):
             data:Dict[str, Any] = json.loads(str(payload))
             # Deserializes the payload into a ClientRequest class.
             request:ClientRequest = ClientRequest(**data)
-
-            # Prints information.
-            print(f"Message ({request.mtype}) received:\nContent: {request.content}")
         
         # If an unexpected error ocurred.
         except Exception as ex:
@@ -77,7 +74,7 @@ class OrchestratorController(IController):
         """
         # Subscribe to message received event.
         await self._event_bus.subscribe(
-            event="ws.message.received",
+            event="ws.received",
             callback=self._on_message_received
         )
 
@@ -87,6 +84,6 @@ class OrchestratorController(IController):
         """
         # Unsubscribe from message received event.
         await self._event_bus.unsubscribe(
-            event="ws.message.received",
+            event="ws.received",
             callback=self._on_message_received
         )

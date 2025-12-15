@@ -137,5 +137,3 @@ class EventBus:
             payload=payload
         ) for callback in callbacks]
         await asyncio.gather(*tasks, return_exceptions=True)
-
-        print("Callback end.")

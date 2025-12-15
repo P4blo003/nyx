@@ -18,6 +18,7 @@ from fastapi import FastAPI
 # Internal:
 from api.ws.routes.chat import router as chat_router
 from api.ws.dependencies import GLOBAL_EVENT_BUS as global_event_bus
+from core.config import logger
 
 
 # ==============================
