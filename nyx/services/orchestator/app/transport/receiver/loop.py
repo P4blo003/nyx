@@ -74,7 +74,7 @@ class ReceiveLoop(IReceiverLoop):
                     message:str = await self._websocket.receive()
 
                     # Publish event to EventBus.
-                    await self._event_bus.publish(
+                    await self._event_bus.publish_background(
                         event="ws.received",
                         payload=message
                     )
@@ -96,7 +96,7 @@ class ReceiveLoop(IReceiverLoop):
                 # If an unexpected error occurred.
                 except Exception as ex:
                     # Publish error.
-                    await self._event_bus.publish(
+                    await self._event_bus.publish_background(
                         event="ws.error",
                         payload=str(ex)
                     )

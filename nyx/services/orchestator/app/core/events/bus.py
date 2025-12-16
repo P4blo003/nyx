@@ -102,10 +102,14 @@ class EventBus:
         """
         # Add the subscriber.
         async with self._lock:
+            # Gets the callbacks.
+            callbacks:List[Callable[[Any], Awaitable[None]]]|None = self._subscribers.get(event)
+            if not callbacks: return
+
             # Checks if the callback is in the list.
-            if callback in self._subscribers[event]:
+            if callback in callbacks:
                 # Remove the callback.
-                self._subscribers[event].remove(callback)
+                callbacks.remove(callback)
     
     async def publish(
         self,
@@ -137,3 +141,21 @@ class EventBus:
             payload=payload
         ) for callback in callbacks]
         await asyncio.gather(*tasks, return_exceptions=True)
+    
+    async def publish_background(
+        self,
+        event:str,
+        payload:Any|None = None
+    ) -> None:
+        """
+        Publish an event without blocking the caller.
+
+        Args:
+            event (str): The event type to publish.
+            payload (Any): Data to pass to subscribers.
+        """
+        # Creates a task to publish.
+        asyncio.create_task(self.publish(
+            event=event,
+            payload=payload
+        ))

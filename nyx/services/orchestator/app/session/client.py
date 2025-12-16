@@ -17,7 +17,7 @@ from contextlib import suppress
 from core.events.bus import EventBus
 from core.interfaces.controller import IController
 from core.interfaces.transport import IWebSocketConnection, IReceiverLoop, ISenderLoop
-from core.logging.facade import Log
+from core.logging import callback as logging_callback
 from transport.receiver.loop import ReceiveLoop
 from transport.sender.loop import SenderLoop
 from controllers.orchestrator import OrchestratorController
@@ -95,15 +95,15 @@ class ClientSession:
         # Subscribes to internal events.
         await self._event_bus.subscribe(
             event="ws.received",
-            callback=lambda _: Log.info(message="Message received.")
+            callback=logging_callback.on_received
         )
         await self._event_bus.subscribe(
             event="ws.sent",
-            callback=lambda _: Log.debug(message="Message sent.")
+            callback=logging_callback.on_received
         )
         await self._event_bus.subscribe(
             event="ws.error",
-            callback=lambda error: Log.error(message=error)
+            callback=logging_callback.on_error
         )
 
         # Create transport layer components.
@@ -162,15 +162,15 @@ class ClientSession:
         if self._event_bus is not None:
             await self._event_bus.unsubscribe(
                 event="ws.error",
-                callback=lambda error: Log.error(message=error)
+                callback=logging_callback.on_error
             )
             await self._event_bus.unsubscribe(
                 event="ws.sent",
-                callback=lambda _: Log.debug(message="Message sent.")
+                callback=logging_callback.on_sent
             )
             await self._event_bus.unsubscribe(
                 event="ws.received",
-                callback=lambda _: Log.info(message="Message received.")
+                callback=logging_callback.on_received
             )
 
         # Unsubscribes to global events.
