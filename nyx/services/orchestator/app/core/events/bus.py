@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 11/12/2025
-# Last edited: 11/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -20,7 +20,7 @@ from typing import List, Dict, Callable, Awaitable, Any
 
 class EventBus:
     """
-    Asynchronous event bus for decoupled component comunication.
+    Asynchronous event bus for decoupled component communication.
 
     Supports multiple subscribers per event type. All callbacks are
     executed concurrently when an event is published.
@@ -35,8 +35,8 @@ class EventBus:
         Initializes the event bus with an empty subscriber registry.
         """
         # Initializes the properties.
-        self._subscribers:Dict[str, List[Callable[[Any], Awaitable[None]]]] = {}
         self._lock:asyncio.Lock = asyncio.Lock()
+        self._subscribers:Dict[str, List[Callable[[Any], Awaitable[None]]]] = {}
 
     
     # ---- Methods ---- #
@@ -60,7 +60,7 @@ class EventBus:
             # Await callback.
             await callback(payload)
 
-        # If an unexpected error ocurred.
+        # If an unexpected error occurred.
         except Exception as ex:
             # Prints information.
             print(f"Error in Callback for event {event}: {ex}")
@@ -123,7 +123,7 @@ class EventBus:
             event (str): The event type to publish.
             payload (Any): Data to pass to subscribers.
         """
-        # Gets all the callbacks that mathc the event.
+        # Gets all the callbacks that match the event.
         async with self._lock:
             callbacks:List[Callable[[Any], Awaitable[None]]] = self._subscribers.get(event, []).copy()
 

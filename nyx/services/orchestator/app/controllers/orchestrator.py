@@ -2,7 +2,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 15/12/2025
-# Last edited: 15/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -16,6 +16,7 @@ from typing import Dict, Any
 # Internal:
 from core.events.bus import EventBus
 from core.interfaces.controller import IController
+from core.logging.facade import Log
 from dto.request import ClientRequest
 
 
@@ -63,10 +64,10 @@ class OrchestratorController(IController):
             # Deserializes the payload into a ClientRequest class.
             request:ClientRequest = ClientRequest(**data)
         
-        # If an unexpected error ocurred.
+        # If an unexpected error occurred.
         except Exception as ex:
             # Prints information.
-            print(f"Error during message handling: {ex}")
+            await Log.error(message=f"Error during message handling", exception=ex)
 
     async def initialize(self) -> None:
         """

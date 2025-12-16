@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 11/12/2025
-# Last edited: 11/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -78,7 +78,7 @@ class SenderLoop(ISenderLoop):
         Main sender loop.
 
         Continuously processes messages from the queue and sends them
-        thorugh the WebSocket connection.
+        through the WebSocket connection.
         """
         # Try-Except to manage errors.
         try:
@@ -91,7 +91,7 @@ class SenderLoop(ISenderLoop):
                         self._queue.get(),
                         timeout=1.0
                     )
-
+                    
                     # Sends the message.
                     await self._websocket.send(message=message)
                 
@@ -114,7 +114,7 @@ class SenderLoop(ISenderLoop):
                     # Ends loop.
                     break
                     
-                # If an unexpected error ocurred.
+                # If an unexpected error occurred.
                 except Exception as ex:
                     # Publish error.
                     await self._event_bus.publish(

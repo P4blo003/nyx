@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 11/12/2025
-# Last edited: 11/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -10,13 +10,12 @@
 # ==============================
 
 # Standard:
-from logging import Logger
 from pathlib import Path
 
 # External:
 import uvicorn
 # Internal:
-from core.config import logger
+from core.config import logging
 
 
 # ==============================
@@ -32,7 +31,7 @@ if __name__ == "__main__":
         config_path:Path = base_dir / "config" / "logging.yml"
 
         # Initializes logger config.
-        logger.setup_logging(config_path=config_path)
+        logging.setup_logging(config_path=config_path)
 
         # Run uvicorn.
         uvicorn.run(
@@ -44,7 +43,7 @@ if __name__ == "__main__":
             log_config=None
         )
     
-    # If an unexpected error ocurred.
+    # If an unexpected error occurred.
     except Exception as ex:
         # Prints information.
         print(f"Fatal error: {ex}\n{ex.with_traceback(ex.__traceback__)}")

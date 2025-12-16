@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 11/12/2025
-# Last edited: 11/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -9,8 +9,9 @@
 # IMPORTS
 # ==============================
 
-# Standar:
+# Standard:
 import sys
+import logging
 # External:
 from fastapi import APIRouter, WebSocket
 from websockets import ConnectionClosedOK
@@ -18,7 +19,7 @@ from websockets import ConnectionClosedOK
 from session.client import ClientSession
 from transport.websocket.adapter import FastApiWebSocketAdapter
 from api.ws.dependencies import GLOBAL_EVENT_BUS as global_event_bus
-from api.ws.dependencies import LOGGER as logger
+from core.logging.facade import Log
 
 
 # ==============================
@@ -27,16 +28,16 @@ from api.ws.dependencies import LOGGER as logger
 
 # Try-Except to manage errors.
 try:
-    # Initilize the router.
+    # Initialize the router.
     router:APIRouter = APIRouter(
         prefix="/ws",
         tags=["WebSocket"]
     )
 
-# If an unexpected error ocurred.
+# If an unexpected error occurred.
 except Exception as ex:
     # Prints information.
-    logger.critical("Unable to create router for API Service", exc_info=True)
+    logging.critical("Unable to initialize router", exc_info=True)
     # End the program.
     sys.exit(1000)
 
@@ -53,10 +54,10 @@ async def chat(
     WebSocket endpoint for chat functionality.
 
     This endpoint accepts WebSocket connections, initializes a client session,
-    and manages the lifecylce of the session.
+    and manages the lifecycle of the session.
 
     Args:
-        websocker (WebSocket): The incoming WebSocket connection.
+        websocket (WebSocket): The incoming WebSocket connection.
     """
     # Awaits for websocket connection.
     await websocket.accept()
@@ -80,10 +81,10 @@ async def chat(
         # Pass
         pass
 
-    # If an unexpected error ocurred.
+    # If an unexpected error occurred.
     except Exception as ex:
         # Prints information.
-        logger.error(f"Error handling request", exc_info=True)
+        await Log.error("Error during request processing.", exception=ex)
 
     # Executes finally.
     finally:

@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 11/12/2025
-# Last edited: 11/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -23,7 +23,7 @@ class FastApiWebSocketAdapter(IWebSocketConnection):
     """
     Adapter for FastAPI WebSocket connections.
 
-    This class impleemnts the IWebSocketConnection interface and provides
+    This class implements the IWebSocketConnection interface and provides
     methods to send, receive and close a WebSocket connection using FastAPI's
     WebSocket implementation.
     """
@@ -51,7 +51,7 @@ class FastApiWebSocketAdapter(IWebSocketConnection):
         Send a text message over the WebSocket connection.
 
         Args:
-            message (str): The mesage to send.
+            message (str): The message to send.
         
         Raises:
             WebSocketException: If sending fails.
@@ -61,7 +61,7 @@ class FastApiWebSocketAdapter(IWebSocketConnection):
 
     async def receive(self) -> str:
         """
-        Receive a text essage from the WebSocket conenction.
+        Receive a text message from the WebSocket connection.
 
         Returns:
             str: The text message received from the client.

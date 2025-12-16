@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 11/12/2025
-# Last edited: 11/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -11,18 +11,16 @@
 
 # Standard:
 import asyncio
-from logging import Logger
 from typing import List, Any
 from contextlib import suppress
 # Internal:
 from core.events.bus import EventBus
 from core.interfaces.controller import IController
 from core.interfaces.transport import IWebSocketConnection, IReceiverLoop, ISenderLoop
-from core.config import logger
+from core.logging.facade import Log
 from transport.receiver.loop import ReceiveLoop
 from transport.sender.loop import SenderLoop
 from controllers.orchestrator import OrchestratorController
-from utils.logger import SessionLogger
 
 
 # ==============================
@@ -33,9 +31,9 @@ class ClientSession:
     """
     Orchestrates the WebSocket client lifecycle.
 
-    Responsabilities:
+    Responsibilities:
         - Component instantiation and dependency injection.
-        - Lifecyclie managment (start/stop).
+        - Lifecycle management (start/stop).
         - Clean shutdown.
     """
 
@@ -53,7 +51,7 @@ class ClientSession:
             websocket (IWebSocketConnection): WebSocket connection implementation.
             global_event_bus (EventBus): Global event bus of the process.
         """
-        # Intialize the properties.
+        # Initializes the properties.
         self._websocket:IWebSocketConnection = websocket
 
         self._global_event_bus:EventBus = global_event_bus
@@ -65,8 +63,6 @@ class ClientSession:
         self._close_event:asyncio.Event = asyncio.Event()
 
         self._controllers:List[IController] = []
-
-        self._logger:SessionLogger = SessionLogger(logger=logger.get_logger(name="session"))
 
         self._initialized:bool = False
     
@@ -95,23 +91,19 @@ class ClientSession:
             event="app.close",
             callback=self._notify_close
         )
-        await self._global_event_bus.subscribe(
-            event="app.close",
-            callback=lambda _: self._logger.debug(msg="Close event notification."),
-        )
 
-        # Subscirbes to internal events.
+        # Subscribes to internal events.
         await self._event_bus.subscribe(
             event="ws.received",
-            callback=lambda _: self._logger.debug(msg="Message received"),
+            callback=lambda _: Log.info(message="Message received.")
         )
         await self._event_bus.subscribe(
             event="ws.sent",
-            callback=lambda _: self._logger.debug(msg="Message sent"),
+            callback=lambda _: Log.debug(message="Message sent.")
         )
         await self._event_bus.subscribe(
             event="ws.error",
-            callback=lambda data: self._logger.error(msg=str(data)),
+            callback=lambda error: Log.error(message=error)
         )
 
         # Create transport layer components.
@@ -165,28 +157,23 @@ class ClientSession:
 
         # Cleanup controllers.
         for controller in self._controllers: await controller.cleanup()
-
-        # Checks if the event bus was initialized.
+        
+        # Unsubscribes to internal events.
         if self._event_bus is not None:
-            # Unsubscirbes from internal events.
             await self._event_bus.unsubscribe(
-                event="ws.received",
-                callback=lambda _: self._logger.debug(msg="Message received"),
+                event="ws.error",
+                callback=lambda error: Log.error(message=error)
             )
             await self._event_bus.unsubscribe(
                 event="ws.sent",
-                callback=lambda _: self._logger.debug(msg="Message sent"),
+                callback=lambda _: Log.debug(message="Message sent.")
             )
             await self._event_bus.unsubscribe(
-                event="ws.error",
-                callback=lambda data: self._logger.error(msg=str(data)),
+                event="ws.received",
+                callback=lambda _: Log.info(message="Message received.")
             )
 
-        # Unsubscribes from global events.
-        await self._global_event_bus.unsubscribe(
-            event="app.close",
-            callback=lambda _: self._logger.debug(msg="Close event notification.")
-        )
+        # Unsubscribes to global events.
         await self._global_event_bus.unsubscribe(
             event="app.close",
             callback=self._notify_close

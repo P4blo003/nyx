@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 11/12/2025
-# Last edited: 11/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -81,8 +81,6 @@ class ReceiveLoop(IReceiverLoop):
 
                 # If the websocket is closed.
                 except (WebSocketDisconnect, ConnectionClosedOK):
-                    # Prints information.
-                    print("Websocket closed.")
                     # Notify closed connection.
                     await self._event_bus.publish(
                         event="ws.close"
@@ -95,7 +93,7 @@ class ReceiveLoop(IReceiverLoop):
                     # Ends loop.
                     break
 
-                # If an unexpected error ocurred.
+                # If an unexpected error occurred.
                 except Exception as ex:
                     # Publish error.
                     await self._event_bus.publish(

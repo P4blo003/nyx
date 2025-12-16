@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 15/12/2025
-# Last edited: 15/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -19,7 +19,7 @@ from enum import Enum
 
 class MessageType(str, Enum):
     """
-    Represents the type of the messsage.
+    Represents the type of the message.
 
     Attributes:
         QUERY: Message from the client containing the query.

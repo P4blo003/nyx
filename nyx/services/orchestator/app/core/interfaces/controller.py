@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 11/12/2025
-# Last edited: 11/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -22,7 +22,7 @@ class IController(ABC):
     """
     Abstract base class for feature controllers.
 
-    Controllers encapsultae business logic and comunicate
+    Controllers encapsulate business logic and communicate
     exclusively through the EventBus.
     """
 

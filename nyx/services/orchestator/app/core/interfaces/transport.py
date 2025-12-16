@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 11/12/2025
-# Last edited: 11/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -106,13 +106,13 @@ class ISenderLoop(ABC):
         Enqueue a message for sending.
 
         Args:
-            message (str): The mssage to send
+            message (str): The massage to send
         """
         pass
 
 class IHeartbeatManager(ABC):
     """
-    Interface for heartbeat managment.
+    Interface for heartbeat management.
     """
 
     # ---- Methods ---- #

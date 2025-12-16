@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 11/12/2025
-# Last edited: 11/12/2025
+# Last edited: 16/12/2025
 # ==========================================================================================
 
 
@@ -42,7 +42,7 @@ def setup_logging(config_path:str|Path):
 
 def get_logger(name:str) -> Logger:
     """
-    Gets configurated logger.
+    Gets configured logger.
 
     Args:
         name (str): Logger's name.
