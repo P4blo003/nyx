@@ -116,5 +116,5 @@ loggers:
   # Configured separately to isolate web server logs from application logs.
   uvicorn:
     level: INFO
-    handlers: [uvicorn_console_handler]
+    handlers: [uvicorn_console_handler, audit_file_handler]
     propagate: false

@@ -51,7 +51,11 @@ def parse_args() -> Namespace:
 
 async def run_client(uri:str, id:int) -> None:
     """
-    
+    Run client console interface.
+
+    Args:
+        uri (str): Web uri.
+        id (int): Client identifier.
     """
     # Try-Except to manage errors.
     try:
@@ -60,11 +64,11 @@ async def run_client(uri:str, id:int) -> None:
             # Prints information.
             print(f"[Client {id}] connected to {uri}")
             
-            # Main loop to send querys.
+            # Main loop to send queries.
             loop = asyncio.get_running_loop()
             while True:
                 # Gets user input in a separate thread to avoid blocking the loop.
-                query:str = await loop.run_in_executor(None, input, ": ")
+                query:str = await loop.run_in_executor(None, input, "🧑: ")
 
                 # Creates the request.
                 request:ClientRequest = ClientRequest(
@@ -75,12 +79,36 @@ async def run_client(uri:str, id:int) -> None:
                 # Sends the message.
                 await ws.send(message=request.model_dump_json())
 
-                print("Message sent.")
+                # Prints response.
+                print(f"🤖: ", end="")
+                # Waits for server response.
+                while True:
+                    # Gets message.
+                    message = await ws.recv()
 
-    # If and unexpected error ocurred.
+                    # Checks if message is a bytes object.
+                    if isinstance(message, bytes):
+                        # Decode message.
+                        message = message.decode("utf-8")
+                    
+                    # Prints the message.
+                    print(message, end="", flush=True)
+
+                    # Break on end-of-stream or custom protocol.
+                    if message.endswith("\n"):                      # type: ignore
+                        break
+                
+                print()
+    
+    # If the task is cancelled.
+    except asyncio.CancelledError:
+        # Prints information.
+        print(f"\n[Client {id}] Connection cancelled, shutting down.")
+    
+    # If and unexpected error occurred.
     except Exception as ex:
         # Prints information.
-        print(f"Unexpected error: {ex}")
+        print(f"\n[Client {id}] Unexpected error: {ex}")
 
 async def main() -> None:
     """
