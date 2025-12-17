@@ -1,0 +1,60 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 17/12/2025
+# Last edited: 17/12/2025
+# ==========================================================================================
+
+
+# ==============================
+# NETWORKS
+# ==============================
+
+networks:
+  # Qdrant internal network.
+  qdrant-net:
+    driver: bridge
+
+
+# ==============================
+# SERVICES
+# ==============================
+
+services:
+  qdrant:
+    # Default configuration.
+    image: qdrant/qdrant:${QDRANT_VERSION}
+    container_name: qdrant
+    restart: unless-stopped
+
+    # Networks.
+    networks:
+      - qdrant-net
+
+    # Container ports.
+    ports:
+      - "${QDRANT_HTTP_PORT}:6333"
+      - "${QDRANT_GRPC_PORT}:6334"
+
+    # Volumes.
+    volumes:
+      - ./data:/qdrant/storage
+      - ./config/qdrant.yaml:/qdrant/config/production.yaml:ro
+      - ./scripts/healthcheck.sh:/healthcheck.sh
+
+    environment:
+      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
+
+    # Container healthcheck.
+    healthcheck:
+      test: ["CMD", "/bin/sh", "/healthcheck.sh"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+    # Deploys.
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4g
