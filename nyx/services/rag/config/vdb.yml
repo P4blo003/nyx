@@ -1,0 +1,27 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 17/12/2025
+# Last edited: 17/12/2025
+# ==========================================================================================
+
+
+# ==============================
+# DATABASE
+# ==============================
+
+store:
+  name: "qdrant"
+
+  connection:
+    host: "localhost"
+    http_port: 6333
+    grpc_port: 6334
+    prefer_grpc: true
+    timeout_seconds: 10
+
+  collection:
+    name: "context_documents"
+    vector_size: 384
+    distance: "Cosine"
+
+  

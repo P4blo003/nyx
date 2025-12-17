@@ -14,8 +14,17 @@ from typing import List
 # External:
 from pydantic import BaseModel
 # Internal
-from dto.document import Document
+from dto.document import DocumentRetrieved
 
+
+# ==============================
+# CLASSES
+# ==============================
+
+class UpdateResponse(BaseModel):
+    """"""
+    # ---- Attributes ---- #
+    pass
 
 class RetrieveResponse(BaseModel):
     """
@@ -26,4 +35,4 @@ class RetrieveResponse(BaseModel):
     """
     # ---- Attributes ---- #
 
-    results:List[Document]
+    results:List[DocumentRetrieved]

@@ -9,13 +9,15 @@
 # IMPORTS
 # ==============================
 
-# Standar:
+# Standard:
 import sys
+import logging
 # External:
 from fastapi import APIRouter
 # Internal:
-from dto.request import RetrieveRequest
-from dto.response import RetrieveResponse
+from dto.request import UpdateRequest, RetrieveRequest
+from dto.response import UpdateResponse, RetrieveResponse
+from core.logging.facade import Log
 
 
 # ==============================
@@ -24,15 +26,15 @@ from dto.response import RetrieveResponse
 
 # Try-Except to manage errors.
 try:
-    # Initilize the router.
+    # Initialize the router.
     router:APIRouter = APIRouter(
-        prefix="/rag"
+        prefix="/search"
     )
 
-# If an unexpected error ocurred.
+# If an unexpected error occurred.
 except Exception as ex:
     # Prints information.
-    print(f"Fatal error at {__name__}: {ex}")
+    logging.critical("Unable to initialize router", exc_info=True)
     # End the program.
     sys.exit(1000)
 
@@ -40,22 +42,3 @@ except Exception as ex:
 # ==============================
 # ENDPOINTS
 # ==============================
-
-@router.post(
-    "/retrieve",
-    response_model=RetrieveResponse
-)
-async def retrieve(
-    request:RetrieveRequest
-) -> None:
-    """
-    Retrieve documents from the RAG system based on a query.
-
-    Args:
-        request (RetrieveRequest): The retrieval request.
-
-    Returns:
-        RetreiveResponse: Response containing a list of retrieved documents,
-            each with their relevance score, content, and metadata.
-    """
-    pass

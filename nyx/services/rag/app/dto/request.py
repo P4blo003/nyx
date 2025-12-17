@@ -19,6 +19,11 @@ from pydantic import BaseModel, Field
 # CLASSES
 # ==============================
 
+class UpdateRequest(BaseModel):
+    """"""
+    # ---- Attributes ---- #
+    pass
+
 class RetrieveRequest(BaseModel):
     """
     Represents a request to retrieve documents from the RAG system.

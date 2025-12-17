@@ -14,7 +14,9 @@ from contextlib import asynccontextmanager
 # External:
 from fastapi import FastAPI
 # Internal:
-from api.routes.context import router as context_router
+from api.routes.search import router as search_router
+from api.routes.document import router as document_router
+from api.middleware.logging import logging_middleware
 
 
 # ==============================
@@ -45,4 +47,8 @@ app:FastAPI = FastAPI(
 )
 
 # Includes the routes.
-app.include_router(context_router)
+app.include_router(search_router)
+app.include_router(document_router)
+
+# Includes middleware.
+app.middleware("http")(logging_middleware)

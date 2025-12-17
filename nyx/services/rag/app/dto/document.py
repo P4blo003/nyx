@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 13/12/2025
-# Last edited: 13/12/2025
+# Last edited: 17/12/2025
 # ==========================================================================================
 
 
@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 # CLASSES
 # ==============================
 
-class Document(BaseModel):
+class DocumentRetrieved(BaseModel):
     """
     Represents a document retrieved from the RAG system.
 
