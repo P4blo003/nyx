@@ -16,6 +16,7 @@ from pathlib import Path
 import uvicorn
 # Internal:
 from core.config import logging
+from api.ws import dependencies
 
 
 # ==============================
@@ -28,10 +29,13 @@ if __name__ == "__main__":
     try:
         # Resolves absolute path.
         base_dir:Path = Path(__file__).resolve().parents[1]
-        config_path:Path = base_dir / "config" / "logging.yml"
+        config_path:Path = base_dir / "config"
 
         # Initializes logger config.
         logging.setup_logging(config_path=config_path)
+
+        # Initializes the dependencies.
+        dependencies.setup_dependencies(config_path=config_path)
 
         # Run uvicorn.
         uvicorn.run(

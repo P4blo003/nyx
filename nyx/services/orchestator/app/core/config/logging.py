@@ -32,8 +32,11 @@ def setup_logging(config_path:str|Path):
     log_dir:Path = Path("logs")
     log_dir.mkdir(exist_ok=True)
 
+    # Creates Path instance to manage access.
+    config_path = Path(config_path)
+
     # Load configuration file.
-    with open(config_path, 'r') as f:
+    with open(config_path.joinpath("logging.yml"), 'r') as f:
         # Load file.
         config = yaml.safe_load(f)
 

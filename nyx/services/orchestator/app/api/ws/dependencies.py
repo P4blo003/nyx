@@ -9,6 +9,8 @@
 # IMPORTS
 # ==============================
 
+# Standard:
+from pathlib import Path
 # Internal:
 from core.events.bus import EventBus
 
@@ -17,4 +19,22 @@ from core.events.bus import EventBus
 # CONSTANTS
 # ==============================
 
-GLOBAL_EVENT_BUS:EventBus = EventBus()
+GLOBAL_EVENT_BUS:EventBus|None = None
+
+
+# ==============================
+# FUNCTIONS
+# ==============================
+
+def setup_dependencies(config_path:str|Path) -> None:
+    """
+    Initialize all dependencies.
+
+    Args:
+        config_path (str|Path): Config directory.
+    """
+    # Global properties.
+    global GLOBAL_EVENT_BUS
+
+    # Initializes the properties.
+    GLOBAL_EVENT_BUS = EventBus()

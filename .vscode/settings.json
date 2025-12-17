@@ -11,6 +11,7 @@
         "cython",
         "datefmt",
         "dmypy",
+        "Embedder",
         "envrc",
         "García",
         "González",
@@ -47,6 +48,7 @@
         "spyderproject",
         "spyproject",
         "streamlit",
+        "upserting",
         "Uvicorn",
         "venv",
         "webassets"
