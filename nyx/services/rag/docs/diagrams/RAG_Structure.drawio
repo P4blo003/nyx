@@ -1,14 +1,44 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0" version="29.2.7">
   <diagram name="Página-1" id="NZCH-LRumxtHhWFJQ9LL">
-    <mxGraphModel dx="1715" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="686" dy="380" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="Lgk_-svIyez5Hu4o1ar3-48" parent="1" style="swimlane;whiteSpace=wrap;html=1;" value="RAG Service" vertex="1">
-          <mxGeometry height="570" width="760" x="40" y="80" as="geometry" />
+          <mxGeometry height="640" width="760" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="r6rQnFVojkQbxMZl57f7-63" edge="1" parent="Lgk_-svIyez5Hu4o1ar3-48" source="Lgk_-svIyez5Hu4o1ar3-50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=none;endFill=0;" target="r6rQnFVojkQbxMZl57f7-5">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="Lgk_-svIyez5Hu4o1ar3-50" parent="Lgk_-svIyez5Hu4o1ar3-48" style="rounded=1;whiteSpace=wrap;html=1;" value="Uvicorn" vertex="1">
           <mxGeometry height="40" width="120" x="320" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="r6rQnFVojkQbxMZl57f7-5" parent="Lgk_-svIyez5Hu4o1ar3-48" style="swimlane;whiteSpace=wrap;html=1;" value="RAG Session" vertex="1">
+          <mxGeometry height="500" width="720" x="20" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="r6rQnFVojkQbxMZl57f7-80" parent="r6rQnFVojkQbxMZl57f7-5" style="swimlane;whiteSpace=wrap;html=1;" value="VectorStoreController" vertex="1">
+          <mxGeometry height="270" width="320" x="380" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="r6rQnFVojkQbxMZl57f7-89" edge="1" parent="r6rQnFVojkQbxMZl57f7-80" source="r6rQnFVojkQbxMZl57f7-81" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.823;exitY=-0.016;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitPerimeter=0;strokeWidth=2;" target="r6rQnFVojkQbxMZl57f7-87">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r6rQnFVojkQbxMZl57f7-81" parent="r6rQnFVojkQbxMZl57f7-80" style="rounded=1;whiteSpace=wrap;html=1;" value="UpsertQueue" vertex="1">
+          <mxGeometry height="30" width="280" x="20" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="r6rQnFVojkQbxMZl57f7-90" edge="1" parent="r6rQnFVojkQbxMZl57f7-80" source="r6rQnFVojkQbxMZl57f7-86" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;" target="r6rQnFVojkQbxMZl57f7-87">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r6rQnFVojkQbxMZl57f7-86" parent="r6rQnFVojkQbxMZl57f7-80" style="rounded=1;whiteSpace=wrap;html=1;" value="Timer" vertex="1">
+          <mxGeometry height="60" width="100" x="20" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="r6rQnFVojkQbxMZl57f7-87" parent="r6rQnFVojkQbxMZl57f7-80" style="rounded=1;whiteSpace=wrap;html=1;" value="Worker" vertex="1">
+          <mxGeometry height="60" width="100" x="200" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="r6rQnFVojkQbxMZl57f7-92" parent="r6rQnFVojkQbxMZl57f7-80" style="rounded=1;whiteSpace=wrap;html=1;" value="IVectorStore" vertex="1">
+          <mxGeometry height="60" width="280" x="20" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="r6rQnFVojkQbxMZl57f7-94" edge="1" parent="r6rQnFVojkQbxMZl57f7-80" source="r6rQnFVojkQbxMZl57f7-87" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.821;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=2;" target="r6rQnFVojkQbxMZl57f7-92">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

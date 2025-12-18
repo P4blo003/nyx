@@ -12,6 +12,11 @@
 # Standard:
 from abc import ABC
 from abc import abstractmethod
+from typing import List
+# External:
+import numpy as np
+from dto.models.vector_store import VectorDocument
+from dto.models.retrieval import RetrievalResult
 
 
 # ==============================
@@ -20,36 +25,122 @@ from abc import abstractmethod
 
 class IVectorStore(ABC):
     """
-    Interface for vector store instances.
+    Interface for vector database operations.
 
-    Defines the contract for vector database implementations.
+    Abstracts storage and retrieval of embed chunks, allowing for
+    swapping vector DB implementations without affecting business logic.
     """
     # ---- Methods ---- #
 
     @abstractmethod
-    async def upload(
-        self
+    async def upsert(
+        self,
+        vector_doc:VectorDocument
     ) -> None:
         """
-        Insert or update vectorized documents.
+        Store an embedded chunk in the store.
+
+        Args:
+            vector_doc (VectorDocument): Document containing chunk data and embedding.
+        """
+        pass
+    
+    @abstractmethod
+    async def flush(
+        self,
+        vector_docs:List[VectorDocument]
+    ) -> None:
+        """
+        Store an array of embedded chunks in Qdrant vector store.
+
+        Args:
+            vector_docs (List[VectorDocument]): List of documents containing chunk data and embedding.
         """
         pass
 
     @abstractmethod
-    async def delete(
+    async def search(
         self,
-        id:str
-    ) -> None:
+        query_embedding:np.typing.NDArray[np.float32],
+        limit:int,
+    ) -> List:
         """
-        Delete document by id.
+        Search index using a query embedding vector.
+
+        Args:
+            query_embedding (np.typing.NDArray[np.float32]): Embedding vector for the query.
+            limit (int): Max number of results.
+
+        Returns:
+            List[RetrievalResult]: Lis of retrieval results ranked by similarity.
+        """
+        pass
+
+class IVectorStoreController(ABC):
+    """
+    
+    """
+    # ---- Methods ---- #
+
+    @abstractmethod
+    async def initialize(self) -> None:
+        """
+        Initialize the controller.
+
+        This method should subscribe to relevant events on the
+        EventBus.
+        """
+        pass
+    
+    @abstractmethod
+    async def cleanup(self) -> None:
+        """
+        Cleanup controller resources.
+
+        Called during system shutdown.
         """
         pass
 
     @abstractmethod
-    async def get(
+    async def add_document(
         self,
-        id:str
+        doc:VectorDocument
     ) -> None:
         """
-        Retrieve a document by id.
+        Add a document to the vector store, with optional batching.
+
+        Args:
+            doc (VectorDocument): Document to add.
         """
+        pass
+
+    @abstractmethod
+    async def add_documents(
+        self,
+        docs:List[VectorDocument]
+    ) -> None:
+        """
+        Add multiple documents to the vector store.
+
+        Args:
+            docs (List[VectorDocument]): List of documents to add.
+        """
+        pass
+
+    @abstractmethod
+    async def search(
+        self,
+        query_embedding:np.typing.NDArray[np.float32],
+        limit:int,
+    ) -> List[RetrievalResult]:
+        """
+        Search the vector store using a query embedding.
+
+        Args:
+            query_embedding (np.typing.NDArray[np.float32]): Embedding vector for the query.
+            limit (int): Max number of results.
+
+        Returns:
+            List[RetrievalResult]: List of retrieval results ranked by similarity.
+        """
+        pass

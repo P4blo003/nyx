@@ -39,6 +39,7 @@
         "pytype",
         "qdrant",
         "rabbitmq",
+        "rerank",
         "ropeproject",
         "scrapy",
         "sdist",

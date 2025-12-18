@@ -34,7 +34,7 @@ if __name__ == "__main__":
         logging.setup_logging(config_path=config_path)
 
         # Initializes dependencies.
-        dependencies.setup_dependencies(config_path=config_path)
+        dependencies.setup(config_path=config_path)
 
         # Run uvicorn.
         uvicorn.run(

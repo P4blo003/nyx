@@ -39,7 +39,7 @@ class StoreSecretsConfig(BaseSettings):
     """
     # ---- Attributes ---- #
 
-    qdrant_api_key:SecretStr
+    api_key:SecretStr
 
 
     # ---- Classes ---- #

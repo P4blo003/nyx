@@ -10,13 +10,18 @@
 # ==============================
 
 # Standard:
+import signal
+import asyncio
+import logging
 from contextlib import asynccontextmanager
 # External:
 from fastapi import FastAPI
 # Internal:
-from api.routes.search import router as search_router
-from api.routes.document import router as document_router
 from api.middleware.logging import logging_middleware
+from api.dependencies import cleanup
+from core.logging.facade import Log
+from core.logging.handler import StandardLogHandler
+
 
 
 # ==============================
@@ -31,6 +36,39 @@ async def lifespan(app:FastAPI):
     Yields:
         None.
     """
+    # Initialize the loggers.
+    Log.init(
+        handlers=[StandardLogHandler(logger_name="app")],
+        queue_size=10,
+        num_workers=2
+    )
+
+    # Gets current loop.
+    loop:asyncio.AbstractEventLoop = asyncio.get_running_loop()
+    # Gets original handler.
+    orig_handler = signal.getsignal(signalnum=signal.SIGINT)
+
+
+    # Function to handle Ctrl+C.
+    def handle_sigint(signum:int, frame) -> None:
+        # Prints information.
+        logging.debug("Ctrl+C detected. Shuting down the server ...")
+
+        # Cleanup dependencies.
+        loop.call_soon_threadsafe(
+            lambda: asyncio.create_task(cleanup())
+        )
+        
+        # Close loggers.
+        Log.shutdown()
+
+        # Checks if there is an original signal handler.
+        if callable(orig_handler):
+            # Calls the handler.
+            orig_handler(signum, frame)
+
+    # Add handler.
+    signal.signal(signalnum=signal.SIGINT, handler=handle_sigint)
 
     # Returns.
     yield
@@ -45,10 +83,6 @@ app:FastAPI = FastAPI(
     title="Rag-Service",
     lifespan=lifespan
 )
-
-# Includes the routes.
-app.include_router(search_router)
-app.include_router(document_router)
 
 # Includes middleware.
 app.middleware("http")(logging_middleware)

@@ -39,7 +39,7 @@ async def lifespan(app:FastAPI):
     # Initialize the loggers.
     Log.init(
         handlers=[StandardLogHandler(logger_name="app")],
-        queue_size=10_000,
+        queue_size=10,
         num_workers=2
     )
 
