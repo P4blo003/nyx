@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 11/12/2025
-# Last edited: 16/12/2025
+# Created: 18/12/2025
+# Last edited: 18/12/2025
 # ==========================================================================================
 
 
@@ -10,38 +10,35 @@
 # ==============================
 
 # Standard:
-import logging.config
 from pathlib import Path
 # Internal:
-from core.logging.facade import Log
-from core.logging.handler import StandardLogHandler
+from dto.config.service import ServiceConfig
 from utilities import yaml
+
+
+# ==============================
+# CONSTANTS
+# ==============================
+
+SERVICE_CONFIG:ServiceConfig|None = None
 
 
 # ==============================
 # FUNCTIONS
 # ==============================
 
-def setup_logging(config_path:str|Path):
+def setup_settings(config_path:str|Path) -> None:
     """
-    Configure logging system from config file.
+    Configure settings from config file.
 
     Args:
         config_path (str|Path): Config file path.
     """
-    # Creates log directory.
-    log_dir:Path = Path("logs")
-    log_dir.mkdir(exist_ok=True)
+    # Global variables.
+    global SERVICE_CONFIG
 
     # Creates Path instance to manage access.
     config_path = Path(config_path)
 
-    # Apply configuration.
-    logging.config.dictConfig(yaml.load(file_path=config_path.joinpath("logging.yml")))
-
-    # Initialize the loggers.
-    Log.init(
-        handlers=[StandardLogHandler(logger_name="app")],
-        queue_size=10,
-        num_workers=2
-    )
+    # Initialize the configurations.
+    SERVICE_CONFIG = ServiceConfig(**yaml.load(file_path=config_path.joinpath("service.yml")))

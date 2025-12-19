@@ -21,12 +21,17 @@ from dto.base import MessageType
 
 class ClientRequest(BaseModel):
     """
-    
+    Data transfer object representing a client request.
+
+    Encapsulates all information needed to process a client's chat message,
+    including message type, content, and RAG (Retrieval-Augmented Generation)
+    preferences for both SQL and document sources.
+
     Attributes:
-        mtype (MessageType): Message's type.
-        content (str): Content of the message.
-        rag_sql (bool): True if want sql rag for the query.
-        rag_doc (bool): True if want doc rag for the query.
+        mtype (MessageType): The type of message being sent.
+        content (str): The actual message content from the client.
+        rag_sql (bool): Whether to use SQL RAG for the query. Defaults to False.
+        rag_doc (bool): Whether to use document RAG for the query. Defaults to False.
     """
     # ---- Attributes ---- #
 

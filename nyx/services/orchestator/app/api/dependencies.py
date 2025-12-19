@@ -26,12 +26,9 @@ GLOBAL_EVENT_BUS:EventBus|None = None
 # FUNCTIONS
 # ==============================
 
-def setup_dependencies(config_path:str|Path) -> None:
+def setup_dependencies() -> None:
     """
     Initialize all dependencies.
-
-    Args:
-        config_path (str|Path): Config directory.
     """
     # Global properties.
     global GLOBAL_EVENT_BUS

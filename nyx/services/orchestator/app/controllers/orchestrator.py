@@ -50,7 +50,7 @@ class OrchestratorController(IController):
         # Initialize properties.
         self._event_bus:EventBus = event_bus
 
-        self._shuting_down:bool = False
+        self._shutting_down:bool = False
         self._active_task:asyncio.Task|None = None
 
         self._handlers:List[IRagHandler] = []
@@ -68,7 +68,7 @@ class OrchestratorController(IController):
         # Try-Except to manage errors.
         try:
             # Checks if it's shutting down.
-            if self._shuting_down: raise RuntimeError("Unable to handle received message. The orchestrator is shutting down.")
+            if self._shutting_down: raise RuntimeError("Unable to handle received message. The orchestrator is shutting down.")
 
             # Convert into dictionary.
             data:Dict[str, Any] = json.loads(str(payload))
@@ -107,7 +107,7 @@ class OrchestratorController(IController):
         Cleanup the controller subscriptions.
         """
         # Sets it's shutting down.
-        self._shuting_down = True
+        self._shutting_down = True
 
         #Await to cancel the task.
         self._active_task = await cancel_task(task_to_cancel=self._active_task)

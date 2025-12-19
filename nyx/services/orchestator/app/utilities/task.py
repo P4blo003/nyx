@@ -38,5 +38,3 @@ async def cancel_task(task_to_cancel:asyncio.Task|None) -> None:
 
     # If task is cancelled.
     except asyncio.CancelledError: pass
-    # Executes finally.
-    finally: return

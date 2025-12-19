@@ -11,6 +11,7 @@
 
 # Standard: 
 import asyncio
+from contextlib import suppress
 # External:
 from fastapi import WebSocketDisconnect
 from websockets import ConnectionClosedOK
@@ -135,5 +136,5 @@ class ReceiveLoop(IReceiverLoop):
         if self._task:
             self._task.cancel()
             # Awaits for the task to finish.
-            # with suppress(asyncio.CancelledError):
-            await self._task
+            with suppress(asyncio.CancelledError):
+                await self._task

@@ -106,7 +106,7 @@ class ISenderLoop(ABC):
         Enqueue a message for sending.
 
         Args:
-            message (str): The massage to send
+            message (str): The message to send.
         """
         pass
 

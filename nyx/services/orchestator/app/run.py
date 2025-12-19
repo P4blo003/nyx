@@ -16,7 +16,7 @@ from pathlib import Path
 import uvicorn
 # Internal:
 from core.config import logging
-from api.ws import dependencies
+from core.config import setting
 
 
 # ==============================
@@ -33,21 +33,23 @@ if __name__ == "__main__":
 
         # Initializes logger config.
         logging.setup_logging(config_path=config_path)
+        # Initializes settings config.
+        setting.setup_settings(config_path=config_path)
 
-        # Initializes the dependencies.
-        dependencies.setup_dependencies(config_path=config_path)
+        # Checks if configuration was initialized.
+        if setting.SERVICE_CONFIG is None: raise RuntimeError("Service Settings was not initialized.")
 
         # Run uvicorn.
         uvicorn.run(
-            "api.ws.main:app",
-            host="0.0.0.0",
-            port=8000,
-            ws_ping_interval=15,
-            ws_ping_timeout=30,
+            "api.main:app",
+            host=setting.SERVICE_CONFIG.host,
+            port=setting.SERVICE_CONFIG.port,
+            ws_ping_interval=setting.SERVICE_CONFIG.ws_ping_interval,
+            ws_ping_timeout=setting.SERVICE_CONFIG.ws_ping_timeout,
             log_config=None
         )
     
     # If an unexpected error occurred.
     except Exception as ex:
         # Prints information.
-        print(f"Fatal error: {ex}\n{ex.with_traceback(ex.__traceback__)}")
+        print(f"Critical error: {ex}\n{ex.with_traceback(ex.__traceback__)}")

@@ -124,7 +124,7 @@ class Log:
             worker.stop()
         # Waits for workers end.
         for worker in cls._workers:
-            worker.join(timeout=5)
+            worker.join(timeout=1)
 
         cls._initialized = False
     

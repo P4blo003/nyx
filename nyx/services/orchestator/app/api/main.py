@@ -17,11 +17,10 @@ from contextlib import asynccontextmanager
 # External:
 from fastapi import FastAPI
 # Internal:
-from api.ws.routes.chat import router as chat_router
-from api.ws.middleware.logging import logging_middleware
-from api.ws.dependencies import GLOBAL_EVENT_BUS as global_event_bus
 from core.logging.facade import Log
 from core.logging.handler import StandardLogHandler
+from api import dependencies
+from api.routes.chat import router as chat_router
 
 
 # ==============================
@@ -36,30 +35,25 @@ async def lifespan(app:FastAPI):
     Yields:
         None.
     """
-    # Initialize the loggers.
-    Log.init(
-        handlers=[StandardLogHandler(logger_name="app")],
-        queue_size=10,
-        num_workers=2
-    )
+    # Initialize dependencies.
+    dependencies.setup_dependencies()
+    # Add event bus to state.
+    app.state.global_event_bus = dependencies.GLOBAL_EVENT_BUS
 
     # Gets current loop.
     loop:asyncio.AbstractEventLoop = asyncio.get_running_loop()
     # Gets original handler.
     orig_handler = signal.getsignal(signalnum=signal.SIGINT)
 
-    # Add event bus to state.
-    app.state.global_event_bus = global_event_bus
-
     # Function to handle Ctrl+C.
     def handle_sigint(signum:int, frame) -> None:
         # Prints information.
-        logging.debug("Ctrl+C detected. Shuting down the server ...")
+        logging.debug("Ctrl+C detected. Shutting down the server ...")
 
-        # Notify close.
+        # Notify close to active sessions.
         loop.create_task(app.state.global_event_bus.publish("app.close"))
 
-        # Close loggers.
+        # Close loggers synchronously.
         Log.shutdown()
 
         # Checks if there is an original signal handler.
@@ -86,6 +80,3 @@ app:FastAPI = FastAPI(
 
 # Includes the routes.
 app.include_router(chat_router)
-
-# Includes middleware.
-app.middleware("http")(logging_middleware)

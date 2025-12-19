@@ -18,7 +18,7 @@ from websockets import ConnectionClosedOK
 # Internal:
 from session.client import ClientSession
 from transport.websocket.adapter import FastApiWebSocketAdapter
-from api.ws.dependencies import GLOBAL_EVENT_BUS as global_event_bus
+from api.dependencies import GLOBAL_EVENT_BUS as global_event_bus
 from core.logging.facade import Log
 
 

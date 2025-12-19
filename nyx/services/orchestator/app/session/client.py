@@ -18,6 +18,7 @@ from core.events.bus import EventBus
 from core.interfaces.controller import IController
 from core.interfaces.transport import IWebSocketConnection, IReceiverLoop, ISenderLoop
 from core.logging import callback as logging_callback
+from core.logging.facade import Log
 from transport.receiver.loop import ReceiveLoop
 from transport.sender.loop import SenderLoop
 from controllers.orchestrator import OrchestratorController
@@ -149,7 +150,7 @@ class ClientSession:
         """
         Stop all components gracefully.
 
-        Ensures proper cleanup and cancellation off all async tasks.
+        Ensures proper cleanup and cancellation of all async tasks.
         """
         # Stops in reverse order of start.
         if self._sender is not None: await self._sender.stop()
@@ -178,10 +179,6 @@ class ClientSession:
             event="app.close",
             callback=self._notify_close
         )
-
-        # Close websocket connection.
-        with suppress(Exception):
-            await self._websocket.close()
 
         # Close websocket connection.
         with suppress(Exception):
