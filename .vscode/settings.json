@@ -17,6 +17,7 @@
         "González",
         "healthcheck",
         "htmlcov",
+        "huggingface",
         "ipynb",
         "ipython",
         "levelname",
@@ -48,10 +49,12 @@
         "Spyder",
         "spyderproject",
         "spyproject",
+        "sqlcoder",
         "streamlit",
         "upserting",
         "Uvicorn",
         "venv",
+        "vllm",
         "webassets"
     ]
 }

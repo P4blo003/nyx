@@ -1,0 +1,75 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 17/12/2025
+# Last edited: 17/12/2025
+# ==========================================================================================
+
+
+# ==============================
+# NETWORKS
+# ==============================
+
+networks:
+  # Internal network for AI services communication.
+  triton-net:
+    driver: bridge
+
+
+# ==============================
+# SERVICES
+# ==============================
+
+services:
+  triton-server:
+    image: nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-vllm-python-py3
+    container_name: triton
+    restart: unless-stopped
+
+    # Networks.
+    networks:
+      - triton-net
+
+    # Container ports.
+    ports:
+      - "${TRITON_HTTP_PORT}:8000"
+      - "${TRITON_GRPC_PORT}:8001"
+      - "${TRITON_METRICS_PORT}:8002"
+
+    # Volumes.
+    volumes:
+      - ./model_repository:/models/model_repository
+
+    # Environment variables.
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+
+    # Entrypoint command.
+    # Note: Loading only sqlcoder for initial testing as per requirements.
+    command: >
+      bash -c "
+      tritonserver 
+      --model-repository=/models/model_repository 
+      --model-control-mode=explicit 
+      --load-model=sql_model
+      --http-port=8000
+      --grpc-port=8001
+      --metrics-port=8002
+      "
+
+    # Container healthcheck.
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/live"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 2m
+      
+    # Resources and CPU reservation.
+    shm_size: '16gb'
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

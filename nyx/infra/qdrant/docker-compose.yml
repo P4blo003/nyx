@@ -39,7 +39,6 @@ services:
     volumes:
       - ./data:/qdrant/storage
       - ./config/qdrant.yaml:/qdrant/config/production.yaml:ro
-      - ./scripts/healthcheck.sh:/healthcheck.sh
 
     environment:
       - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
