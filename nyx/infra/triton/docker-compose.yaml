@@ -37,35 +37,22 @@ services:
 
     # Volumes.
     volumes:
-      - ./model_repository:/models/model_repository
+      - ./models:/models/
 
     # Environment variables.
     environment:
       - CUDA_VISIBLE_DEVICES=0
 
-    # Entrypoint command.
-    # Note: Loading only sqlcoder for initial testing as per requirements.
-    command: >
-      bash -c "
-      tritonserver 
-      --model-repository=/models/model_repository 
-      --model-control-mode=explicit 
-      --load-model=sql_model
-      --http-port=8000
-      --grpc-port=8001
-      --metrics-port=8002
-      "
-
     # Container healthcheck.
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/live"]
+      test: ["CMD", "curl", "-v", "http://localhost:8000/v2/health/live"]
       interval: 1m
       timeout: 10s
       retries: 3
       start_period: 2m
       
     # Resources and CPU reservation.
-    shm_size: '16gb'
+    shm_size: '16gb'                  # This is RAM.
     deploy:
       resources:
         reservations:
