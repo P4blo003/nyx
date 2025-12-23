@@ -74,7 +74,7 @@
             <mxPoint x="154" y="185" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ihCDV98zMTC-sSY5YnHX-205" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" value="Vector&lt;br&gt;Store" vertex="1">
+        <mxCell id="ihCDV98zMTC-sSY5YnHX-205" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" value="Vector&lt;br&gt;Store" vertex="1">
           <mxGeometry height="80" width="60" x="364" y="865" as="geometry" />
         </mxCell>
         <mxCell id="ihCDV98zMTC-sSY5YnHX-206" edge="1" parent="1" source="ihCDV98zMTC-sSY5YnHX-186" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;flowAnimation=1;strokeWidth=2;" target="ihCDV98zMTC-sSY5YnHX-205">
