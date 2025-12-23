@@ -16,7 +16,6 @@
 4. [Ejecución del servicio](#ejecución-del-servicio)
 5. [Conexión a Qdrant](#conexión-a-qdrant)
 
----
 
 ## Descripción
 
@@ -33,7 +32,6 @@ Este proyecto proporciona una infraestructura completa para desplegar **Qdrant**
 - ✅ Límites de recursos (CPU/Memoria).
 - ✅ Soporte para HTTP y gRPC.
 
----
 
 ## Requisitos previos
 
@@ -56,7 +54,6 @@ docker compose version
 make --version
 ```
 
----
 
 ## Preparación del entorno
 
@@ -100,7 +97,6 @@ El proyecto creará automáticamente los siguientes directorios:
 
 Estos directorios se crean automáticamente al ejecutar el servicio.
 
----
 
 ## Ejecución del servicio
 
@@ -168,7 +164,6 @@ Qdrant HTTP API is listening on 0.0.0.0:6333
 Qdrant gRPC API is listening on 0.0.0.0:6334
 ```
 
----
 
 ## Conexión a Qdrant
 
