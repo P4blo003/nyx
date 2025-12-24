@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 23/12/2025
-# Last edited: 23/12/2025
+# Created: 24/12/2025
+# Last edited: 24/12/2025
 # ==========================================================================================
 
 
@@ -9,12 +9,16 @@
 # IMPORTS
 # ==============================
 
+# Standard:
+import os
+import sys
 # External:
 import uvicorn
 from fastapi import FastAPI
 # Internal:
-from config import loader as cfg_loader
-import api
+from utilities import banner
+from config import loader
+from api.main import create_application
 
 
 # ==============================
@@ -22,21 +26,34 @@ import api
 # ==============================
 
 if __name__ == "__main__":
-    
+
     # Try-Except to manage errors.
     try:
+
+        # Prints startup information.
+        banner.print_startup_message()
         
-        # Load environment variables.
-        cfg_loader.load_env()
+        # Loads environment variables.
+        loader.load_env()
 
-        # Initializes FastAPI.
-        app:FastAPI = api.setup()
+        # Creates the FastAPI application.
+        app:FastAPI = create_application()
 
-        # Runs uvicorn.
-        uvicorn.run(app=app)
+        # Run uvicorn.
+        uvicorn.run(
+            app=app,
+            host=os.environ.get("UVICORN_HOST", "localhost"),
+            port=int(os.environ.get("UVICORN_PORT", "80"))
+        )
+
+        # Ends process with status code.
+        sys.exit(0)
 
     # If an unexpected error occurs.
     except Exception as ex:
-        
-        # Print error.
-        print(f"CRITICAL ERROR: {ex}")
+
+        # Prints information.
+        print(f"Critical error during main execution: {ex}")
+
+        # Ends process with status code.
+        sys.exit(1000)

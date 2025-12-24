@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 23/12/2025
-# Last edited: 23/12/2025
+# Created: 24/12/2025
+# Last edited: 24/12/2025
 # ==========================================================================================
 
 
@@ -9,19 +9,28 @@
 # IMPORTS
 # ==============================
 
-# Standard:
-from contextlib import asynccontextmanager
-# External:
-from fastapi import FastAPI
+
+# ==============================
+# VARIABLES
+# ==============================
+
+BANNER:str = r"""
+  ____      _    ____ 
+ |  _ \    / \  / ___|
+ | |_) |  / _ \| |  _ 
+ |  _ <  / ___ \ |_| |
+ |_| \_\/_/   \_\____|
+"""
 
 
 # ==============================
 # FUNCTIONS
 # ==============================
 
-@asynccontextmanager
-async def lifespan(app:FastAPI):
+def print_startup_message() -> None:
     """
-    
+    Prints startup message.
     """
-    yield
+
+    # Print title.
+    print(BANNER)

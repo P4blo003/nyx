@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 23/12/2025
-# Last edited: 23/12/2025
+# Created: 24/12/2025
+# Last edited: 24/12/2025
 # ==========================================================================================
 
 
@@ -21,15 +21,12 @@ import dotenv
 
 def load_env(file:str|Path|None = None) -> None:
     """
-    Load configuration from `file` if it's not None or from
-    default `.env` file.
-
-    Args:
-        file (str|Path|None): Environment variables file.
+    Loads environment variables from `file` or try to load
+    from default `.env`.
     """
     
     # Creates Path instance to manage access.
     path:Path = Path(file) if file is not None else Path(".env")
 
-    # Loads environment variables.
-    dotenv.load_dotenv(path)
+    # Load environment variables.
+    dotenv.load_dotenv(dotenv_path=path)

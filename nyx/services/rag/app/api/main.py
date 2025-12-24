@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 23/12/2025
-# Last edited: 23/12/2025
+# Created: 24/12/2025
+# Last edited: 24/12/2025
 # ==========================================================================================
 
 
@@ -14,25 +14,34 @@ from fastapi import FastAPI
 
 
 # ==============================
-# CONSTANTS
-# ==============================
-
-__APP:FastAPI|None = None
-
-
-# ==============================
 # FUNCTIONS
 # ==============================
 
-def setup() -> FastAPI:
+def create_application() -> FastAPI:
     """
-    Initializes `FastAPI` application.
+    Creates a new FastAPI application.
     """
 
-    # Global variables.
-    global __APP
+    # Try-Except to manage errors.
+    try:
 
-    # Initializes fastapi application.
-    __APP = FastAPI()
+        # Initialize Fast API application.
+        app = FastAPI()
 
-    return __APP
+        # Import routes.
+        from api.routes import documents
+
+        # Checks if routes are not initialize properly.
+        if documents.router is None: raise RuntimeError("Documents router is not initialized.")
+
+        # Add routes to the application.
+        app.include_router(router=documents.router)
+
+        # Return application.
+        return app
+
+    # If an unexpected error occurs.
+    except Exception as ex:
+
+        # Raises the error.
+        raise RuntimeError(f"Unable to initialize FastAPI application: {ex}")
