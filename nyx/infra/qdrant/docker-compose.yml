@@ -37,11 +37,15 @@ services:
 
     # Volumes.
     volumes:
+      - ./certs:/qdrant/ssl:ro
       - ./data:/qdrant/storage
       - ./config/qdrant.yaml:/qdrant/config/production.yaml:ro
 
     environment:
       - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
+      - QDRANT__SERVICE__ENABLE_TLS=${QDRANT_TLS_ENABLED}
+      - QDRANT__TLS__CERT=/qdrant/ssl/${QDRANT_CERT}
+      - QDRANT__TLS__KEY=/qdrant/ssl/${QDRANT_KEY}
 
     # Container healthcheck.
     healthcheck:

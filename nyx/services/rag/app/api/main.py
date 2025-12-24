@@ -11,6 +11,8 @@
 
 # External:
 from fastapi import FastAPI
+# Internal:
+from api.lifecycle import lifespan
 
 
 # ==============================
@@ -26,16 +28,20 @@ def create_application() -> FastAPI:
     try:
 
         # Initialize Fast API application.
-        app = FastAPI()
+        app = FastAPI(
+            lifespan=lifespan,
+            docs_url="/docs",
+            redoc_url="/redoc"
+        )
 
         # Import routes.
-        from api.routes import documents
+        from api.routes import collections
 
         # Checks if routes are not initialize properly.
-        if documents.router is None: raise RuntimeError("Documents router is not initialized.")
+        if collections.router is None: raise RuntimeError("Collection router is not initialized.")
 
         # Add routes to the application.
-        app.include_router(router=documents.router)
+        app.include_router(router=collections.router)
 
         # Return application.
         return app

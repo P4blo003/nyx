@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
         # Prints startup information.
         banner.print_startup_message()
-        
+
         # Loads environment variables.
         loader.load_env()
 
