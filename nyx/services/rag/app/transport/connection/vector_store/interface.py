@@ -13,6 +13,8 @@
 from abc import ABC
 from abc import abstractmethod
 from typing import List, Dict, Any
+# Internal:
+from dto.models.collection import CollectionInfo
 
 
 # ==============================
@@ -53,6 +55,16 @@ class IVectorStoreConnection(ABC):
 
         Returns:
             bool: True if the collection exist, False otherwise.
+        """
+        raise NotImplementedError
+    
+    @abstractmethod
+    async def get_collections(self) -> List[CollectionInfo]:
+        """
+        Gets all collections from the vector store.
+
+        Returns:
+            List[CollectionInfo]: List with all collection information.
         """
         raise NotImplementedError
     

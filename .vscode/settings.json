@@ -12,6 +12,7 @@
         "datefmt",
         "dmypy",
         "dotenv",
+        "dtype",
         "Embedder",
         "envrc",
         "fitz",

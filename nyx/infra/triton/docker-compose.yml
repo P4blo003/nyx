@@ -1,0 +1,56 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 31/12/2025
+# Last edited: 31/12/2025
+# ==========================================================================================
+
+
+# ==============================
+# NETWORKS
+# ==============================
+
+networks:
+  # Qdrant internal network.
+  triton-net:
+    driver: bridge
+
+
+# ==============================
+# SERVICES
+# ==============================
+
+services:
+  triton:
+    # Default configuration.
+    image: nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-vllm-python-py3
+    runtime: nvidia
+    container_name: triton
+    restart: unless-stopped
+
+    # Networks.
+    networks:
+      - triton-net
+
+    # Container ports.
+    ports:
+      - "${TRITON_HTTP_PORT}:8000"
+      - "${TRITON_GRPC_PORT}:8001"
+      - "${TRITON_METRICS_PORT}:8002"
+
+    # Volumes.
+    volumes:
+      - ./model_repository:/models
+
+    # Commands.
+    command: >
+      tritonserver
+      --model-repository=/models
+      --allow-metrics=${TRITON_ALLOW_METRICS}
+
+    # Container healthcheck.
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
