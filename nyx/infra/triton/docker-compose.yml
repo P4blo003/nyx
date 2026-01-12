@@ -20,11 +20,10 @@ networks:
 # ==============================
 
 services:
-  triton:
-    # Default configuration.
+  triton-llm:
     image: nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-vllm-python-py3
     runtime: nvidia
-    container_name: triton
+    container_name: triton-llm
     restart: unless-stopped
 
     shm_size: '6gb'
@@ -47,13 +46,12 @@ services:
 
     # Volumes.
     volumes:
-      - ./model_repository:/models
+      - ./model_repository/triton_llm:/models
 
     # Commands.
     command: >
       tritonserver
       --model-repository=/models
-      --allow-metrics=${TRITON_ALLOW_METRICS}
 
     # Container healthcheck.
     healthcheck:
