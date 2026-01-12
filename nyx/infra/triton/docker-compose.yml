@@ -27,6 +27,14 @@ services:
     container_name: triton
     restart: unless-stopped
 
+    shm_size: '6gb'
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    
+    environment:
+      - VLLM_ATTENTION_BACKEND=XFORMERS
+
     # Networks.
     networks:
       - triton-net
