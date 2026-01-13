@@ -1,0 +1,41 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 13/01/2026
+# Last edited: 13/01/2026
+# ==========================================================================================
+
+
+# Global settings applied to all scrape jobs.
+global:
+  # Scrape interval for all targets (frequency to pull metrics).
+  scrape_interval: 15s
+  # Default scrape timeout for each target.
+  scrape_timeout: 10s
+  # Default labels to attach to all metrics.
+  external_labels:
+    environment: production
+    role: monitoring
+
+# Scrape configuration for all monitored services
+# Each job represents a service / system.
+scrape_configs:
+
+  # Triton vLLM server metrics.
+  - job_name: 'triton-vllm'
+    static_configs:
+      - labels:
+          service: triton-vllm
+        targets: ['triton-vllm:8002']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+    
+  # Triton ONNX server metrics.
+  - job_name: 'triton-onnx'
+    static_configs:
+      - labels:
+          service: triton-onnx
+        targets: ['triton-onnx:8002']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance

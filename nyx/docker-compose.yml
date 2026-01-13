@@ -1,0 +1,242 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 31/12/2025
+# Last edited: 13/01/2026
+#
+# Docker Compose file for deploying multiple Triton Inference Server instances.
+#
+# This setup separates inference workloads by nature:
+# - Triton + vLLM for Large Language Models (LLMs).
+# - Triton + ONNX Runtime for classical ML / DL models.
+#
+# The separation allows independent optimization, scaling and deployment.
+# ==========================================================================================
+
+
+# ==============================
+# NETWORKS
+# ==============================
+
+networks:
+  # Internal bridge network used for communication between Triton containers
+  # and any auxiliary services (API gateways, orchestrators, etc).
+  # This network is not intended to be exposed externally.
+  triton-net:
+    driver: bridge
+  metrics-net:
+    driver: bridge
+
+
+# ==============================
+# SERVICES
+# ==============================
+
+# Triton services.
+services:
+
+  # Prometheus is responsible for scraping, staring and querying metrics
+  # exposed by Triton Inference Server instances.
+  prometheus:
+
+    # Official Prometheus image.
+    # In production, pin a specific version instead of using 'latest'.
+    # to ensure reproducible and stable deployments.
+    image: prom/prometheus:v2.50.0
+    # Explicit container name for easier management and monitoring.
+    container_name: prometheus
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+
+    # Attach the container to the internal networks.
+    networks:
+      - metrics-net
+
+    # Expose Prometheus web UI and API.
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+
+    # Mount Prometheus configuration file.
+    # This file defines scrape targets, intervals and alerting rules.
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+  
+  # Grafana is used exclusively for visualizing and alerting on top of
+  # Prometheus metrics. It does not collect metrics by itself.
+  grafana:
+
+    # Official Grafana image.
+    # In production, pin a specific version instead of using 'latest'.
+    image: grafana/grafana:10.1.2
+    # Explicit container name for easier management and monitoring.
+    container_name: grafana
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+
+    # Environment variables specific to Grafana.
+    # See https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/ for details.
+    environment:
+      # Initial admin password for Grafana.
+      # IMPORTANT:
+      # - Do not hardcode credentials in production.
+      # - Use Docker secrets, environment injection or external auth.
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      # Disable anonymous access to avoid exposing dashboards unintentionally.
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED}
+      # Set Grafana to production mode.
+      - GF_SERVER_ENABLE_GZIP=${GF_SERVER_ENABLE_GZIP}
+
+    # Attach the container to the internal networks.
+    networks:
+      - metrics-net
+
+    # Expose Grafana web UI.
+    ports:
+      - "3000:3000"
+
+    # Mount Grafana volumes.
+    volumes:
+      - ./infra/grafana/provisioning/users/users.yaml:/etc/grafana/provisioning/users/users.yaml:ro
+      # Optional: Mount dashboards, data persistence.
+      - ./infra/grafana/data:/var/lib/grafana
+
+  # Triton server dedicated to LLM inference using vLLM.
+  # This service is expected to run on a GPU with sufficient memory and compute
+  # capability to host Large Language Models efficiently.
+  triton-vllm:
+
+    # Triton Inference Server image including vLLM and Python backend support.
+    # The version is controller via the TRITON_VERSION variable in the .env file.
+    image: nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-vllm-python-py3
+    # Explicit container name for easier management and monitoring.
+    container_name: triton-vllm
+    # Enable NVIDIA Container runtime for GPU access.
+    runtime: nvidia
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+
+    # Increase shared memory size inside the container.
+    # Triton, CUDA, TensorRt, ONNX Runtime and vLLM rely heavily on /dev/shm.
+    # For inter-process communication, tensor exchange and dynamic batching.
+    # The default Docker value (64 MB) is insufficient for ML inference workloads.
+    shm_size: '8gb'
+    ulimits:
+      # Allows the container to lock unlimited amounts of memory.
+      # This is required by CUDA and TensorRT to pin memory and prevent it
+      # from being swapped out by the OS.
+      memlock: -1
+      # Increase the maximum stack size per thread to 64 MB.
+      # Deep C++ call stacks used by Triton, TensorRT and ONNX Runtime
+      # can overflow the default Linux stack limit (usually 8MB).
+      stack: 67108864
+    
+    # Environment variables specific to the vLLM workload.
+    # See https://docs.vllm.ai/en/latest/configuration/env_vars/ for details.
+    environment:
+      # GPU device(s) visible to this container.
+      # Typically a single, dedicated GPU is assigned to the LLM service.
+      - CUDA_VISIBLE_DEVICES=${VLLM_CUDA_VISIBLE_DEVICES}
+      # Attention backend used by vLLM.
+      # XFORMERS is broadly compatible and stable across GPU generations.
+      - VLLM_ATTENTION_BACKEND=${VLLM_ATTENTION_BACKEND}
+
+    # Attach the container to the internal networks.
+    networks:
+      - triton-net
+      - metrics-net
+
+    # Expose Triton service ports.
+    # These are typically consumed by an API gateway or internal clients.
+    ports:
+      - "${TRITON_VLLM_HTTP_PORT}:8000"
+      - "${TRITON_VLLM_GRPC_PORT}:8001"
+      - "${TRITON_VLLM_METRICS_PORT}:8002"
+
+    # Mount the model repository for vLLM-backend models.
+    volumes:
+      - ./infra/triton/model_repository/triton_vllm:/models
+
+    # Start Triton with explicit runtime options.
+    # Metrics are enabled for observability and capacity planning.
+    command: >
+      tritonserver
+      --model-repository=/models
+      --log-info=true
+      --allow-metrics=true
+      --allow-gpu-metrics=true
+
+    # Health check to ensure the Triton server is fully ready
+    # before traffic is sent to this service.
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+
+  # Triton inference server.
+  triton-onnx:
+    # Triton Inference Server image with Python backend support.
+    # ONNX Runtime and TensorRT backends are included in the standard image.
+    image: nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
+    # Explicit container name for easier management and monitoring.
+    container_name: triton-onnx
+    # Enable NVIDIA Container runtime for GPU access.
+    runtime: nvidia
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+
+    # Increase shared memory size inside the container.
+    # Triton, CUDA, TensorRt, ONNX Runtime and vLLM rely heavily on /dev/shm.
+    # For inter-process communication, tensor exchange and dynamic batching.
+    # The default Docker value (64 MB) is insufficient for ML inference workloads.
+    shm_size: '4gb'
+    ulimits:
+      # Allows the container to lock unlimited amounts of memory.
+      # This is required by CUDA and TensorRT to pin memory and prevent it
+      # from being swapped out by the OS.
+      memlock: -1
+      # Increase the maximum stack size per thread to 64 MB.
+      # Deep C++ call stacks used by Triton, TensorRT and ONNX Runtime
+      # can overflow the default Linux stack limit (usually 8MB).
+      stack: 67108864
+
+    # Environment variables specific to the ONNX workload.
+    environment:
+      # GPU device(s) visible to this container.
+      # When sharing a GPU with vLLM, ONNX models should be lightweight
+      # and carefully tuned to avoid attention.
+      - CUDA_VISIBLE_DEVICES=${ONNX_CUDA_VISIBLE_DEVICES}
+
+    # Attach the container to the internal networks.
+    networks:
+      - triton-net
+      - metrics-net
+
+    # Expose Triton service ports.
+    # These are typically consumed by an API gateway or internal clients.
+    ports:
+      - "${TRITON_ONNX_HTTP_PORT}:8000"
+      - "${TRITON_ONNX_GRPC_PORT}:8001"
+      - "${TRITON_ONNX_METRICS_PORT}:8002"
+
+    # Mount the model repository for ONNX-backend models.
+    volumes:
+      - ./infra/triton/model_repository/triton_onnx:/models
+
+    # Start Triton with explicit runtime options.
+    # Metrics are enabled for observability and capacity planning.
+    command: >
+      tritonserver
+      --model-repository=/models
+      --log-info=true
+      --allow-metrics=true
+      --allow-gpu-metrics=true
+
+    # Health check to ensure the Triton server is fully ready
+    # before traffic is sent to this service.
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 120s

@@ -1,12 +1,12 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 24/12/2025
-# Last edited: 24/12/2025
+# Created: 13/01/2026
+# Last edited: 13/01/2026
 # ==========================================================================================
 
 
 # ==============================
-# IGNORE
+# FILES AND DIRECTORIES
 # ==============================
 
 # Byte-compiled / optimized / DLL files
@@ -224,4 +224,16 @@ marimo/_lsp/
 __marimo__/
 
 # Streamlit
-.streamlit/secrets.toml
+.streamlit/secrets.tom
+
+# IA models.
+*.pt
+*.pkl
+
+# Datasets.
+*.csv
+
+# Other directories.
+/data
+/certs
+/model_repository
