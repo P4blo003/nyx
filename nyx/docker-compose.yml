@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 31/12/2025
-# Last edited: 13/01/2026
+# Last edited: 15/01/2026
 #
 # Docker Compose file for deploying multiple Triton Inference Server instances.
 #
@@ -50,10 +50,6 @@ services:
     # Attach the container to the internal networks.
     networks:
       - metrics-net
-
-    # Expose Prometheus web UI and API.
-    ports:
-      - "${PROMETHEUS_PORT}:9090"
 
     # Mount Prometheus configuration file.
     # This file defines scrape targets, intervals and alerting rules.
@@ -144,22 +140,16 @@ services:
       - triton-net
       - metrics-net
 
-    # Expose Triton service ports.
-    # These are typically consumed by an API gateway or internal clients.
-    ports:
-      - "${TRITON_VLLM_HTTP_PORT}:8000"
-      - "${TRITON_VLLM_GRPC_PORT}:8001"
-      - "${TRITON_VLLM_METRICS_PORT}:8002"
-
     # Mount the model repository for vLLM-backend models.
     volumes:
-      - ./infra/triton/model_repository/triton_vllm:/models
+      - ./infra/triton/model_repository/vllm:/models
 
     # Start Triton with explicit runtime options.
     # Metrics are enabled for observability and capacity planning.
     command: >
       tritonserver
       --model-repository=/models
+      --model-control-mode=explicit
       --log-info=true
       --allow-metrics=true
       --allow-gpu-metrics=true
@@ -212,22 +202,16 @@ services:
       - triton-net
       - metrics-net
 
-    # Expose Triton service ports.
-    # These are typically consumed by an API gateway or internal clients.
-    ports:
-      - "${TRITON_ONNX_HTTP_PORT}:8000"
-      - "${TRITON_ONNX_GRPC_PORT}:8001"
-      - "${TRITON_ONNX_METRICS_PORT}:8002"
-
     # Mount the model repository for ONNX-backend models.
     volumes:
-      - ./infra/triton/model_repository/triton_onnx:/models
+      - ./infra/triton/model_repository/onnx:/models
 
     # Start Triton with explicit runtime options.
     # Metrics are enabled for observability and capacity planning.
     command: >
       tritonserver
       --model-repository=/models
+      --model-control-mode=explicit
       --log-info=true
       --allow-metrics=true
       --allow-gpu-metrics=true
@@ -240,32 +224,48 @@ services:
       timeout: 5s
       retries: 5
       start_period: 120s
-    
 
+  nyx-ai:
 
-  tokenizer:
-
-    image: nyx/tokenizer:${TOKENIZER_VERSION}
+    # Build image for this service using Dockerfile.
+    build:
+      context: ./services/ai
+      dockerfile: Dockerfile
+    # AI service to use.
+    image: nyx/ai:latest
     # Explicit container name for easier management and monitoring.
-    container_name: tokenizer
-
-    # Environment variables specific to the Tokenizer workload.
+    container_name: nyx-ai
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+    
+    # Environment variables specific to the ai service workload.
     environment:
-      - TOKENIZER_MODEL_PATH=${TOKENIZER_MODEL_PATH}
+      - VLLM_HOST=triton-vllm
+      - VLLM_HTTP_PORT=8000
+      - VLLM_GRPC_PORT=8001
+      - ONNX_HOST=triton-onnx
+      - ONNX_HTTP_PORT=8000
+      - ONNX_GRPC_PORT=8001
 
-    # Expose Tokenizer service ports.
-    # These are typically consumed by an API gateway or internal clients.
+    # Attach the container to the internal networks.
+    networks:
+      - triton-net
+      - metrics-net
+
+    # Expose the FastAPI port to the host for external access.
     ports:
-      - "${TOKENIZER_HTTP_PORT}:8000"
+      - "${AI_HTTP_PORT}:80"
 
-    # Mount service directories.
+    # Mount the model repository for develop scripts.
     volumes:
-      - ./services/tokenizer/app:/app
-
-    # Start Tokenizer service.
+      - ./services/ai/src:/app/src
+    
+    # Start ai service.
     command: >
-      uvicorn
-      api.main:app
-      --host 0.0.0.0
-      --port 8000
-      --workers 1
+      python src/main.py
+
+    # Ensure Triton containers start before this service
+    # Note: This does not guarantee Triton is fully ready
+    depends_on:
+      - triton-onnx
+      - triton-vllm

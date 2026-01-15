@@ -60,6 +60,7 @@
         "rabbitmq",
         "redoc",
         "rerank",
+        "REUSEADDR",
         "ropeproject",
         "scrapy",
         "sdist",
