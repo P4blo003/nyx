@@ -230,10 +230,15 @@ __marimo__/
 *.pt
 *.pkl
 
+
 # Datasets.
 *.csv
 
 # Other directories.
 /data
 /certs
-/model_repository
+
+# Model repository - ignore everything except config.pbtxt and model.json files
+model_repository/
+!model_repository/**/config.pbtxt
+!model_repository/**/model.json
