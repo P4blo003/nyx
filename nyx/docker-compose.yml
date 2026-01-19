@@ -18,6 +18,8 @@
 # ==============================
 
 networks:
+  common-net:
+    driver: bridge
   # Internal bridge network used for communication between Triton containers
   # and any auxiliary services (API gateways, orchestrators, etc).
   # This network is not intended to be exposed externally.
@@ -142,7 +144,7 @@ services:
 
     # Mount the model repository for vLLM-backend models.
     volumes:
-      - ./infra/triton/model_repository/vllm:/models
+      - ${MODEL_REPO}/vllm:/models:ro
 
     # Start Triton with explicit runtime options.
     # Metrics are enabled for observability and capacity planning.
@@ -204,7 +206,7 @@ services:
 
     # Mount the model repository for ONNX-backend models.
     volumes:
-      - ./infra/triton/model_repository/onnx:/models
+      - ${MODEL_REPO}/onnx:/models:ro
 
     # Start Triton with explicit runtime options.
     # Metrics are enabled for observability and capacity planning.
@@ -249,6 +251,7 @@ services:
 
     # Attach the container to the internal networks.
     networks:
+      - common-net
       - triton-net
       - metrics-net
 
@@ -259,6 +262,7 @@ services:
     # Mount the model repository for develop scripts.
     volumes:
       - ./services/ai/src:/app/src
+      - ${MODEL_REPO}:/app/models
     
     # Start ai service.
     command: >
@@ -269,3 +273,38 @@ services:
     depends_on:
       - triton-onnx
       - triton-vllm
+
+  nyx-rag:
+    
+    # Build image for this service using Dockerfile.
+    build:
+      context: ./services/rag
+      dockerfile: Dockerfile
+    # Rag Service to use.
+    image: nyx/rag:latest
+    # Explicit container name for easier management and monitoring.
+    container_name: nyx-rag
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+
+    # Environment variables specific to the ai service workload.
+    environment:
+      - AI_SERVICE_HOST=nyx-ai
+      - AI_SERVICE_PORT=${AI_HTTP_PORT}
+
+    # Attach the container to the internal networks.
+    networks:
+      - common-net
+      - metrics-net
+
+    # Expose the FastAPI port to the host for external access.
+    ports:
+      - "${RAG_HTTP_PORT}:80"
+    
+    # Mount the model repository for develop scripts.
+    volumes:
+      - ./services/rag/src:/app/src
+
+    # Start rag service.
+    command: >
+      python src/main.py

@@ -10,15 +10,14 @@
 # ==============================
 
 # Standard:
-import os
 from contextlib import asynccontextmanager
 
 # External:
 from fastapi import FastAPI
-from tritonclient.grpc import InferenceServerClient
+from tritonclient.grpc.aio import InferenceServerClient
 
 # Internal:
-from core.config import triton_config
+from application.config import triton_config
 
 
 # ==============================

@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 31/12/2025
-# Last edited: 13/01/2026
+# Last edited: 15/01/2026
 # ==========================================================================================
 
 
@@ -10,11 +10,11 @@
 # ==============================
 
 # Internal:
-from typing import Optional, Dict, List, Any
+from typing import Optional, List
 
 # External:
 from pydantic import BaseModel
-from pydantic import Field, AliasChoices
+from pydantic import Field
 
 
 # ==============================

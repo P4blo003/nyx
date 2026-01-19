@@ -17,10 +17,9 @@ from typing import List
 from fastapi import APIRouter, status
 from fastapi import Request
 from fastapi import HTTPException
-from tritonclient.grpc import InferenceServerClient
 
 # Internal:
-from dto.model import TritonModel
+from infrastructure.triton.schemas.model import TritonModel
 
 
 # ==============================
@@ -69,7 +68,7 @@ async def get_models(req:Request):
             try:
 
                 # Gets model repository. 
-                repo_index = client.get_model_repository_index(as_json=True)
+                repo_index = await client.get_model_repository_index(as_json=True)
                 # Checks if there isn't data.
                 if repo_index is None: continue
 

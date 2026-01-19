@@ -44,6 +44,7 @@
         "nvcr",
         "onnx",
         "onnxruntime",
+        "pbtxt",
         "pipenv",
         "Pipfile",
         "pybuilder",

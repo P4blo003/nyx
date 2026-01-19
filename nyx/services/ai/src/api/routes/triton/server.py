@@ -11,16 +11,18 @@
 
 # Standard:
 import logging
-from typing import List
+from typing import List, Optional
 
 # External:
 from fastapi import APIRouter, status
 from fastapi import Request
 from fastapi import HTTPException
-from tritonclient.grpc import InferenceServerClient
+from tritonclient.grpc.aio import InferenceServerClient, InferInput, InferRequestedOutput
+import numpy as np
 
 # Internal:
-from dto.model import TritonModel, ModelMetadata
+from infrastructure.triton.schemas.model import TritonModel, ModelMetadata
+from infrastructure.triton.schemas.request import InferenceRequest
 
 
 # ==============================
@@ -112,7 +114,7 @@ async def get_server_models(
         if client is None: raise HTTPException(status_code=404, detail=f"No client found for server {server}")
 
         # Gets model repository.
-        repo_index = client.get_model_repository_index(as_json=True)
+        repo_index = await client.get_model_repository_index(as_json=True)
 
         # Checks if there isn't data.
         if repo_index is None: return response
@@ -178,7 +180,7 @@ async def get_server_model(
         if client is None: raise HTTPException(status_code=404, detail=f"No client found for server {server}")
 
         # Get model repository. 
-        repo_index = client.get_model_repository_index(as_json=True)
+        repo_index = await client.get_model_repository_index(as_json=True)
 
         # Checks if the repository is empty.
         if repo_index is None: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Server {server} doesn't contains any model.")
@@ -256,13 +258,12 @@ async def load_server_model(
     try:
         
         # Gets server client.
-        client:InferenceServerClient|None = req.app.state.triton_clients.get(server, None)
-
+        client:Optional[InferenceServerClient] = req.app.state.triton_clients.get(server, None)
         # Checks if the client is not available.
         if client is None: raise HTTPException(status_code=404, detail=f"No client found for server {server}")
 
-        # Load the model.
-        client.load_model(model_name=model_name)
+        # Loads the model.
+        await client.load_model(model_name=model_name)
 
     # If it's an HTTPException.
     except HTTPException: raise
@@ -277,7 +278,8 @@ async def load_server_model(
 
 @_router.put(
     "/{server}/models/{model_name}/unload",
-    status_code=status.HTTP_200_OK)
+    status_code=status.HTTP_200_OK
+)
 async def unload_server_model(
     req:Request,
     server:str,
@@ -306,7 +308,7 @@ async def unload_server_model(
         if client is None: raise HTTPException(status_code=404, detail=f"No client found for server {server}")
 
         # Load the model.
-        client.unload_model(model_name=model_name)
+        await client.unload_model(model_name=model_name)
 
     # If it's an HTTPException.
     except HTTPException: raise
@@ -318,3 +320,69 @@ async def unload_server_model(
         _logger.error(f"Error unloading model {model_name} on server {server}: {ex}")
         # Raises HTTP error.
         raise HTTPException(status_code=500, detail=f"Internal server error while unloading {model_name}")
+
+@_router.post(
+    "/{server}/models/{model_name}/infer",
+    status_code=status.HTTP_200_OK
+)
+async def infer(
+    req:Request,
+    server:str,
+    model_name:str,
+    request:InferenceRequest
+):
+    """"""
+    
+    # Try-Except to manage errors.
+    try:
+        
+        # Gets server client.
+        client:InferenceServerClient|None = req.app.state.triton_clients.get(server, None)
+
+        # Checks if the client is not available.
+        if client is None: raise HTTPException(status_code=404, detail=f"No client found for server {server}")
+
+
+    # If it's an HTTPException.
+    except HTTPException: raise
+    
+    # If an error occurs.
+    except Exception as ex:
+
+        # Prints the error.
+        _logger.error(f"Error during inference with model {model_name} on server {server}: {ex}")
+        # Raises HTTP error.
+        raise HTTPException(status_code=500, detail=f"Internal server error during inference with model {model_name} on server {server}")
+
+@_router.post(
+    "/{server}/models/{model_name}/infer-stream",
+    status_code=status.HTTP_200_OK
+)
+async def infer_stream(
+    req:Request,
+    server:str,
+    model_name:str
+):
+    """"""
+    
+    # Try-Except to manage errors.
+    try:
+        
+        # Gets server client.
+        client:InferenceServerClient|None = req.app.state.triton_clients.get(server, None)
+
+        # Checks if the client is not available.
+        if client is None: raise HTTPException(status_code=404, detail=f"No client found for server {server}")
+
+
+
+    # If it's an HTTPException.
+    except HTTPException: raise
+    
+    # If an error occurs.
+    except Exception as ex:
+
+        # Prints the error.
+        _logger.error(f"Error during stream inference with model {model_name} on server {server}: {ex}")
+        # Raises HTTP error.
+        raise HTTPException(status_code=500, detail=f"Internal server error during stream inference with model {model_name} on server {server}")

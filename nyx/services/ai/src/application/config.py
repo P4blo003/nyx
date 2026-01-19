@@ -23,11 +23,13 @@ triton_config:Dict[str, Any] = {
     "vllm": {
         "host": os.environ.get("VLLM_HOST", "localhost"),
         "http_port": os.environ.get("VLLM_HTTP_PORT", "8000"),
-        "grpc_port": os.environ.get("VLLM_GRPC_PORT", "8001")
+        "grpc_port": os.environ.get("VLLM_GRPC_PORT", "8001"),
+        "support_stream": True
     },
     "onnx": {
         "host": os.environ.get("ONNX_HOST", "localhost"),
         "http_port": os.environ.get("ONNX_HTTP_PORT", "8000"),
-        "grpc_port": os.environ.get("ONNX_GRPC_PORT", "8001")
+        "grpc_port": os.environ.get("ONNX_GRPC_PORT", "8001"),
+        "support_stream": False
     }
 }
