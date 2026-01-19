@@ -1,0 +1,47 @@
+name: "qwen2.5_3b_instruct"
+backend: "vllm"
+
+
+# ==============================
+# INPUTS
+# ==============================
+
+input [
+    {
+        name: "INPUT"
+        data_type: TYPE_STRING
+        dims: [ -1 ]
+    }
+]
+
+
+# ==============================
+# OUTPUTS
+# ==============================
+
+output [
+    {
+        name: "OUTPUT"
+        data_type: TYPE_STRING
+        dims: [ -1 ]
+    }
+]
+
+
+# ==============================
+# PARAMETERS
+# ==============================
+
+parameters {
+    key: "temperature"
+    value: { string_value: "0.7" }
+}
+
+
+# ==============================
+# POLICY
+# ==============================
+
+model_transaction_policy {
+  decoupled: true
+}
