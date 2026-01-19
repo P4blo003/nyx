@@ -240,5 +240,6 @@ __marimo__/
 
 /model_repository/**/*
 !/model_repository/**/
+!/model_repository/**/requirements.txt
 !/model_repository/**/config.pbtxt
 !/model_repository/**/model.json
