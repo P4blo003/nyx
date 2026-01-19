@@ -12,6 +12,7 @@
         "cython",
         "datefmt",
         "DCMAKE",
+        "distilbert",
         "dmypy",
         "dotenv",
         "dtype",
