@@ -201,7 +201,7 @@ async def get_server_model(
                 if state != "READY": raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Model {model_name} at {server} is not running")
 
                 # Retrieve model metadata from Triton.
-                metadata = client.get_model_metadata(model_name=model_name, as_json=True)
+                metadata = await client.get_model_metadata(model_name=model_name, as_json=True)
 
                 # Checks if the metadata is valid.
                 if metadata is None or not isinstance(metadata, dict): raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Invalid metadata returned by Triton")
@@ -353,36 +353,3 @@ async def infer(
         _logger.error(f"Error during inference with model {model_name} on server {server}: {ex}")
         # Raises HTTP error.
         raise HTTPException(status_code=500, detail=f"Internal server error during inference with model {model_name} on server {server}")
-
-@_router.post(
-    "/{server}/models/{model_name}/infer-stream",
-    status_code=status.HTTP_200_OK
-)
-async def infer_stream(
-    req:Request,
-    server:str,
-    model_name:str
-):
-    """"""
-    
-    # Try-Except to manage errors.
-    try:
-        
-        # Gets server client.
-        client:InferenceServerClient|None = req.app.state.triton_clients.get(server, None)
-
-        # Checks if the client is not available.
-        if client is None: raise HTTPException(status_code=404, detail=f"No client found for server {server}")
-
-
-
-    # If it's an HTTPException.
-    except HTTPException: raise
-    
-    # If an error occurs.
-    except Exception as ex:
-
-        # Prints the error.
-        _logger.error(f"Error during stream inference with model {model_name} on server {server}: {ex}")
-        # Raises HTTP error.
-        raise HTTPException(status_code=500, detail=f"Internal server error during stream inference with model {model_name} on server {server}")
