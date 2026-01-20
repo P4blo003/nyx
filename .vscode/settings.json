@@ -83,5 +83,8 @@
         "vllm",
         "webassets",
         "XFORMERS"
-    ]
+    ],
+    "files.exclude": {
+        "**/__pycache__": true
+    }
 }
