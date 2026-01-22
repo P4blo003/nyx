@@ -106,9 +106,11 @@ services:
 
   # Triton inference server.
   triton-onnx:
-    # Triton Inference Server image with Python backend support.
-    # ONNX Runtime and TensorRT backends are included in the standard image.
-    image: nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
+
+    # Build image for this service using Dockerfile.
+    build:
+      context: ./infra/triton/onnx
+      dockerfile: Dockerfile
     # Explicit container name for easier management and monitoring.
     container_name: triton-onnx
     # Enable NVIDIA Container runtime for GPU access.
@@ -201,7 +203,7 @@ services:
     # Mount the model repository for develop scripts.
     volumes:
       - ./services/ai/src:/app/src
-      - ${MODEL_REPO}:/app/models
+      - ./services/ai/config:/app/config
     
     # Start ai service.
     command: >

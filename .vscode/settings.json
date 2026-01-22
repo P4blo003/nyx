@@ -75,6 +75,7 @@
         "sqlcoder",
         "streamlit",
         "torchvision",
+        "tritonclientutils",
         "tritonserver",
         "ulimits",
         "upserting",
