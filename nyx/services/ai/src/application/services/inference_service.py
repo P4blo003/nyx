@@ -12,7 +12,7 @@
 # Standard:
 from abc import ABC
 from abc import abstractmethod
-from typing import List, Any, Optional
+from typing import List, Optional
 
 # External:
 import numpy as np
@@ -20,7 +20,7 @@ import numpy as np
 # Internal:
 from infrastructure.triton.triton_context import TritonContext
 from domain.models.triton_model import TritonModel
-from infrastructure.triton.triton_repository import TritonSDK
+from infrastructure.triton.triton_sdk import TritonSDK
 from interfaces.api.schemas.inference_response import InferenceResult, InferenceResponse
 
 
@@ -30,6 +30,7 @@ from interfaces.api.schemas.inference_response import InferenceResult, Inference
 
 class IInferenceService(ABC):
     """
+    Interface that defines the contract for inference services.
     """
 
     # ---- Methods ---- #
@@ -38,8 +39,16 @@ class IInferenceService(ABC):
     async def make_infer(
         self,
         texts:List[str]
-    ) -> Any:
+    ) -> List[InferenceResult]:
         """
+        Executes an inference request over a collection of input texts.
+
+        Args:
+            texts (List[str]): Lis of input texts to bre processed by the inference model.
+
+        Returns:
+            Any: Backend-specific inference result. Concrete implementations should
+                return a well-defined response object.
         """
         pass
 
@@ -50,6 +59,7 @@ class IInferenceService(ABC):
 
 class InferenceService(IInferenceService):
     """
+    Concrete implementation of `IInferenceService` using Triton Inference Server.
     """
 
     # ---- Default ---- #
@@ -61,6 +71,10 @@ class InferenceService(IInferenceService):
     ) -> None:
         """
         Initializes the service.
+
+        Args:
+            context (TritonContext): Runtime context holding initialized Triton Clients.
+            triton_sdk (TritonSDK): Responsible for interacting with Triton Server.
         """
 
         # Initializes the class properties.
@@ -73,11 +87,24 @@ class InferenceService(IInferenceService):
     async def make_infer(
         self,
         texts:List[str]
-    ) -> Any:
+    ) -> List[InferenceResult]:
         """
+        Performs inference over the provided texts using a Triton-Hosted model.
+
+        The method iterates through all available Triton Clients, discovers deployed
+        models, and executes inference once the target model is found.
+
+        Args:
+            texts (List[str]): List of the input texts for which embeddings will be generated.
+
+        Returns:
+            List[InferenceResult]: List of inference results.
         """
         
         model_name:str = "bge_m3_ensemble"
+
+        # Variable to keep results.
+        results:List[InferenceResult] = []
 
         # Iterate over all available clients.
         for __, client in self._context.Clients.items():
@@ -95,13 +122,13 @@ class InferenceService(IInferenceService):
                     
                     if embeddings is None: embeddings = np.array([])
                     
-                    # Variable to keep results.
-                    results:List[InferenceResult] = []
                     # Iterate over all calculated embeddings.
                     for index, embedding in enumerate(embeddings):
                         results.append(InferenceResult(
                             id=str(index),
                             embedding=embedding.tolist()
                         ))
-
-                    return InferenceResponse(results=results)
+    
+                    return results
+        
+        raise RuntimeError("Unable to perform inference. No client/model was found for the task.")

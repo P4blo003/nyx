@@ -10,7 +10,7 @@
 # ==============================
 
 # Standard:
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 # External:
 import numpy as np
@@ -38,6 +38,15 @@ class TritonSDK:
         client:InferenceServerClient,
     ) -> List[TritonModel]:
         """
+        Retrieves the list of models available in the Triton Inference Server.
+
+        Args:
+            client (InferenceServerClient): Asynchronous gRPC client instance.
+
+        Returns:
+            List[TritonModel]: List of model exposed by the Triton Server, populated
+                with basic identification and state information. Metadata and
+                configuration are not included ath this stage.
         """
 
         # Gets the response from the Triton Inference Server.
@@ -58,23 +67,47 @@ class TritonSDK:
         self,
         client:InferenceServerClient,
         model_name:str
-    ):
+    ) -> Dict[str, Any]:
         """
+        Retrieves metadata for specific model.
+
+        Metadata typically includes information about model inputs, outputs,
+        datatypes, and shapes.
+
+        Args:
+            client (InferenceServerClient): Asynchronous gRPC client instance.
+            model_name (str): Name of the model whose metadata is requested.
+
+        Returns:
+            Dict[str, Any]: Raw metadata returned by Triton as a JSON-compatible
+                dictionary.
         """
 
         # Gets the response from the Triton Inference Client.
-        return await client.get_model_metadata(model_name=model_name, as_json=True)
+        return await client.get_model_metadata(model_name=model_name, as_json=True)         # type: ignore
     
     async def get_model_config(
         self,
         client:InferenceServerClient,
         model_name:str
-    ):
+    ) -> Dict[str, Any]:
         """
+        Retrieves the configuration of a specific model.
+
+        The configuration usually includes instance groups, batching configuration,
+        optimization settings, and execution parameters.
+
+        Args:
+            client (InferenceServerClient): Asynchronous gRPC client instance.
+            model_name (str): Name of the model whose configuration is requested.
+
+        Returns:
+            Dict[str, Any]: Raw configuration payload returned by Triton as a JSON-compatible
+                dictionary.
         """
 
         # Gets the response from the Triton Inference Client.
-        return await client.get_model_config(model_name=model_name, as_json=True)
+        return await client.get_model_config(model_name=model_name, as_json=True)         # type: ignore
     
     async def load_model(
         self,
@@ -82,6 +115,11 @@ class TritonSDK:
         model_name:str
     ) -> None:
         """
+        Loads a model into memory on the Triton Inference Server.
+
+        Args:
+            client (InferenceServerClient): Asynchronous gRPC client instance.
+            model_name (str): Name of the model to load.
         """
 
         # Loads the model in the Triton Inference Server.
@@ -93,6 +131,11 @@ class TritonSDK:
         model_name:str
     ) -> None:
         """
+        Unloads a model into memory on the Triton Inference Server.
+
+        Args:
+            client (InferenceServerClient): Asynchronous gRPC client instance.
+            model_name (str): Name of the model to unload.
         """
 
         # Unloads the mode from the Triton Inference Server.

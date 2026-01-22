@@ -17,7 +17,7 @@ from typing import List, Optional
 # Internal:
 from infrastructure.triton.triton_context import TritonContext
 from domain.models.triton_model import TritonModel
-from infrastructure.triton.triton_repository import TritonSDK
+from infrastructure.triton.triton_sdk import TritonSDK
 
 
 # ==============================
@@ -26,6 +26,7 @@ from infrastructure.triton.triton_repository import TritonSDK
 
 class IModelService(ABC):
     """
+    Interface tha defines the contract for model management services.
     """
 
     # ---- Methods ---- #
@@ -33,6 +34,10 @@ class IModelService(ABC):
     @abstractmethod
     async def get_models(self) -> List[TritonModel]:
         """
+        Retrieves all models available across configured inference clients.
+
+        Returns:
+            List[TritonModel]: Collection of models currently visible to the service.
         """
         pass
 
@@ -42,6 +47,16 @@ class IModelService(ABC):
         model_name:str
     ) -> Optional[TritonModel]:
         """
+        Retrieves detailed information for a specific model.
+
+        This includes base model information as well as its metadata and
+        configuration as reported by the inference backend.
+
+        Args:
+            model_name (str): Nme of the model to retrieve.
+
+        Returns:
+            Optional[TritonModel]: Fully populated model instance if found; otherwise `None`.
         """
         pass
 
@@ -51,6 +66,10 @@ class IModelService(ABC):
         model_name:str
     ) -> None:
         """
+        Load a model into memory on the inference backend.
+
+        Args:
+            model_name (str): Name of the model to load.
         """
         pass
 
@@ -60,6 +79,10 @@ class IModelService(ABC):
         model_name:str
     ) -> None:
         """
+        Unloads a model from memory on the inference backend.
+
+        Args:
+            model_name (str): Name of the model to unload.
         """
         pass
 
@@ -70,7 +93,10 @@ class IModelService(ABC):
 
 class ModelService(IModelService):
     """
-    
+    Triton-base implementation of the model management service.
+
+    This service coordinates multiple Triton clients, providing a unified view and 
+    control plane for model lifecycle operations.
     """
 
     # ---- Default ---- #
@@ -82,6 +108,10 @@ class ModelService(IModelService):
     ) -> None:
         """
         Initializes the service properties.
+
+        Args:
+            context (TritonContext): Runtime context holding initialized Triton Clients.
+            triton_sdk (TritonSDK): Responsible for interacting with Triton Server.
         """
 
         # Initializes the class properties.
@@ -92,7 +122,11 @@ class ModelService(IModelService):
     # ---- Methods ---- #
 
     async def get_models(self) -> List[TritonModel]:
-        """ 
+        """
+        Retrieve all models available across al Triton clients.
+
+        Returns:
+            List[TritonModel]: Aggregated list of models from every configured client.
         """
 
         result:List[TritonModel] = []
@@ -107,7 +141,14 @@ class ModelService(IModelService):
         self,
         model_name:str
     ) -> Optional[TritonModel]:
-        """ 
+        """
+        Retrieves detailed information for a specific model.
+
+        Args:
+            model_name (str): Name of the model retrieve.
+
+        Returns:
+            Optional[TritonModel]: Populated model instance if found; otherwise `None`.
         """
         
         result:Optional[TritonModel] = None
@@ -130,6 +171,10 @@ class ModelService(IModelService):
         model_name: str
     ) -> None:
         """
+        Loads a model into memory on the first Triton Client where it is found.
+
+        Args:
+            model_name (str): Nae of the model to load.
         """
 
         # Iterate over all available clients.
@@ -146,6 +191,10 @@ class ModelService(IModelService):
         model_name: str
     ) -> None:
         """
+        Unloads a model from memory on the first Triton Client where it is found.
+
+        Args:
+            model_name (str): Name of the model to unload.
         """
 
         # Iterate over all available clients.

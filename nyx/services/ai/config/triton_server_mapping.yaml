@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 20/01/2025
-# Last edited: 20/01/2025
+# Created: 20/01/2026
+# Last edited: 22/01/2026
 #
 # Defines the Triton Inference Server available for the AI Service.
 # Each server entry contains connection information required to send inference requests.

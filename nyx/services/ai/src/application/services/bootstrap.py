@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 20/01/2025
-# Last edited: 20/01/2025
+# Created: 20/01/2026
+# Last edited: 22/01/2026
 # ==========================================================================================
 
 
@@ -17,7 +17,6 @@ from typing import Dict, Any
 from shared.utils import yaml
 from infrastructure.triton.config.triton_server import TritonInferenceServerMapping
 from infrastructure.triton.triton_context import TritonContext
-from infrastructure.triton.triton_registry import TritonRegistry
 
 
 # ==============================
@@ -34,7 +33,5 @@ async def bootstrap_ai_service():
     server_mapping:TritonInferenceServerMapping = TritonInferenceServerMapping(**server_mapping_data)
 
     # Initializes singletons.
-    TritonContext.initialize(server_mapping=server_mapping)
-    TritonRegistry.initialize()
-    
+    TritonContext.initialize(server_mapping=server_mapping)    
     await TritonContext.get().startup()

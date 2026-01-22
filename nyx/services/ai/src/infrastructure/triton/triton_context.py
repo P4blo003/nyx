@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 20/01/2025
-# Last edited: 20/01/2025
+# Created: 20/01/2026
+# Last edited: 22/01/2026
 # ==========================================================================================
 
 
@@ -26,7 +26,7 @@ from infrastructure.triton.config.triton_server import TritonInferenceServerMapp
 
 class TritonContext(Singleton):
     """
-    
+    Context for Triton Inference Server clients.
     """
 
     # ---- Default ---- #
@@ -52,6 +52,14 @@ class TritonContext(Singleton):
     @property
     def Clients(self) -> Dict[str, InferenceServerClient]:
         """
+        Returns active Triton gRPC clients.
+
+        The returned dictionary maps a logical server identifier to its
+        corresponding `InferenceServerClient` instance.
+
+        Returns:
+            Dict[str, InferenceClient]: Active Triton clients indexed
+                by server key.
         """
 
         return self._clients
@@ -61,7 +69,11 @@ class TritonContext(Singleton):
 
     async def startup(self) -> None:
         """
-        
+        Initializes Triton Inference Server clients for all configured Triton servers.
+
+        This method should be called during application startup. It creates
+        asynchronous fRPC clients using the configuration
+        provided in `TritonInferenceServerMapping`.
         """
 
         for key, server in self._mapping.servers.items():
@@ -70,7 +82,10 @@ class TritonContext(Singleton):
 
     async def close(self) -> None:
         """
-        
+        Gracefully close all active Triton gRPC clients.
+
+        This method should me invoked during application shutdown to ensure the
+        network resources and connections are released properly.
         """
 
         for __, server in self._clients.items():

@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 20/01/2025
-# Last edited: 20/01/2025
+# Created: 20/01/2026
+# Last edited: 22/01/2026
 # ==========================================================================================
 
 
@@ -10,13 +10,10 @@
 # ==============================
 
 # Standard:
-from typing import Optional, List, Dict
+from typing import Dict
 
 # External:
 from pydantic import BaseModel, Field
-
-# Internal:
-from domain.enums.inference_task import InferenceTask
 
 
 # ==============================
