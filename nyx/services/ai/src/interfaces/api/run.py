@@ -16,8 +16,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 # Internal:
-from interfaces.api.routes import models, inference
 from application.services.bootstrap import bootstrap_ai_service
+from interfaces.api.routes import models, inference
+from infrastructure.triton.triton_context import TritonContext
 
 
 
@@ -35,6 +36,9 @@ async def lifespan(app:FastAPI):
     await bootstrap_ai_service()
 
     yield
+
+    # Closes services.
+    await TritonContext.get().close()
 
 
 # ==============================
@@ -54,10 +58,10 @@ app:FastAPI = FastAPI(
 
 # Register application routes.
 app.include_router(
-    prefix="/api",
-    router=models.router
+    router=models.router,
+    prefix="/api"
 )
 app.include_router(
-    prefix="/api",
-    router=inference.router
+    router=inference.router,
+    prefix="/api"
 )

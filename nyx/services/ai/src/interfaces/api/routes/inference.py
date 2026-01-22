@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/01/2025
-# Last edited: 20/01/2025
+# Last edited: 21/01/2025
 # ==========================================================================================
 
 
@@ -10,65 +10,55 @@
 # ==============================
 
 # Standard:
+import logging
 from logging import Logger
-from logging import getLogger
+from typing import List
 
 # External:
-from fastapi import APIRouter, HTTPException
-from fastapi import status
+from fastapi import APIRouter, Depends, status
+from fastapi import HTTPException
 
 # Internal:
-from application.services.inference import InferenceManager
+from interfaces.api.dependencies import get_inference_service
 from interfaces.api.schemas.inference_request import InferenceRequest
+from application.services.inference_service import IInferenceService
+
+
+# ==============================
+# VARIABLES
+# ==============================
+
+router:APIRouter = APIRouter(prefix="/inference")
+logger:Logger = logging.getLogger(__name__)
 
 
 # ==============================
 # ENDPOINTS
-# ==============================
-
-router:APIRouter = APIRouter(prefix="/inference")
-logger:Logger = getLogger(__name__)
+# ============================== 
 
 @router.post(
-    path="/",
+    path="/{task}",
     status_code=status.HTTP_200_OK
 )
-async def inference(
-    request:InferenceRequest
-) -> None:
+async def infer(
+    task:str,
+    request:InferenceRequest,
+    service:IInferenceService = Depends(get_inference_service)
+):
     """
     """
-    
+
     try:
-        
-        pass
 
-    # If an unexpected error occurs.
+        # Make inference.
+        return await service.make_infer(texts=request.texts)
+
+    # If an error occurs.
     except Exception as ex:
-        
-        # Prints the error.
-        logger.error(f"Unable to make '{request.task}' inference: {ex}")
-        # Returns error to client.
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unable to make '{request.task}' inference'.")
 
-@router.post(
-    path="/stream",
-    status_code=status.HTTP_200_OK
-)
-async def inference_stream(
-    request:InferenceRequest
-) -> None:
-    """
-    """
-    
-    try:
-        
-        pass
-
-    # If an unexpected error occurs.
-    except Exception as ex:
-        
         # Prints the error.
-        logger.error(f"Unable to make '{request.task}' stream-inference: {ex}")
-        # Returns error to client.
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unable to make '{request.task}' stream-inference.")
+        logger.error(f"Unable to make inference '{task}': {ex}")
+        # Returns 500 to client.
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unable to make inference '{task}'.")

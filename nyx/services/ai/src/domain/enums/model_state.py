@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 22/01/2026
-# Last edited: 22/01/2026
+# Created: 20/01/2025
+# Last edited: 20/01/2025
 # ==========================================================================================
 
 
@@ -10,21 +10,20 @@
 # ==============================
 
 # Standard:
-from typing import Union, List
-
-# External:
-from pydantic import BaseModel, Field
+from enum import StrEnum
 
 
 # ==============================
-# CLASSES
+# ENUMS
 # ==============================
 
-class InferenceRequest(BaseModel):
+class ModelState(StrEnum):
     """
-    
+
     """
 
     # ---- Attributes ---- #
 
-    texts:List[str] = Field(..., description="")
+    UNAVAILABLE = "UNAVAILABLE"
+    AVAILABLE = "AVAILABLE"
+    READY = "READY"

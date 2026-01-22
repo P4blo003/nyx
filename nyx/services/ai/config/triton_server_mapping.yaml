@@ -15,12 +15,12 @@
 servers:
   # ONNX Triton Server used for embedding and classification tasks.
   triton-onnx:
-    host: triton-onnx                     # Backend server host.
-    http_port: 8000                       # HTTP endpoint port.
-    grpc_port: 8001                       # gRPC endpoint port.
+    host: triton-onnx                         # Backend server host.
+    http_port: 8000                           # HTTP endpoint port.
+    grpc_port: 8001                           # gRPC endpoint port.
 
   # VLLM Triton Server used for text-generation tasks.
   triton-vllm:
-    host: triton-vllm                     # Backend server host.
-    http_port: 8000                       # HTTP endpoint port.
-    grpc_port: 8001                       # gRPC endpoint port.
+    host: triton-vllm                         # Backend server host.
+    http_port: 8000                           # HTTP endpoint port.
+    grpc_port: 8001                           # gRPC endpoint port.

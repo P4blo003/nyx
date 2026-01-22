@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 20/01/2025
-# Last edited: 20/01/2025
+# Last edited: 21/01/2025
 # ==========================================================================================
 
 
@@ -10,88 +10,139 @@
 # ==============================
 
 # Standard:
+import logging
 from logging import Logger
-from logging import getLogger
+from typing import List, Optional
 
 # External:
-from fastapi import APIRouter, HTTPException
-from fastapi import status
+from fastapi import APIRouter, Depends, status
+from fastapi import HTTPException
 
 # Internal:
-from application.services.inference import InferenceManager
-from interfaces.api.schemas.model_request import LoadModelRequest, UnloadModelRequest
+from interfaces.api.dependencies import get_model_service
+from application.services.model_service import IModelService
+from domain.models.triton_model import TritonModel
+
+
+# ==============================
+# VARIABLES
+# ==============================
+
+router:APIRouter = APIRouter(prefix="/models")
+logger:Logger = logging.getLogger(__name__)
 
 
 # ==============================
 # ENDPOINTS
 # ==============================
 
-router:APIRouter = APIRouter(prefix="/models")
-logger:Logger = getLogger(__name__)
-
-@router.post(
-    path="/load",
-    status_code=status.HTTP_200_OK
+@router.get(
+    path="/",
+    status_code=status.HTTP_200_OK,
+    summary="List all available models",
+    description="Returns all Triton models with metadata and state"
 )
-async def load_model(
-    request:LoadModelRequest
-) -> None:
+async def get_models(
+    service:IModelService = Depends(get_model_service)
+) -> List[TritonModel]:
     """
-    Load a model corresponding to a specific inference task into memory.
-
-    This endpoint triggers the InferenceManager to load the model associated
-    with the given task. The mode will be loaded on its assigned Triton server.
-
-    Args:
-        request (LoadModelRequest): Contains the task type to load.
-
-    Raises:
-        HTTPException: Returns 500 if there are unhandled errors.
     """
 
     try:
-        
-        # Await to load the model.
-        await InferenceManager.get().load_model_async(task_type=request.task)
 
-    # If an unexpected error occurs.
+        # Returns available models.
+        return await service.get_models()
+
+    # If an error occurs.
     except Exception as ex:
-        
+
         # Prints the error.
-        logger.error(f"Unable to load model for task '{request.task}': {ex}")
-        # Returns error to client.
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unable to load model for task '{request.task}'.")
+        logger.error(f"Unable to list models: {ex}")
+        # Returns 500 to client.
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unable to list models.")
+    
+@router.get(
+    path="/{model_name}",
+    status_code=status.HTTP_200_OK,
+    summary="List all available models",
+    description="Returns all Triton models with metadata and state"
+)
+async def get_model_data(
+    model_name:str,
+    service:IModelService = Depends(get_model_service)
+) -> Optional[TritonModel]:
+    """
+    """
+
+    try:
+
+        # Returns available models.
+        return await service.get_model_data(model_name=model_name)
+
+    # If an error occurs.
+    except Exception as ex:
+
+        # Prints the error.
+        logger.error(f"Unable to list models: {ex}")
+        # Returns 500 to client.
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unable to list models.")
     
 @router.post(
-    path="/unload",
-    status_code=status.HTTP_200_OK
+    path="/{model_name}/load",
+    status_code=status.HTTP_200_OK,
+    summary="Load the specified model.",
+    description="Returns all Triton models with metadata and state"
 )
-async def unload_model(
-    request:UnloadModelRequest
+async def load_model(
+    model_name:str,
+    service:IModelService = Depends(get_model_service)
 ) -> None:
     """
-    Unload a model corresponding to a specific inference task into memory.
-
-    This endpoint triggers the InferenceManager to unload the model associated
-    with the given task. The mode will be unloaded on its assigned Triton server.
-
-    Args:
-        request (UnloadModelRequest): Contains the task type to unload.
-
-    Raises:
-        HTTPException: Returns 500 if there are unhandled errors.
     """
 
     try:
 
-        # Await to unload the model.
-        await InferenceManager.get().unload_model_async(task_type=request.task)
+        # Load the model.
+        await service.load_model(model_name=model_name)
 
-
-    # If an unexpected error occurs.
+    # If an error occurs.
     except Exception as ex:
-        
+
         # Prints the error.
-        logger.error(f"Unable to unload model for task '{request.task}': {ex}")
-        # Returns error to client.
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Unable to unload model for task'{request.task}'.")
+        logger.error(f"Unable to load model '{model_name}': {ex}")
+        # Returns 500 to client.
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unable to load model '{model_name}'.")
+    
+@router.post(
+    path="/{model_name}/unload",
+    status_code=status.HTTP_200_OK,
+    summary="Unload the specified model.",
+    description="Returns all Triton models with metadata and state"
+)
+async def unload_model(
+    model_name:str,
+    service:IModelService = Depends(get_model_service)
+) -> None:
+    """
+    """
+
+    try:
+
+        # Load the model.
+        await service.unload_model(model_name=model_name)
+
+    # If an error occurs.
+    except Exception as ex:
+
+        # Prints the error.
+        logger.error(f"Unable to unload model '{model_name}': {ex}")
+        # Returns 500 to client.
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unable to unload model '{model_name}'.")

@@ -9,22 +9,25 @@
 # IMPORTS
 # ==============================
 
-# Standard:
-from typing import Union, List
-
-# External:
-from pydantic import BaseModel, Field
+# Internal:
+from shared.singleton import Singleton
 
 
 # ==============================
 # CLASSES
 # ==============================
 
-class InferenceRequest(BaseModel):
+class TritonRegistry(Singleton):
     """
     
     """
 
-    # ---- Attributes ---- #
+    # ---- Default ---- #
 
-    texts:List[str] = Field(..., description="")
+    def __init__(self) -> None:
+        """
+        Initializes the registry.
+        """
+
+        # Initializes the class properties.
+        pass
