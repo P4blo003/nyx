@@ -1,1 +1,1 @@
-optimum-cli export onnx --model intfloat/multilingual-e5-base ./onnx/multilingual_e5_base/1 --task feature-extraction --dtype fp32 --no-post-process --optimize O2
+optimum-cli export onnx --model BAAI/bge-m3 ./onnx/bge_m3/1 --task feature-extraction --dtype fp32 --no-post-process --optimize O2

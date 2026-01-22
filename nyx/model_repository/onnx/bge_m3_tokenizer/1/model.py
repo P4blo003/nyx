@@ -24,7 +24,7 @@ import triton_python_backend_utils as pb_utils
 # ==============================
 
 MODELS_PATH:str = "/models"
-MODEL_NAME:str = "multilingual_e5_base_model"
+MODEL_NAME:str = "bge_m3_model"
 
 
 # ==============================
@@ -53,7 +53,7 @@ class TritonPythonModel:
         self._tokenizer:AutoTokenizer = AutoTokenizer.from_pretrained(
             tokenizer_path,
             local_files_only=True,
-            fix_mistral_regex=True
+            trust_remote_code=True
         )
 
     def execute(self, requests):
