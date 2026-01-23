@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 20/01/2025
-# Last edited: 20/01/2025
+# Created: 23/01/2026
+# Last edited: 23/01/2026
 # ==========================================================================================
 
 
@@ -9,38 +9,57 @@
 # IMPORTS
 # ==============================
 
-# Standard:
-import os
-import sys
-from datetime import datetime
+# Internal:
+from contextlib import asynccontextmanager
 
 # External:
-import uvicorn
+from fastapi import FastAPI
 
 # Internal:
-from interfaces.api import run as run_api
+from shared.utilities import yaml
+from application.cache import ICache, ModelCache
+from infrastructure.triton.client import ITritonClientManager, TritonClientManager
+from infrastructure.triton.config import TritonConfig
+from interfaces.api.v1.api import api_router
+
+
+# ==============================
+# FUNCTIONS
+# ==============================
+
+@asynccontextmanager
+async def lifespan(app:FastAPI):
+    """
+    """
+
+    # Load configurations.
+    triton_config:TritonConfig = TritonConfig(**yaml.load_data(path="config/triton_config.yaml"))
+
+    # Initializes clients manager.
+    client_manager:ITritonClientManager = TritonClientManager(triton_config=triton_config)
+    await client_manager.startup()
+    # Initializes model cache.
+    model_cache:ICache = ModelCache()
+
+    # Save the instances in application state.
+    app.state.client_manager=client_manager
+    app.state.model_cache = model_cache
+
+    yield
+
+    # Close active connections.
+    await client_manager.shutdown()
 
 
 # ==============================
 # MAIN
 # ==============================
 
-if __name__ == "__main__":
-
-    try:
-
-        # Executes uvicorn.
-        uvicorn.run(
-            app=run_api.app,
-            host=os.environ.get("HOST", "0.0.0.0"),
-            port=int(os.environ.get("PORT", "80"))
-        )
-
-        sys.exit(0)
-    
-    # If an error occurs.
-    except Exception as ex:
-        
-        # Prints the error.
-        print(f"({datetime.now()}) [ERROR] => Critical error during main execution: {ex}")
-        sys.exit(1)
+# Initializes FastAPI application and include v1 routes.
+app:FastAPI = FastAPI(
+    lifespan=lifespan
+)
+app.include_router(
+    router=api_router,
+    prefix="/api/v1"
+)

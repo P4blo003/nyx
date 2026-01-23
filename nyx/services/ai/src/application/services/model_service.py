@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 22/01/2026
-# Last edited: 22/01/2026
+# Created: 23/01/2026
+# Last edited: 23/01/2026
 # ==========================================================================================
 
 
@@ -10,198 +10,81 @@
 # ==============================
 
 # Standard:
-from abc import ABC
-from abc import abstractmethod
-from typing import List, Optional
+import asyncio
+from typing import Dict, List
 
 # Internal:
-from infrastructure.triton.triton_context import TritonContext
-from domain.models.triton_model import TritonModel
-from infrastructure.triton.triton_sdk import TritonSDK
-
-
-# ==============================
-# INTERFACES
-# ==============================
-
-class IModelService(ABC):
-    """
-    Interface tha defines the contract for model management services.
-    """
-
-    # ---- Methods ---- #
-
-    @abstractmethod
-    async def get_models(self) -> List[TritonModel]:
-        """
-        Retrieves all models available across configured inference clients.
-
-        Returns:
-            List[TritonModel]: Collection of models currently visible to the service.
-        """
-        pass
-
-    @abstractmethod
-    async def get_model_data(
-        self,
-        model_name:str
-    ) -> Optional[TritonModel]:
-        """
-        Retrieves detailed information for a specific model.
-
-        This includes base model information as well as its metadata and
-        configuration as reported by the inference backend.
-
-        Args:
-            model_name (str): Nme of the model to retrieve.
-
-        Returns:
-            Optional[TritonModel]: Fully populated model instance if found; otherwise `None`.
-        """
-        pass
-
-    @abstractmethod
-    async def load_model(
-        self,
-        model_name:str
-    ) -> None:
-        """
-        Load a model into memory on the inference backend.
-
-        Args:
-            model_name (str): Name of the model to load.
-        """
-        pass
-
-    @abstractmethod
-    async def unload_model(
-        self,
-        model_name:str
-    ) -> None:
-        """
-        Unloads a model from memory on the inference backend.
-
-        Args:
-            model_name (str): Name of the model to unload.
-        """
-        pass
+from application.cache import ICache
+from domain.models.model import TritonModel, CachedTritonModel
+from infrastructure.triton.client import ITritonClientManager
+from infrastructure.triton.sdk import TritonSdk
 
 
 # ==============================
 # CLASSES
 # ==============================
 
-class ModelService(IModelService):
+class ModelService:
     """
-    Triton-base implementation of the model management service.
-
-    This service coordinates multiple Triton clients, providing a unified view and 
-    control plane for model lifecycle operations.
     """
 
     # ---- Default ---- #
 
     def __init__(
         self,
-        context:TritonContext,
-        triton_sdk:TritonSDK
+        triton_client_manager:ITritonClientManager,
+        model_cache:ICache
     ) -> None:
         """
-        Initializes the service properties.
-
-        Args:
-            context (TritonContext): Runtime context holding initialized Triton Clients.
-            triton_sdk (TritonSDK): Responsible for interacting with Triton Server.
+        Initializes the service.
         """
-
+        
         # Initializes the class properties.
-        self._context:TritonContext = context
-        self._triton_sdk:TritonSDK = triton_sdk
+        self._triton_client_manager:ITritonClientManager = triton_client_manager
+        self._model_cache:ICache = model_cache
+
+        self._triton_sdk:TritonSdk = TritonSdk()
 
 
-    # ---- Methods ---- #
+    # ---- Default ---- #
 
     async def get_models(self) -> List[TritonModel]:
         """
-        Retrieve all models available across al Triton clients.
+        Retrieves all Triton models for external clients.
+
+        This method first attempts to load models from the internal cache.
+        If the cache is empty, it should query Triton Inference Servers
+        and populate the cache.
 
         Returns:
-            List[TritonModel]: Aggregated list of models from every configured client.
+            List[TritonModel]: A list of TritonModel instances containing model
+                information.
         """
 
-        result:List[TritonModel] = []
-        
-        # Iterate over all available clients.
-        for __, client in self._context.Clients.items():
-            result.extend(await self._triton_sdk.get_models(client=client))
+        # Load models from cache.
+        models:Dict[str, CachedTritonModel] = self._model_cache.get_all() or {}
+        # If models is None, it could be for this reasons:
+        #   1. The Triton Inference Server is empty.
+        #   2. The cache does not load models from Triton.
+        # In any case, to prevent this issue, if models is `None`, the program
+        # should retrieve models from Triton Inference Servers.
+        if not models:
+            
+            tasks = [self._triton_sdk.get_models(client=client)
+                    for client in self._triton_client_manager.get_clients().values()]
+            # Await for all tasks results.
+            results:List[Dict[str, List[TritonModel]]] = await asyncio.gather(*tasks)
+            
+            # Get models from updated cache.
+            models = self._model_cache.get_all() or {}
 
-        return result
-    
-    async def get_model_data(
-        self,
-        model_name:str
-    ) -> Optional[TritonModel]:
-        """
-        Retrieves detailed information for a specific model.
+        print(models)
 
-        Args:
-            model_name (str): Name of the model retrieve.
-
-        Returns:
-            Optional[TritonModel]: Populated model instance if found; otherwise `None`.
-        """
-        
-        result:Optional[TritonModel] = None
-
-        # Iterate over all available clients.
-        for __, client in self._context.Clients.items():
-            # Gets available models.
-            models:List[TritonModel] = await self._triton_sdk.get_models(client=client)
-
-            for model in models:
-                if model.name == model_name:
-                    result = model
-                    result.metadata = await self._triton_sdk.get_model_metadata(client=client, model_name=model_name)
-                    result.config = await self._triton_sdk.get_model_config(client=client, model_name=model_name)
-
-        return result
-
-    async def load_model(
-        self,
-        model_name: str
-    ) -> None:
-        """
-        Loads a model into memory on the first Triton Client where it is found.
-
-        Args:
-            model_name (str): Nae of the model to load.
-        """
-
-        # Iterate over all available clients.
-        for __, client in self._context.Clients.items():
-            # Gets available models.
-            models:List[TritonModel] = await self._triton_sdk.get_models(client=client)
-
-            for model in models:
-                if model.name == model_name:
-                    return await self._triton_sdk.load_model(client=client, model_name=model_name)
-
-    async def unload_model(
-        self,
-        model_name: str
-    ) -> None:
-        """
-        Unloads a model from memory on the first Triton Client where it is found.
-
-        Args:
-            model_name (str): Name of the model to unload.
-        """
-
-        # Iterate over all available clients.
-        for __, client in self._context.Clients.items():
-            # Gets available models.
-            models:List[TritonModel] = await self._triton_sdk.get_models(client=client)
-
-            for model in models:
-                if model.name == model_name:
-                    return await self._triton_sdk.unload_model(client=client, model_name=model_name)
+        return [
+            TritonModel(
+                name=model.name,
+                version=model.version,
+                metadata=model.metadata,
+                config=model.config
+            )
+            for __, model in models.items()]

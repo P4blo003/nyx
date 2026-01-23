@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 22/01/2026
-# Last edited: 22/01/2026
+# Created: 23/01/2026
+# Last edited: 23/01/2026
 # ==========================================================================================
 
 
@@ -9,22 +9,17 @@
 # IMPORTS
 # ==============================
 
-# Standard:
-from typing import Union, List
-
 # External:
-from pydantic import BaseModel, Field
+from fastapi import APIRouter
+
+# Internal:
+from interfaces.api.v1.routes.models import router as models_router
 
 
 # ==============================
-# CLASSES
+# MAIN
 # ==============================
 
-class InferenceRequest(BaseModel):
-    """
-    
-    """
-
-    # ---- Attributes ---- #
-
-    texts:List[str] = Field(..., description="")
+# Initializes the api router and includes all application endpoints.
+api_router:APIRouter = APIRouter()
+api_router.include_router(router=models_router)
