@@ -62,3 +62,27 @@ class TritonSdk:
         ) for data in response.get("models", [])]
 
         return {client.get_name():models}
+    
+    async def load_model(
+        self,
+        client:ITritonClient,
+        model_name:str
+    ) -> None:
+        """
+        
+        """
+
+        # Loads model.
+        await client.load_model(model_name=model_name)
+
+    async def unload_model(
+        self,
+        client:ITritonClient,
+        model_name:str
+    ) -> None:
+        """
+        
+        """
+
+        # Loads model.
+        await client.unload_model(model_name=model_name)

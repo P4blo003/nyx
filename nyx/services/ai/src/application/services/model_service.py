@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 23/01/2026
-# Last edited: 23/01/2026
+# Last edited: 27/01/2026
 # ==========================================================================================
 
 
@@ -10,14 +10,14 @@
 # ==============================
 
 # Standard:
-import asyncio
-from typing import Dict, List
+from typing import Optional, Dict, List
 
 # Internal:
 from application.cache import ICache
-from domain.models.model import TritonModel, CachedTritonModel
 from infrastructure.triton.client import ITritonClientManager
 from infrastructure.triton.sdk import TritonSdk
+from infrastructure.models.model import CachedTritonModel
+from interfaces.api.v1.models.models_responses import ModelSummary
 
 
 # ==============================
@@ -33,7 +33,7 @@ class ModelService:
     def __init__(
         self,
         triton_client_manager:ITritonClientManager,
-        model_cache:ICache
+        model_cache:ICache[CachedTritonModel]
     ) -> None:
         """
         Initializes the service.
@@ -41,14 +41,14 @@ class ModelService:
         
         # Initializes the class properties.
         self._triton_client_manager:ITritonClientManager = triton_client_manager
-        self._model_cache:ICache = model_cache
+        self._model_cache:ICache[CachedTritonModel] = model_cache
 
         self._triton_sdk:TritonSdk = TritonSdk()
 
 
     # ---- Default ---- #
 
-    async def get_models(self) -> List[TritonModel]:
+    async def get_models(self) -> List[ModelSummary]:
         """
         Retrieves all Triton models for external clients.
 
@@ -62,29 +62,71 @@ class ModelService:
         """
 
         # Load models from cache.
-        models:Dict[str, CachedTritonModel] = self._model_cache.get_all() or {}
+        models:Dict[str, CachedTritonModel] = await self._model_cache.get_all() or {}
         # If models is None, it could be for this reasons:
         #   1. The Triton Inference Server is empty.
         #   2. The cache does not load models from Triton.
         # In any case, to prevent this issue, if models is `None`, the program
         # should retrieve models from Triton Inference Servers.
         if not models:
-            
-            tasks = [self._triton_sdk.get_models(client=client)
-                    for client in self._triton_client_manager.get_clients().values()]
-            # Await for all tasks results.
-            results:List[Dict[str, List[TritonModel]]] = await asyncio.gather(*tasks)
-            
-            # Get models from updated cache.
-            models = self._model_cache.get_all() or {}
+        
+            # TODO: Update cache.
 
-        print(models)
+            pass
+        
+        # Load models from cache again.
+        models = await self._model_cache.get_all() or {}
+        
+        return [ModelSummary(
+            name=name,
+            version=model.model.version,
+            server=model.server
+        ) for name, model in models.items()]
+    
+    async def load_model(
+        self,
+        model_name:str
+    ) -> None:
+        """
+        
+        """
 
-        return [
-            TritonModel(
-                name=model.name,
-                version=model.version,
-                metadata=model.metadata,
-                config=model.config
-            )
-            for __, model in models.items()]
+        # Get model from cache.
+        model:Optional[CachedTritonModel] = await self._model_cache.get(model_name)
+        # Checks if the model si None.
+        if model is None: raise ValueError(f"Unable to find model '{model_name}' in cache.")
+        
+        # Gets server assigned to the model.
+        client = self._triton_client_manager.get_client(model.server)
+        # Check it the server assigned to the model is None.
+        if client is None: raise ValueError(f"Unable to find the assigned client for server '{model.server}' of model '{model_name}'.")
+        
+        # Awaits to load model.
+        await self._triton_sdk.load_model(
+            client=client,
+            model_name=model_name
+        )
+
+    async def unload_model(
+        self,
+        model_name:str
+    ) -> None:
+        """
+        
+        """
+
+        # Get model from cache.
+        model:Optional[CachedTritonModel] = await self._model_cache.get(model_name)
+        # Checks if the model si None.
+        if model is None: raise ValueError(f"Unable to find model '{model_name}' in cache.")
+        
+        # Gets server assigned to the model.
+        client = self._triton_client_manager.get_client(model.server)
+        # Check it the server assigned to the model is None.
+        if client is None: raise ValueError(f"Unable to find the assigned client for server '{model.server}' of model '{model_name}'.")
+        
+        # Awaits to load model.
+        await self._triton_sdk.unload_model(
+            client=client,
+            model_name=model_name
+        )

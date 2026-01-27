@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 23/01/2026
-# Last edited: 27/01/2026
+# Last edited: 23/01/2026
 # ==========================================================================================
 
 
@@ -9,34 +9,24 @@
 # IMPORTS
 # ==============================
 
-# Standard:
-from typing import Any, Optional, Dict
-
 # External:
 from pydantic import BaseModel, Field
+
+# Internal:
+from domain.models.model import TritonModel
 
 
 # ==============================
 # CLASSES
 # ==============================
 
-class TritonModel(BaseModel):
+class ModelSummary(BaseModel):
     """
-    Represents a model deployed or managed by Triton Inference Server.
-
-    This domain model provides a normalized and backend agnostic view of a
-    Triton model, suitable for use across application, service, and API layers.
-
-    Attributes:
-        name (str): Unique name of the model.
-        version (str): Version of the model.
-
+    
     """
 
     # ---- Attributes ---- #
 
     name:str = Field(..., description="")
     version:str = Field(..., description="")
-
-    metadata:Optional[Dict[str, Any]] = Field(..., description="")
-    config:Optional[Dict[str, Any]] = Field(..., description="")
+    server:str = Field(..., description="")

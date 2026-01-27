@@ -23,6 +23,7 @@ from fastapi import HTTPException
 from application.services.model_service import ModelService
 from domain.models.model import TritonModel
 from interfaces.api.v1.dependencies.injection import get_model_service
+from interfaces.api.v1.models.models_responses import ModelSummary
 
 
 # ==============================
@@ -43,7 +44,7 @@ log:Logger = getLogger(__name__)
 )
 async def get_models(
     service:ModelService = Depends(get_model_service)
-) -> List[TritonModel]:
+) -> List[ModelSummary]:
     """
     
     """
@@ -62,4 +63,60 @@ async def get_models(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to list Triton models."
+        )
+    
+@router.post(
+    path="/{model_name}/load",
+    status_code=status.HTTP_200_OK
+)
+async def load_model(
+    model_name:str,
+    service:ModelService = Depends(get_model_service)
+) -> None:
+    """
+    
+    """
+
+    try:
+        
+        # Await for service response.
+        await service.load_model(model_name=model_name)
+
+    # If an error occurs.
+    except Exception as ex:
+
+        # Prints the error.
+        log.error(f"Unable to load model '{model_name}': {ex}")
+        # Returns status 500 to client.
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unable to load model {model_name}"
+        )
+    
+@router.post(
+    path="/{model_name}/unload",
+    status_code=status.HTTP_200_OK
+)
+async def unload_model(
+    model_name:str,
+    service:ModelService = Depends(get_model_service)
+) -> None:
+    """
+    
+    """
+
+    try:
+        
+        # Await for service response.
+        await service.unload_model(model_name=model_name)
+
+    # If an error occurs.
+    except Exception as ex:
+
+        # Prints the error.
+        log.error(f"Unable to unload model '{model_name}': {ex}")
+        # Returns status 500 to client.
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unable to unload model {model_name}"
         )

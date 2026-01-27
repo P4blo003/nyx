@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 23/01/2026
-# Last edited: 23/01/2026
+# Last edited: 27/01/2026
 # ==========================================================================================
 
 
@@ -11,4 +11,4 @@
 
 # Internal:
 from .cache_interface import ICache
-from .model_cache import ModelCache
+from .model_cache import InMemoryCache

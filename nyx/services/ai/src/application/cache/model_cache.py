@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 23/01/2026
-# Last edited: 23/01/2026
+# Last edited: 27/01/2026
 # ==========================================================================================
 
 
@@ -10,83 +10,117 @@
 # ==============================
 
 # Standard:
-from typing import Any, Dict, List
+from asyncio import Lock
+from typing import Any, Optional, Dict, List
+from typing import Generic, TypeVar
 
 # Internal:
 from application.cache.cache_interface import ICache
 
 
 # ==============================
-# INTERFACES
+# TYPES
 # ==============================
 
-class ModelCache(ICache):
-    """
-    Represents a generic cache interface for the application.
+V = TypeVar("V")
 
-    This interfaces abstracts the cache implementation (in-memory, Redis, etc.)
-    from the services that depend on it.
+
+# ==============================
+# CLASSES
+# ==============================
+
+class InMemoryCache(ICache[V]):
+    """
+    Stores key-value paris in memory and is suitable for single-process applications.
+    It implements standard dictionary-like operations and is fully generic over the
+    type of values stored (V).
     """
 
-    # ---- Methods ---- #
+    # ---- Default ---- #
+
+    def __init__(self) -> None:
+        """
+        Initializes the in-memory cache.
+        """
+
+        # Initializes the class properties.
+        self._store:Dict[str, V] = {}
+        self._lock:Lock = Lock()
+
     
-    def get_all(self) -> Dict[str, Any]:
+    # ---- Methods ---- #
+
+    async def get(self, key: str) -> Optional[V]:
         """
-        Gets all key-values pairs currently stored in the cache.
-
-        Returns:
-            Dict[str, Any]: A dictionary where each key is a cache key
-                and the corresponding value is the cached object.
-        """
-
-        return {}
-
-    def get_keys(self) -> List[str]:
-        """
-        Gets all keys stored in the cache.
-
-        Returns:
-            List[str]: A list of all keys.
-        """
-
-        return []
-
-    def get(self, key:str) -> Any:
-        """
-        Gets the value associated with the specified key.
+        Returns the value associated with the given key.
 
         Args:
-            key (str): The key to retrieve.
+            key (str): Cache key.
 
         Returns:
-            Any: The value associated with the key, or `None` if the key does not exist.
+            Optional[V]: Cached value or None if key does not exist.
         """
+        
+        async with self._lock: return self._store.get(key, None)
 
-        pass
-
-    def update(self, dict:Dict[str, Any]) -> None:
+    async def get_all(self) -> Dict[str, V]:
         """
-        """
+        Returns all cache key-value pairs.
 
-        pass
-
-    def set(self, key:str, value:Any) -> None:
+        Returns:
+            Dict[str, V]: Complete cache content.
         """
-        Sets or updates the value associated with the specified key.
+        async with self._lock: return self._store
+
+    async def set(
+        self,
+        key:str,
+        value:V
+    ) -> None:
+        """
+        Inserts or overwrite a cache entry.
 
         Args:
-            key (str): The key to set.
-            value (Any): The value to associate with the key.
+            key (str): Cache key.
+            value (V): Value to store.
         """
+        async with self._lock: self._store[key] = value
 
-        pass
-
-    def delete(self, key:str) -> None:
+    async def update(self, values:Dict[str, V]) -> None:
         """
-        Deletes the value associated with the specified key.
+        Updates the cache using dictionary merge semantics.
 
         Args:
-            key (str): The key to delete.
+            values (Dict[str, Any]): Key-value pairs to merge.
         """
+        async with self._lock: self._store.update(values)
 
-        pass
+    async def delete(self, key:str) -> None:
+        """
+        Removes a key from the cache.
+
+        Args:
+            key (str): Cache key.
+        """
+        async with self._lock: self._store.pop(key, None)
+
+    async def exists(
+        self,
+        key:str
+    ) -> bool:
+        """
+        Checks whether a key exists in the cache.
+
+        Args:
+            key (str): Cache key.
+
+        Returns:
+            bool: True if key exists, False otherwise.
+        """
+        async with self._lock: return key in self._store
+
+    async def clear(self) -> None:
+        """
+        Removes all entries from the cache.
+        """
+        async with self._lock: self._store.clear()

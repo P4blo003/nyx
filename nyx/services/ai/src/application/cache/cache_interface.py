@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 23/01/2026
-# Last edited: 23/01/2026
+# Last edited: 27/01/2026
 # ==========================================================================================
 
 
@@ -12,14 +12,22 @@
 # Standard:
 from abc import ABC
 from abc import abstractmethod
-from typing import Any, Dict, List
+from typing import Optional, Dict
+from typing import Generic, TypeVar
+
+
+# ==============================
+# TYPES
+# ==============================
+
+V = TypeVar("V")
 
 
 # ==============================
 # INTERFACES
 # ==============================
 
-class ICache(ABC):
+class ICache(ABC, Generic[V]):
     """
     Represents a generic cache interface for the application.
 
@@ -28,70 +36,87 @@ class ICache(ABC):
     """
 
     # ---- Methods ---- #
-    
-    @abstractmethod
-    def get_all(self) -> Dict[str, Any]:
-        """
-        Gets all key-values pairs currently stored in the cache.
-
-        Returns:
-            Dict[str, Any]: A dictionary where each key is a cache key
-                and the corresponding value is the cached object.
-        """
-
-        pass
 
     @abstractmethod
-    def get_keys(self) -> List[str]:
+    async def get(
+        self,
+        key:str
+    ) -> Optional[V]:
         """
-        Gets all keys stored in the cache.
-
-        Returns:
-            List[str]: A list of all keys.
-        """
-
-        pass
-
-    @abstractmethod
-    def get(self, key:str) -> Any:
-        """
-        Gets the value associated with the specified key.
+        Returns the value associated with the given key.
 
         Args:
-            key (str): The key to retrieve.
+            key (str): Cache key.
 
         Returns:
-            Any: The value associated with the key, or `None` if the key does not exist.
+            Optional[V]: Cached value or None if key does not exist.
         """
-
         pass
 
     @abstractmethod
-    def update(self, dict:Dict[str, Any]) -> None:
+    async def get_all(self) -> Dict[str, V]:
         """
-        """
+        Returns all cache key-value pairs.
 
+        Returns:
+            Dict[str, V]: Complete cache content.
+        """
         pass
 
     @abstractmethod
-    def set(self, key:str, value:Any) -> None:
+    async def set(
+        self,
+        key:str,
+        value:V
+    ) -> None:
         """
-        Sets or updates the value associated with the specified key.
+        Inserts or overwrite a cache entry.
 
         Args:
-            key (str): The key to set.
-            value (Any): The value to associate with the key.
+            key (str): Cache key.
+            value (V): Value to store.
         """
-
         pass
 
     @abstractmethod
-    def delete(self, key:str) -> None:
+    async def update(self, values:Dict[str, V]) -> None:
         """
-        Deletes the value associated with the specified key.
+        Updates the cache using dictionary merge semantics.
 
         Args:
-            key (str): The key to delete.
+            values (Dict[str, Any]): Key-value pairs to merge.
         """
+        pass
 
+    @abstractmethod
+    async def delete(self, key:str) -> None:
+        """
+        Removes a key from the cache.
+
+        Args:
+            key (str): Cache key.
+        """
+        pass
+
+    @abstractmethod
+    async def exists(
+        self,
+        key:str
+    ) -> bool:
+        """
+        Checks whether a key exists in the cache.
+
+        Args:
+            key (str): Cache key.
+
+        Returns:
+            bool: True if key exists, False otherwise.
+        """
+        pass
+
+    @abstractmethod
+    async def clear(self) -> None:
+        """
+        Removes all entries from the cache.
+        """
         pass
