@@ -15,6 +15,9 @@ from typing import Any, Optional, Dict
 # External:
 from pydantic import BaseModel, Field
 
+# Internal:
+from domain.enums.model_state import ModelState
+
 
 # ==============================
 # CLASSES
@@ -28,22 +31,22 @@ class TritonModel(BaseModel):
     a Triton model.
 
     Attributes:
-        name (str):
-        version (Optional[str]):
-        state (Optional[str]):
-        reason (Optional[str])
-        metadata (Optional[Dict[str, Any]]):
-        config (Optional[Dict[str, Any]]):
+        name (str): Unique name of the model as registered in Triton Inference Server.
+        version (Optional[str]): Model version.
+        state (Optional[ModelState]): Currently lifecycle state of the model.
+        reason (Optional[str]): Optional human-readable explanation.
+        metadata (Optional[Dict[str, Any]]): Additional metadata associated with the model.
+        config (Optional[Dict[str, Any]]): Model configuration as defined in Triton.
     """
 
     # ---- Attributes ---- #
 
-    name:str = Field(..., description="")
-    version:Optional[str] = Field(..., description="")
-    state:Optional[str] = Field(..., description="")
-    reason:Optional[str] = Field(..., description="")
-    metadata:Optional[Dict[str, Any]] = Field(..., description="")
-    config:Optional[Dict[str, Any]] = Field(..., description="")
+    name:str = Field(..., description="Unique name of the model as registered in Triton Inference Server")
+    version:Optional[str] = Field(..., description="Model version")
+    state:Optional[ModelState] = Field(..., description="Currently lifecycle state of the model")
+    reason:Optional[str] = Field(..., description="Optional human-readable explanation")
+    metadata:Optional[Dict[str, Any]] = Field(..., description="Additional metadata associated with the model")
+    config:Optional[Dict[str, Any]] = Field(..., description="Model configuration as defined in Triton")
 
 class CachedTritonModel(BaseModel):
     """

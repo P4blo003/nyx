@@ -26,21 +26,28 @@ from interfaces.api.v1.models.model_response import ModelSummary
 
 class ModelService:
     """
+    Application service responsible for managing Triton model lifecycle and exposing model
+    information to external clients.
     """
 
     # ---- Default ---- #
 
     def __init__(
         self,
-        triton_client_manager:IClientManager,
+        client_manager:IClientManager,
         cache_service:CacheService
     ) -> None:
         """
         Initializes the service.
+
+        Args:
+            client_manager (IClientManager): Manager responsible for providing Triton clients.
+            cache_service (CacheService): Service that maintains the cache of available
+                Triton models.
         """
         
         # Initializes the class properties.
-        self._triton_client_manager:IClientManager = triton_client_manager
+        self._client_manager:IClientManager = client_manager
         self._cache_service:CacheService = cache_service
 
         self._triton_sdk:TritonSdk = TritonSdk()
@@ -88,7 +95,10 @@ class ModelService:
         model_name:str
     ) -> None:
         """
-        
+        Load a specific model into Triton Inference Server.
+
+        Args:
+            model_name (str): Name of the model to load.
         """
 
         # Get model from cache.
@@ -97,7 +107,7 @@ class ModelService:
         if model is None: raise ValueError(f"Unable to find model '{model_name}' in cache.")
         
         # Gets server assigned to the model.
-        client = self._triton_client_manager.get_client(model.server)
+        client = self._client_manager.get_client(model.server)
         # Check it the server assigned to the model is None.
         if client is None: raise ValueError(f"Unable to find the assigned client for server '{model.server}' of model '{model_name}'.")
         
@@ -112,7 +122,10 @@ class ModelService:
         model_name:str
     ) -> None:
         """
-        
+        Unload a specific model from Triton Inference Server.
+
+        Args:
+            model_name (str): Name of the model to be unloaded.
         """
 
         # Get model from cache.
@@ -121,7 +134,7 @@ class ModelService:
         if model is None: raise ValueError(f"Unable to find model '{model_name}' in cache.")
         
         # Gets server assigned to the model.
-        client = self._triton_client_manager.get_client(model.server)
+        client = self._client_manager.get_client(model.server)
         # Check it the server assigned to the model is None.
         if client is None: raise ValueError(f"Unable to find the assigned client for server '{model.server}' of model '{model_name}'.")
         

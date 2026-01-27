@@ -10,7 +10,7 @@
 # ==============================
 
 # Standard:
-from typing import Optional
+from typing import Any, Optional, List
 
 # External:
 from pydantic import BaseModel, Field
@@ -20,13 +20,21 @@ from pydantic import BaseModel, Field
 # CLASSES
 # ==============================
 
-class ModelSummary(BaseModel):
+class InferenceInput(BaseModel):
     """
     
     """
 
     # ---- Attributes ---- #
 
-    name:str = Field(..., description="")
-    server:str = Field(..., description="")
-    version:Optional[str] = Field(..., description="")
+    id:str = Field(..., description="Id of the input")
+    content:Any = Field(..., description="Content of the input")
+
+class InferenceRequest(BaseModel):
+    """
+    
+    """
+
+    # ---- Attributes ---- #
+
+    inputs:List[InferenceInput] = Field(..., description="")

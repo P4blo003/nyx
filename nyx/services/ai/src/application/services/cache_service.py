@@ -29,7 +29,13 @@ from infrastructure.triton.sdk import SDK as TritonSdk
 
 class CacheService:
     """
-    
+    Background service responsible for periodically synchronizing Triton model
+    metadata into an application-level cache.
+
+    This service runs as asynchronous loop.
+
+    The lifecycle of the service is explicitly controlled through `start()` and `stop()`
+    methods, allowing safe integration with application startup and shutdown hooks.
     """
 
     # ---- Default ---- #
@@ -42,6 +48,13 @@ class CacheService:
     ) -> None:
         """
         Initializes the updated instance.
+
+        Args:
+            cache (ICache[CachedTritonModel]): Cache implementation used to store Triton
+                model information.
+            client_manager (IClientManager): Manager responsible for providing initialized
+                Triton clients.
+            interval (int): Refresh interval in seconds between cache updates.
         """
 
         # Initializes the class properties.
@@ -105,14 +118,17 @@ class CacheService:
 
     def start(self):
         """
+        Starts the cache synchronization background task.
         
+        If the task is already running, this method has no effect. This method
+        is safe to call multiple times.
         """
 
         if self._task is None or self._task.done(): self._task = asyncio.create_task(self._run())
 
     async def stop(self):
         """
-        
+        Stop the cache synchronization background task gracefully.
         """
 
         if self._task:
@@ -127,7 +143,10 @@ class CacheService:
 
     def get_cache(self) -> ICache:
         """
-        Retrieve the cache.
+        Retrieve the underlying cache instance.
+
+        Returns:
+            response (ICache): The cache storing the latest synchronized Triton model information.
         """
         
         return self._cache

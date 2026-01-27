@@ -10,12 +10,10 @@
 # ==============================
 
 # Standard:
-from abc import ABC
-from abc import abstractmethod
-from typing import Any, Optional, Dict
+from typing import Any, List, Dict
 
 # External:
-from tritonclient.grpc.aio import InferenceServerClient
+from tritonclient.grpc.aio import InferInput, InferRequestedOutput, InferenceServerClient, InferResult
 
 # Internal:
 from infrastructure.triton.client.interfaces import IAsyncClient
@@ -186,3 +184,27 @@ class GrpcAsyncClient(IAsyncClient):
 
         # Awaits for server to unload the model.
         await self._client.unload_model(model_name=model_name)
+
+    async def infer(
+        self,
+        model_name: str,
+        inputs: List[InferInput],
+        outputs: List[InferRequestedOutput]
+    ) -> InferResult:
+        """
+        
+        """
+
+        # Awaits for a response from server.
+        response = await self._client.infer(
+            model_name=model_name,
+            inputs=inputs,
+            outputs=outputs,
+        )
+
+        # Checks it there is no response from server.
+        if response is None: raise RuntimeError(f"Unable to make inference with model '{model_name}' in server '{self._server_name}")
+        # Checks if the model is not a dictionary.
+        if not isinstance(response, InferResult): raise TypeError(f"Invalid config response type: {type(response)}")
+
+        return response

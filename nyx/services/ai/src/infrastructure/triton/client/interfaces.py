@@ -12,8 +12,11 @@
 # Standard:
 from abc import ABC
 from abc import abstractmethod
-from typing import Any, Optional, Dict
+from typing import Any, Optional, Dict, List
 from typing import Generic, TypeVar
+
+# External:
+from tritonclient.grpc.aio import InferInput, InferRequestedOutput, InferResult
 
 
 # ==============================
@@ -131,6 +134,17 @@ class IAsyncClient(ABC):
 
         Args:
             model_name (str): Name of the model to unload.
+        """
+        pass
+
+    @abstractmethod
+    async def infer(
+        self,
+        model_name:str,
+        inputs:List[InferInput],
+        outputs:List[InferRequestedOutput]
+    ) -> InferResult:
+        """
         """
         pass
 
