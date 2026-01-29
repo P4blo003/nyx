@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 31/12/2025
-# Last edited: 15/01/2026
+# Last edited: 29/01/2026
 #
 # Docker Compose file for deploying multiple Triton Inference Server instances.
 #
@@ -214,3 +214,78 @@ services:
     depends_on:
       - triton-onnx
       - triton-vllm
+
+  qdrant:
+    # Default configuration.
+    image: qdrant/qdrant:${QDRANT_VERSION}
+    container_name: qdrant
+    restart: unless-stopped
+
+    # Networks.
+    networks:
+      - common-net
+
+    # Container ports.
+    ports:
+      - "${QDRANT_HTTP_PORT}:6333"
+      - "${QDRANT_GRPC_PORT}:6334"
+
+    # Volumes.
+    volumes:
+      - ./infra/qdrant/data:/qdrant/storage
+      - ./infra/qdrant/config/qdrant.yaml:/qdrant/config/production.yaml:ro
+
+    environment:
+      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
+      - QDRANT__SERVICE__ENABLE_TLS=${QDRANT_TLS_ENABLED}
+
+    # Container healthcheck.
+    healthcheck:
+      test: ["CMD", "/bin/sh", "/healthcheck.sh"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+    # Deploys.
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4g
+
+  
+  nyx-rag:
+
+    # Build image for this service using Dockerfile.
+    build:
+      context: ./services/rag
+      dockerfile: Dockerfile
+    # AI service to use.
+    image: nyx/rag:latest
+    # Explicit container name for easier management and monitoring.
+    container_name: nyx-rag
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+
+    # Attach the container to the internal networks.
+    networks:
+      - common-net
+      - metrics-net
+
+    # Expose the FastAPI port to the host for external access.
+    ports:
+      - "${RAG_HTTP_PORT}:80"
+
+    # Mount the model repository for develop scripts.
+    volumes:
+      - ./services/rag/src:/app
+    
+    # Start ai service.
+    command: >
+      python -m uvicorn main:app --host 0.0.0.0 --port 80
+
+    # Ensure Triton containers start before this service
+    # Note: This does not guarantee Triton is fully ready
+    depends_on:
+      - qdrant
