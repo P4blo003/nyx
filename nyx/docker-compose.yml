@@ -18,6 +18,7 @@
 # ==============================
 
 networks:
+  # Shared network for inter-service communication between core application services.
   common-net:
     driver: bridge
   # Internal bridge network used for communication between Triton containers
@@ -25,6 +26,7 @@ networks:
   # This network is not intended to be exposed externally.
   triton-net:
     driver: bridge
+  # Network dedicated to metrics, monitoring and observability components.
   metrics-net:
     driver: bridge
 
@@ -33,83 +35,65 @@ networks:
 # SERVICES
 # ==============================
 
-# Triton services.
 services:
 
-  # Triton server dedicated to LLM inference using vLLM.
-  # This service is expected to run on a GPU with sufficient memory and compute
-  # capability to host Large Language Models efficiently.
-  triton-vllm:
-
-    # Triton Inference Server image including vLLM and Python backend support.
-    # The version is controller via the TRITON_VERSION variable in the .env file.
-    image: nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-vllm-python-py3
+  # Qdrant vector database service.
+  # Used for storing and querying embeddings for semantic search and RAG workflow.
+  qdrant:
+    # Default configuration.
+    image: qdrant/qdrant:v1.16.3
     # Explicit container name for easier management and monitoring.
-    container_name: triton-vllm
-    # Enable NVIDIA Container runtime for GPU access.
-    runtime: nvidia
+    container_name: qdrant
     # Automatically restart the container unless it is explicitly stopped.
     restart: unless-stopped
 
-    # Increase shared memory size inside the container.
-    # Triton, CUDA, TensorRt, ONNX Runtime and vLLM rely heavily on /dev/shm.
-    # For inter-process communication, tensor exchange and dynamic batching.
-    # The default Docker value (64 MB) is insufficient for ML inference workloads.
-    shm_size: '8gb'
-    ulimits:
-      # Allows the container to lock unlimited amounts of memory.
-      # This is required by CUDA and TensorRT to pin memory and prevent it
-      # from being swapped out by the OS.
-      memlock: -1
-      # Increase the maximum stack size per thread to 64 MB.
-      # Deep C++ call stacks used by Triton, TensorRT and ONNX Runtime
-      # can overflow the default Linux stack limit (usually 8MB).
-      stack: 67108864
-    
-    # Environment variables specific to the vLLM workload.
-    # See https://docs.vllm.ai/en/latest/configuration/env_vars/ for details.
+    # Environment variables for service configuration.
     environment:
-      # GPU device(s) visible to this container.
-      # Typically a single, dedicated GPU is assigned to the LLM service.
-      - CUDA_VISIBLE_DEVICES=${VLLM_CUDA_VISIBLE_DEVICES}
-      # Attention backend used by vLLM.
-      # XFORMERS is broadly compatible and stable across GPU generations.
-      - VLLM_ATTENTION_BACKEND=${VLLM_ATTENTION_BACKEND}
+      # API key used to authenticate client requests.
+      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
+      # Enable or disable TLS support (true / false).
+      - QDRANT__SERVICE__ENABLE_TLS=${QDRANT_ENABLE_TLS}
 
-    # Attach the container to the internal networks.
+    # Attach the service to the shared internal networks.
     networks:
-      - triton-net
-      - metrics-net
+      - common-net
 
-    # Mount the model repository for vLLM-backend models.
+    # Expose HTTP and gRPC ports to the host.
+    ports:
+      # 6333: REST / HTTP API.
+      - "6333:6333"
+      # 6334: gRPC API.
+      - "6334:6334"
+
+    # Persistent storage and configuration.
     volumes:
-      - ${MODEL_REPO}/vllm:/models:ro
+      # Persistent data directory for collections, indexes and WAL.
+      - ./third-party/qdrant/data:/qdrant/storage
+      #    Production configuration file (read-only).
+      - ./third-party/qdrant/config/production.yaml:/qdrant/config/production.yaml:ro
 
-    # Start Triton with explicit runtime options.
-    # Metrics are enabled for observability and capacity planning.
-    command: >
-      tritonserver
-      --model-repository=/models
-      --model-control-mode=explicit
-      --log-info=true
-      --allow-metrics=true
-      --allow-gpu-metrics=true
-
-    # Health check to ensure the Triton server is fully ready
-    # before traffic is sent to this service.
+    # Health check to ensure the service is alive and responsive.
+    # Uses the built-in Qdrant healthcheck endpoint.
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/ready"]
-      interval: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
       timeout: 5s
       retries: 5
-      start_period: 120s
+      start_period: 20s
 
-  # Triton inference server.
+    # Resource limits to prevent the service from exhausting host resources.
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4g
+  
+  # Triton Inference Server for embedding and classification models.
   triton-onnx:
 
     # Build image for this service using Dockerfile.
     build:
-      context: ./infra/triton/onnx
+      context: ./third-party/triton/onnx
       dockerfile: Dockerfile
     # Explicit container name for easier management and monitoring.
     container_name: triton-onnx
@@ -138,17 +122,18 @@ services:
       # GPU device(s) visible to this container.
       # When sharing a GPU with vLLM, ONNX models should be lightweight
       # and carefully tuned to avoid attention.
-      - CUDA_VISIBLE_DEVICES=${ONNX_CUDA_VISIBLE_DEVICES}
-
-    # Attach the container to the internal networks.
+      - CUDA_VISIBLE_DEVICES=0
+    
+    # Attach the container to the shared internal networks.
     networks:
       - triton-net
       - metrics-net
 
-    # Mount the model repository for ONNX-backend models.
+    # Persistent storage and configuration.
     volumes:
-      - ${MODEL_REPO}/onnx:/models:ro
-
+      # Mount the model repository for ONNX-backend models.
+      - ./model_repository/onnx:/models:ro
+    
     # Start Triton with explicit runtime options.
     # Metrics are enabled for observability and capacity planning.
     command: >
@@ -158,7 +143,7 @@ services:
       --log-info=true
       --allow-metrics=true
       --allow-gpu-metrics=true
-
+    
     # Health check to ensure the Triton server is fully ready
     # before traffic is sent to this service.
     healthcheck:
@@ -168,20 +153,19 @@ services:
       retries: 5
       start_period: 120s
 
-  nyx-ai:
-
+  
+  ai-service:
+    
     # Build image for this service using Dockerfile.
     build:
       context: ./services/ai
       dockerfile: Dockerfile
-    # AI service to use.
-    image: nyx/ai:latest
     # Explicit container name for easier management and monitoring.
-    container_name: nyx-ai
+    container_name: ai-service
     # Automatically restart the container unless it is explicitly stopped.
     restart: unless-stopped
-    
-    # Environment variables specific to the ai service workload.
+
+    # Environment variables specific to the AI Service workload.
     environment:
       - VLLM_HOST=triton-vllm
       - VLLM_HTTP_PORT=8000
@@ -190,17 +174,17 @@ services:
       - ONNX_HTTP_PORT=8000
       - ONNX_GRPC_PORT=8001
 
-    # Attach the container to the internal networks.
+    # Attach the container to the shared internal networks.
     networks:
-      - common-net
       - triton-net
       - metrics-net
+      - common-net
 
     # Expose the FastAPI port to the host for external access.
     ports:
-      - "${AI_HTTP_PORT}:80"
+      - "1080:80"
 
-    # Mount the model repository for develop scripts.
+     # Persistent storage and configuration.
     volumes:
       - ./services/ai/src:/app
       - ./services/ai/config:/app/config
@@ -213,79 +197,3 @@ services:
     # Note: This does not guarantee Triton is fully ready
     depends_on:
       - triton-onnx
-      - triton-vllm
-
-  qdrant:
-    # Default configuration.
-    image: qdrant/qdrant:${QDRANT_VERSION}
-    container_name: qdrant
-    restart: unless-stopped
-
-    # Networks.
-    networks:
-      - common-net
-
-    # Container ports.
-    ports:
-      - "${QDRANT_HTTP_PORT}:6333"
-      - "${QDRANT_GRPC_PORT}:6334"
-
-    # Volumes.
-    volumes:
-      - ./infra/qdrant/data:/qdrant/storage
-      - ./infra/qdrant/config/qdrant.yaml:/qdrant/config/production.yaml:ro
-
-    environment:
-      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
-      - QDRANT__SERVICE__ENABLE_TLS=${QDRANT_TLS_ENABLED}
-
-    # Container healthcheck.
-    healthcheck:
-      test: ["CMD", "/bin/sh", "/healthcheck.sh"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s
-
-    # Deploys.
-    deploy:
-      resources:
-        limits:
-          cpus: "2"
-          memory: 4g
-
-  
-  nyx-rag:
-
-    # Build image for this service using Dockerfile.
-    build:
-      context: ./services/rag
-      dockerfile: Dockerfile
-    # AI service to use.
-    image: nyx/rag:latest
-    # Explicit container name for easier management and monitoring.
-    container_name: nyx-rag
-    # Automatically restart the container unless it is explicitly stopped.
-    restart: unless-stopped
-
-    # Attach the container to the internal networks.
-    networks:
-      - common-net
-      - metrics-net
-
-    # Expose the FastAPI port to the host for external access.
-    ports:
-      - "${RAG_HTTP_PORT}:80"
-
-    # Mount the model repository for develop scripts.
-    volumes:
-      - ./services/rag/src:/app
-    
-    # Start ai service.
-    command: >
-      python -m uvicorn main:app --host 0.0.0.0 --port 80
-
-    # Ensure Triton containers start before this service
-    # Note: This does not guarantee Triton is fully ready
-    depends_on:
-      - qdrant

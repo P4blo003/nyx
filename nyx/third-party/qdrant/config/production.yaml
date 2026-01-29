@@ -1,0 +1,35 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 17/12/2025
+# Last edited: 23/12/2025
+# ==========================================================================================
+
+
+# ==============================
+# CONFIGURATION
+# ==============================
+
+# Log level configuration.
+# Determines the verbosity of logs.
+# Typical values: DEBUG, INFO, WARN, ERROR.
+log_level: INFO
+
+# Service configuration.
+service:
+
+  # IP address the service will bind to.
+  # 0.0.0.0 means all interfaces.
+  host: 0.0.0.0
+  # Port for HTTP API requests.
+  http_port: 6333
+  # Port for gRPC API requests.
+  grpc_port: 6334
+
+# Storage configuration.
+storage:
+  # Path where data, indices, and vectors are persisted.
+  storage_path: /qdrant/storage
+
+# Telemetry configuration.
+# If true, disables sending anonymous usage statistics.
+telemetry_disabled: false

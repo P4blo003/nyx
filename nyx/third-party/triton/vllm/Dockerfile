@@ -1,25 +1,13 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 17/12/2025
-# Last edited: 23/12/2025
+# Created: 29/01/2026
+# Last edited: 29/01/2026
 # ==========================================================================================
 
 
 # ==============================
-# CONFIGURATION
+# IMAGE
 # ==============================
 
-# Log level configuration.
-log_level: INFO
-
-# Service configuration.
-service:
-  host: 0.0.0.0
-  http_port: 6333
-  grpc_port: 6334
-
-# Storage configuration.
-storage:
-  storage_path: /qdrant/storage
-
-telemetry_disabled: false
+# Triton Inference Server image with Python backend and vLLM support.
+FROM nvcr.io/nvidia/tritonserver:25.02-vllm-python-py3

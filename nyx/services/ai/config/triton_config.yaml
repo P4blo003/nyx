@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 23/01/2026
-# Last edited: 23/01/2026
+# Last edited: 29/01/2026
 # ==========================================================================================
 
 
@@ -11,12 +11,11 @@
 
 servers:
 
+  # Triton server for ONNX models.
   triton-onnx:
+    # Hostname or Docker service name.
     host: triton-onnx
+    # HTTP port for REST API request.
     http_port: 8000
-    grpc_port: 8001
-  
-  triton-vllm:
-    host: triton-vllm
-    http_port: 8000
+    # gRPC por for inference requests.
     grpc_port: 8001

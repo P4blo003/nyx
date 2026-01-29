@@ -6,19 +6,50 @@
 
 
 # ==============================
-# IMAGE
+# BASE IMAGE
 # ==============================
 
-FROM python:3.13.9-slim
+FROM python:3.11-slim
+
+# Set environment variables for reproducible, non-interactive builds.
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/home/ai/.local/bin:$PATH"
+
+
+# ==============================
+# SYSTEM DEPENDENCIES
+# ==============================
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    ca-certificates \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# ==============================
+# USER
+# ==============================
+
+# Create a non-root user for security.
 RUN useradd -m -u 1000 ai
-
 WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY src/ .
-
-RUN chown -R ai:ai /app
-
 USER ai
+
+
+# ==============================
+# DEPENDENCIES
+# ==============================
+
+# Install Python dependencies in a separate layer for caching.
+COPY --chown=ai:ai requirements.txt .
+RUN python -m pip install --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir -r requirements.txt
+
+
+# ==============================
+# APP CODE
+# ==============================
+COPY --chown=ai:ai src/ .

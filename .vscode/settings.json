@@ -57,6 +57,8 @@
         "pypackages",
         "pypirc",
         "pytest",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONUNBUFFERED",
         "pytype",
         "qdrant",
         "qrpc",
