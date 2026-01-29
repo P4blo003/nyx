@@ -10,7 +10,6 @@
 # ==============================
 
 # Standard:
-import httpx
 from logging import Logger
 from logging import getLogger
 
@@ -23,6 +22,7 @@ from fastapi import HTTPException
 from application.services.document_service import DocumentService
 from interfaces.api.v1.dependencies.injection import get_document_service
 from infrastructure.processor.txt import TxtDocumentProcessor
+
 
 # ==============================
 # MAIN
@@ -53,14 +53,18 @@ async def add_document(
         # TODO: Process the document.
         chunks = await TxtDocumentProcessor().process(file=file)
 
+        print(chunks)
+
+        import httpx
         # TODO: Sent documents to calculate embeddings.
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "http://ai-service:1080/api/v1/inference/embeddings",
-                json={"chunks": chunks}
+                "http://localhost:1080/api/v1/inference/embeddings",
+                json={"inputs": chunks}
             )
             response.raise_for_status()
-            return response.json()["chunks"]
+            
+            print(response.content)
 
         # TODO: Awaits to add the new document.
         await service.add_document()

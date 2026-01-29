@@ -17,10 +17,31 @@ from typing import Generic, TypeVar
 
 # External:
 from fastapi import UploadFile
+from pydantic import BaseModel, Field
 
 # Internal:
 from infrastructure.processor.interfaces import IDocumentProcessor
 
+
+class InferenceInput(BaseModel):
+    """
+    
+    """
+
+    # ---- Attributes ---- #
+
+    id:str = Field(..., description="Id of the input")
+    content:Any = Field(..., description="Content of the input")
+
+class InferenceRequest(BaseModel):
+    """
+    
+    """
+
+    # ---- Attributes ---- #
+
+    inputs:List[InferenceInput] = Field(..., description="")
+    
 
 # ==============================
 # CLASSES
@@ -43,10 +64,6 @@ class TxtDocumentProcessor(IDocumentProcessor):
 
         # Reads file content.
         content = (await file.read()).decode("utf-8")
-        metadata = {
-            "filename": file.filename,
-            "content_type": file.content_type
-        }
 
         # Divides text in chunks.
         chunks = []
@@ -57,8 +74,8 @@ class TxtDocumentProcessor(IDocumentProcessor):
             end = min(start + 500, len(content))
             chunk_text = content[start:end]
             chunks.append({
-                "content": chunk_text,
-                "metadata": {**metadata, "block_id":block_id}
+                "id": str(block_id),
+                "content": chunk_text
             })
             start += 500 - 200
             block_id += 1
