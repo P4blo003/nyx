@@ -17,7 +17,7 @@ from typing import Dict
 from fastapi import FastAPI
 
 # Internal:
-from application.cache.interfaces import ICache
+from application.cache.base import ICache
 from application.cache.in_memory import InMemoryCache
 from application.services.cache_service import CacheService
 from domain.models.triton.model import CachedTritonModel

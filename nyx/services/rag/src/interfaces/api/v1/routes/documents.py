@@ -20,15 +20,16 @@ from fastapi import HTTPException
 
 # Internal:
 from application.services.document_service import DocumentService
+from domain.ports.document import IDocumentProcessor
+from infrastructure.processor.unstructured_processor import UnstructuredProcessor
 from interfaces.api.v1.dependencies.injection import get_document_service
-from infrastructure.processor.txt import TxtDocumentProcessor
 
 
 # ==============================
 # MAIN
 # ==============================
 
-router:APIRouter = APIRouter(prefix="/inference")
+router:APIRouter = APIRouter(prefix="/documents")
 log:Logger = getLogger(__name__)
 
 
@@ -50,10 +51,8 @@ async def add_document(
 
     try:
         
-        # TODO: Process the document.
-        chunks = await TxtDocumentProcessor().process(file=file)
-
-        print(chunks)
+        # Process document.
+        chunks = await UnstructuredProcessor().process(file=file, filename="")
 
         import httpx
         # TODO: Sent documents to calculate embeddings.

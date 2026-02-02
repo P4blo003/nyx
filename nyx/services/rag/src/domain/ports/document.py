@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 29/01/2026
-# Last edited: 29/01/2026
+# Created: 02/02/2026
+# Last edited: 02/02/2026
 # ==========================================================================================
 
 
@@ -12,11 +12,11 @@
 # Standard:
 from abc import ABC
 from abc import abstractmethod
-from typing import Any, Optional, Dict, List
-from typing import Generic, TypeVar
+from typing import List
+from typing import BinaryIO
 
-# External:
-from fastapi import UploadFile
+# Internal:
+from domain.entities.document import ProcessedChunk
 
 
 # ==============================
@@ -31,10 +31,8 @@ class IDocumentProcessor(ABC):
     # ---- Methods ---- #
 
     @abstractmethod
-    async def process(
-        self,
-        file:UploadFile
-    ) -> list:
+    def process(self, file:BinaryIO, filename:str) -> List[ProcessedChunk]:
         """
+        
         """
         pass
