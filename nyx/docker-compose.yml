@@ -165,15 +165,6 @@ services:
     # Automatically restart the container unless it is explicitly stopped.
     restart: unless-stopped
 
-    # Environment variables specific to the AI Service workload.
-    environment:
-      - VLLM_HOST=triton-vllm
-      - VLLM_HTTP_PORT=8000
-      - VLLM_GRPC_PORT=8001
-      - ONNX_HOST=triton-onnx
-      - ONNX_HTTP_PORT=8000
-      - ONNX_GRPC_PORT=8001
-
     # Attach the container to the shared internal networks.
     networks:
       - triton-net
