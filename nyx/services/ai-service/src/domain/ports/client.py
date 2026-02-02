@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 23/01/2026
-# Last edited: 29/01/2026
+# Last edited: 27/01/2026
 # ==========================================================================================
 
 
@@ -12,15 +12,22 @@
 # Standard:
 from abc import ABC
 from abc import abstractmethod
-from typing import Any
-from typing import Dict
+from typing import Any, Optional, Dict, List
+from typing import Generic, TypeVar
+
+
+# ==============================
+# TYPES
+# ==============================
+
+T = TypeVar("T")
 
 
 # ==============================
 # INTERFACES
 # ==============================
 
-class AsyncClient(ABC):
+class IAsyncClient(ABC):
     """
     Represents a generic interface for a Triton Inference Server client.
 
@@ -29,16 +36,6 @@ class AsyncClient(ABC):
     """
 
     # ---- Methods ---- #
-
-    @abstractmethod
-    def get_server_name(self) -> str:
-        """
-        Retrieves server name associated to this client.
-
-        Returns:
-            response (str): Name of the associated server.
-        """
-        pass
 
     @abstractmethod
     async def close(self) -> None:
@@ -55,6 +52,13 @@ class AsyncClient(ABC):
         Returns:
             response (bool): `True` if the server is alive, `False` otherwise.
         """
+
+    @abstractmethod
+    def get_server_name(self) -> str:
+        """
+        Retrieves server name associated to this client.
+        """
+        pass
 
     @abstractmethod
     async def get_model_repository_index(self) -> Dict[str, Any]:
@@ -127,5 +131,57 @@ class AsyncClient(ABC):
 
         Args:
             model_name (str): Name of the model to unload.
+        """
+        pass
+
+class IClientManager(ABC, Generic[T]):
+    """
+    Represents a generic interface for managing clients.
+
+    This interface defines the contract for creating, accessing, and shitting down
+    clients, allowing multiple containers to be managed in a consistent way.
+    """
+
+    # ---- Methods ---- #
+
+    @abstractmethod
+    async def start(self) -> None:
+        """
+        Starts all clients.
+        """
+        pass
+
+    @abstractmethod
+    async def stop(self) -> None:
+        """
+        Stops all clients.
+        """
+        pass
+
+    @abstractmethod
+    def get_clients(self) -> Dict[str, T]:
+        """
+        Retrieves all clients managed by this manager.
+
+        Returns:
+            response (Dict[str, T]): A dictionary mapping containing keys to
+                their respective client.
+        """
+        pass
+
+    @abstractmethod
+    def get_client(
+        self,
+        key:str
+    ) -> Optional[T]:
+        """
+        Retrieve a specific client by its key.
+
+        Args:
+            key (str): The unique identifier.
+
+        Returns:
+            response (Optional[T]): The client associated with the key, or `None` it
+                the key does not exist.
         """
         pass

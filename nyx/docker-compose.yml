@@ -29,6 +29,9 @@ networks:
   # Network dedicated to metrics, monitoring and observability components.
   metrics-net:
     driver: bridge
+  
+  cache-net:
+    driver: bridge
 
 
 # ==============================
@@ -153,38 +156,33 @@ services:
       retries: 5
       start_period: 120s
 
-  
-  ai-service:
-    
+  ai-service-cache:
+
     # Build image for this service using Dockerfile.
     build:
-      context: ./services/ai
+      context: ./third-party/redis/ai-service
       dockerfile: Dockerfile
     # Explicit container name for easier management and monitoring.
-    container_name: ai-service
+    container_name: ai-service-cache
     # Automatically restart the container unless it is explicitly stopped.
     restart: unless-stopped
-
+    
     # Attach the container to the shared internal networks.
     networks:
-      - triton-net
-      - metrics-net
-      - common-net
+      - cache-net
 
-    # Expose the FastAPI port to the host for external access.
     ports:
-      - "1080:80"
+      - "6379:6379"
 
-     # Persistent storage and configuration.
+    # Persistent storage and configuration.
     volumes:
-      - ./services/ai/src:/app
-      - ./services/ai/config:/app/config
+      # Mount the model repository for ONNX-backend models.
+      - ./third-party/redis/ai-service/redis.conf:/usr/local/etc/redis/redis.conf:ro
     
-    # Start ai service.
-    command: >
-      python -m uvicorn main:app --host 0.0.0.0 --port 80
+    # Resource limits to prevent the service from exhausting host resources.
+    deploy:
+      resources:
+        limits:
+          memory: 2g
 
-    # Ensure Triton containers start before this service
-    # Note: This does not guarantee Triton is fully ready
-    depends_on:
-      - triton-onnx
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
