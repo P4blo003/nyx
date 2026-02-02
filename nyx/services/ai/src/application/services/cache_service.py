@@ -17,7 +17,7 @@ from asyncio import Task
 from typing import Optional, Dict
 
 # Internal:
-from application.cache.interfaces import ICache
+from application.cache.base import ICache
 from domain.models.triton.model import CachedTritonModel
 from infrastructure.triton.client.interfaces import IClientManager
 from infrastructure.triton.sdk import SDK as TritonSdk
@@ -66,6 +66,16 @@ class CacheService:
         self._logger:Logger = logging.getLogger(__name__)
 
 
+    # ---- Properties ---- #
+
+    @property
+    def Cache(self) -> ICache:
+        """
+        
+        """
+
+        return self._cache
+
     # ---- Methods ---- #
 
     async def _run(self):
@@ -80,28 +90,10 @@ class CacheService:
         while True:
             
             try:
-                # Get clients from Triton context.
-                clients = self._client_manager.get_clients().values()
-
-                # Query all models concurrently.
-                tasks = [TritonSdk().get_models(client=client) for client in clients]
-                results = await asyncio.gather(*tasks, return_exceptions=True)
-
-                # Flatten results and convert to CachedTritonModel.
-                cached:Dict[str, CachedTritonModel] = {}
-                for result in results:
-                    if isinstance(result, Exception):
-                        raise result
-                    if isinstance(result, dict):
-                        for server, models in result.items():
-                            for model in models:
-                                cached[model.name] = CachedTritonModel(
-                                    server=server,
-                                    model=model
-                                )
-
-                # Update cache.
-                await self._cache.update(values=cached)
+                
+                # Updates the cache.
+                await self.update()
+                
                 # Prints information.
                 self._logger.info("Cache updated")
             
@@ -141,12 +133,30 @@ class CacheService:
         # Prints information.
         self._logger.info("Cache updater stopped.")
 
-    def get_cache(self) -> ICache:
-        """
-        Retrieve the underlying cache instance.
-
-        Returns:
-            response (ICache): The cache storing the latest synchronized Triton model information.
+    async def update(self) -> None:
         """
         
-        return self._cache
+        """
+
+        # Get clients from Triton context.
+        clients = self._client_manager.get_clients().values()
+
+        # Query all models concurrently.
+        tasks = [TritonSdk().get_models(client=client) for client in clients]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Flatten results and convert to CachedTritonModel.
+        cached:Dict[str, CachedTritonModel] = {}
+        for result in results:
+            if isinstance(result, Exception):
+                raise result
+            if isinstance(result, dict):
+                for server, models in result.items():
+                    for model in models:
+                        cached[model.name] = CachedTritonModel(
+                            server=server,
+                            model=model
+                        )
+
+        # Update cache.
+        await self._cache.update(values=cached)

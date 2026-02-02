@@ -15,7 +15,7 @@ from typing import Optional, Dict
 from typing import TypeVar
 
 # Internal:
-from application.cache.interfaces import ICache
+from application.cache.base import ICache
 
 
 # ==============================

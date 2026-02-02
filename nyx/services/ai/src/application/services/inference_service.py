@@ -75,7 +75,7 @@ class InferenceService:
         """
 
         # Retrieve the model metadata from cache.
-        model:Optional[CachedTritonModel] = await self._cache_service.get_cache().get("bge_m3_ensemble") or None
+        model:Optional[CachedTritonModel] = await self._cache_service.Cache.get("bge_m3_ensemble") or None
         if model is None: raise ValueError(f"Unable to find model in cache.")
 
         # Resolve the Triton client for the model's server.

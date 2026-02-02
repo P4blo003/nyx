@@ -69,7 +69,7 @@ class ModelService:
         """
 
         # Load models from cache.
-        models:Dict[str, CachedTritonModel] = await self._cache_service.get_cache().get_all() or {}
+        models:Dict[str, CachedTritonModel] = await self._cache_service.Cache.get_all() or {}
         # If models is None, it could be for this reasons:
         #   1. The Triton Inference Server is empty.
         #   2. The cache does not load models from Triton.
@@ -82,7 +82,7 @@ class ModelService:
             pass
         
         # Load models from cache again.
-        models = await self._cache_service.get_cache().get_all() or {}
+        models = await self._cache_service.Cache.get_all() or {}
         
         return [ModelSummary(
             name=name,
@@ -102,7 +102,7 @@ class ModelService:
         """
 
         # Get model from cache.
-        model:Optional[CachedTritonModel] = await self._cache_service.get_cache().get(model_name)
+        model:Optional[CachedTritonModel] = await self._cache_service.Cache.get(model_name)
         # Checks if the model si None.
         if model is None: raise ValueError(f"Unable to find model '{model_name}' in cache.")
         
@@ -129,7 +129,7 @@ class ModelService:
         """
 
         # Get model from cache.
-        model:Optional[CachedTritonModel] = await self._cache_service.get_cache().get(model_name)
+        model:Optional[CachedTritonModel] = await self._cache_service.Cache.get(model_name)
         # Checks if the model si None.
         if model is None: raise ValueError(f"Unable to find model '{model_name}' in cache.")
         
