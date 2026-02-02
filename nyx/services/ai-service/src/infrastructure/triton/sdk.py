@@ -14,11 +14,12 @@ from typing import Any, Optional, Dict, List
 
 # External:
 import numpy as np
+from tritonclient.grpc.aio import InferInput, InferRequestedOutput, InferResult
 
 # Internal:
-from domain.entities.triton.model import TritonModel
+from domain.entities.triton.models import TritonModel
 from domain.enums.model_state import ModelState
-from domain.ports.client import IAsyncClient
+from infrastructure.triton.client.interfaces import IAsyncClient
 
 
 # ==============================
@@ -151,3 +152,35 @@ class SDK:
         except Exception as ex:
             # Raise a new error.
             raise RuntimeError(f"SDK: Unable to unload model {model_name} from server {client.get_server_name()}: {ex}")
+        
+    async def make_infer(
+        self,
+        client:IAsyncClient,
+        model_name:str,
+        inputs:List
+    ) -> Optional[np.ndarray]:
+        """
+        """
+        
+        # Prepare data to sent.
+        input_data:np.ndarray = np.array(inputs, dtype=object).reshape([-1, 1])
+
+        # Create infer input to sent.
+        inputs_array:List[InferInput] = [InferInput(
+            name="TEXT",
+            shape=input_data.shape,
+            datatype="BYTES"
+        )]
+        inputs_array[0].set_data_from_numpy(input_data)
+
+        # Defines outputs.
+        outputs:List[InferRequestedOutput] = [InferRequestedOutput("EMBEDDING")]
+
+        # Realize the inference.
+        response:InferResult = await client.infer(
+            model_name=model_name,
+            inputs=inputs_array,
+            outputs=outputs
+        )
+
+        return response.as_numpy("EMBEDDING")

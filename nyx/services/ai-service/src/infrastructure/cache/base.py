@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 23/01/2026
-# Last edited: 02/02/2026
+# Last edited: 27/01/2026
 # ==========================================================================================
 
 
@@ -12,18 +12,22 @@
 # Standard:
 from abc import ABC
 from abc import abstractmethod
-from typing import Any, Optional
-from typing import Mapping, Dict
+from typing import Optional, Dict
+from typing import Generic, TypeVar
 
-# External:
-from pydantic import BaseModel
+
+# ==============================
+# TYPES
+# ==============================
+
+V = TypeVar("V")
 
 
 # ==============================
 # INTERFACES
 # ==============================
 
-class ICache(ABC):
+class ICache(ABC, Generic[V]):
     """
     Represents a generic cache interface for the application.
 
@@ -37,7 +41,7 @@ class ICache(ABC):
     async def get(
         self,
         key:str
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[V]:
         """
         Returns the value associated with the given key.
 
@@ -45,7 +49,17 @@ class ICache(ABC):
             key (str): Cache key.
 
         Returns:
-            Optional[Dict[str, Any]]: Cached value or None if key does not exist.
+            Optional[V]: Cached value or None if key does not exist.
+        """
+        pass
+
+    @abstractmethod
+    async def get_all(self) -> Dict[str, V]:
+        """
+        Returns all cache key-value pairs.
+
+        Returns:
+            Dict[str, V]: Complete cache content.
         """
         pass
 
@@ -53,24 +67,24 @@ class ICache(ABC):
     async def set(
         self,
         key:str,
-        value:BaseModel
+        value:V
     ) -> None:
         """
         Inserts or overwrite a cache entry.
 
         Args:
             key (str): Cache key.
-            value (BaseModel): Value to store.
+            value (V): Value to store.
         """
         pass
 
     @abstractmethod
-    async def update(self, values:Mapping[str, BaseModel]) -> None:
+    async def update(self, values:Dict[str, V]) -> None:
         """
         Updates the cache using dictionary merge semantics.
 
         Args:
-            values (Mapping[str, BaseModel]): Key-value pairs to merge.
+            values (Dict[str, Any]): Key-value pairs to merge.
         """
         pass
 
@@ -101,7 +115,8 @@ class ICache(ABC):
         pass
 
     @abstractmethod
-    async def close(self) -> None:
+    async def clear(self) -> None:
         """
+        Removes all entries from the cache.
         """
         pass

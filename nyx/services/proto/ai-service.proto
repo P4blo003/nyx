@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 02/02/2026
+// Last edited: 02/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// DEFAULT
+// ==============================
+
+package ai_service.v1;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+
+// ==============================
+// SERVICES
+// ==============================
+
+service AIService
+{
+    // ---- Models ---- //
+
+    // List installed models.
+    rpc list_models(ListModelsRequest) returns (ListModelsResponse);
+    // Load a model in Triton.
+    rpc load_model(ModelIdentifier) returns (ModelStatus);
+    // Unload a model from Triton.
+    rpc unload_model(ModelIdentifier) returns (ModelStatus);
+
+
+    // ---- Inference ---- //
+
+    // Make normal inference.
+    rpc make_infer(InferenceRequest) returns (InferenceResponse);
+    // Make streamed inference.
+    rpc make_infer_stream(InferenceRequest) returns (stream InferenceResponse);
+}
+
+
+// ==============================
+// MESSAGES
+// ==============================
+
+message ModelIdentifier
+{
+    string model_id = 1;
+    string version = 2;
+}
+
+message ModelStatus
+{
+    string model_id = 1;
+    enum State
+    {
+        UNKNOWN = 0;
+        LOADING = 1;
+        READY = 2;
+        UNLOADED = 3;
+        ERROR = 4;
+    }
+    State state = 2;
+    string message = 3;
+}
+
+message ListModelsRequest
+{
+    // Optional.
+    string filter = 1;
+}
+
+message ListModelsResponse
+{
+    repeated ModelMetadata models = 1;
+}
+
+message ModelMetadata
+{
+    string model_id = 1;
+    string version = 2;
+}
+
+message InferenceRequest
+{
+    repeated DataInput data_input = 1;
+}
+
+message DataInput
+{
+    oneof payload
+    {
+        string text = 1;
+        bytes binary_data = 2;
+    }
+}
+
+message InferenceResponse
+{
+    repeated DataOutput embedding = 1;
+}
+
+message DataOutput
+{
+    oneof payload
+    {
+        string text = 1;
+        EmbeddingVector embedding = 2;
+    }
+}
+
+message EmbeddingVector
+{
+    repeated float values = 1;
+}

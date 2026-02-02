@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 31/12/2025
-# Last edited: 29/01/2026
+# Last edited: 02/02/2026
 #
 # Docker Compose file for deploying multiple Triton Inference Server instances.
 #
@@ -155,34 +155,3 @@ services:
       timeout: 5s
       retries: 5
       start_period: 120s
-
-  ai-service-cache:
-
-    # Build image for this service using Dockerfile.
-    build:
-      context: ./third-party/redis/ai-service
-      dockerfile: Dockerfile
-    # Explicit container name for easier management and monitoring.
-    container_name: ai-service-cache
-    # Automatically restart the container unless it is explicitly stopped.
-    restart: unless-stopped
-    
-    # Attach the container to the shared internal networks.
-    networks:
-      - cache-net
-
-    ports:
-      - "6379:6379"
-
-    # Persistent storage and configuration.
-    volumes:
-      # Mount the model repository for ONNX-backend models.
-      - ./third-party/redis/ai-service/redis.conf:/usr/local/etc/redis/redis.conf:ro
-    
-    # Resource limits to prevent the service from exhausting host resources.
-    deploy:
-      resources:
-        limits:
-          memory: 2g
-
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]

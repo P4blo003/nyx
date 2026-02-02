@@ -17,10 +17,10 @@ from asyncio import Task
 from typing import Optional, Dict
 
 # Internal:
-from domain.ports.cache import ICache
-from domain.ports.client import IClientManager
-from domain.entities.triton.model import CachedTritonModel
-from infrastructure.sdk.triton import triton_sdk
+from domain.entities.triton.models import CachedTritonModel
+from infrastructure.cache.base import ICache
+from infrastructure.triton.sdk import SDK as TritonSdk
+
 
 
 # ==============================
@@ -42,7 +42,7 @@ class CacheService:
 
     def __init__(
         self,
-        cache:ICache,
+        cache:ICache[CachedTritonModel],
         client_manager:IClientManager,
         interval:int = 10_000    
     ) -> None:
@@ -142,7 +142,7 @@ class CacheService:
         clients = self._client_manager.get_clients().values()
 
         # Query all models concurrently.
-        tasks = [triton_sdk.SDK().get_models(client=client) for client in clients]
+        tasks = [TritonSdk().get_models(client=client) for client in clients]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Flatten results and convert to CachedTritonModel.
