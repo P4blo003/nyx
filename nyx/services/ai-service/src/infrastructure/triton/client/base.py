@@ -12,16 +12,19 @@
 # Standard:
 from abc import ABC
 from abc import abstractmethod
-from typing import Optional
+
+# Internal:
+from domain.ports.client import ISyncClient, IAsyncClient
 
 
 # ==============================
 # INTERFACES
 # ==============================
 
-class ISyncClient(ABC):
+class TritonSyncClient(ISyncClient, ABC):
     """
-    Base interface for any sync client.
+    Abstract base class for Triton sync clients.
+    Adds Triton-specific API on top of ``ISyncClient``.
     """
 
     # ---- Methods ---- #
@@ -32,10 +35,10 @@ class ISyncClient(ABC):
     @abstractmethod
     def disconnect(self) -> None: ...
 
-
-class IAsyncClient(ABC):
+class TritonAsyncClient(IAsyncClient, ABC):
     """
-    Base interface for any async client.
+    Abstract base class for Triton async clients.
+    Adds Triton-specific API on top of ``IAsyncClient``.
     """
 
     # ---- Methods ---- #
@@ -45,36 +48,3 @@ class IAsyncClient(ABC):
 
     @abstractmethod
     async def disconnect(self) -> None: ...
-
-
-class ISyncClientService(ABC):
-    """
-    
-    """
-
-    # ---- Default ---- #
-
-    @abstractmethod
-    def get_client(self, key:str) -> Optional[ISyncClient]: ...
-
-    @abstractmethod
-    def startup(self) -> None: ...
-
-    @abstractmethod
-    def shutdown(self) -> None: ...
-
-
-class IAsyncClientService(ABC):
-    """
-    
-    """
-
-    # ---- Default ---- #
-    @abstractmethod
-    def get_client(self, key:str) -> Optional[IAsyncClient]: ...
-
-    @abstractmethod
-    async def startup(self) -> None: ...
-
-    @abstractmethod
-    async def shutdown(self) -> None: ...
