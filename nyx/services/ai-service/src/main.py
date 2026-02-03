@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 23/01/2026
-# Last edited: 02/02/2026
+# Last edited: 03/02/2026
 # ==========================================================================================
 
 
@@ -11,44 +11,30 @@
 
 # Standard:
 import asyncio
-
-# External:
-import grpc.aio
+import logging
 
 # Internal:
-from interfaces.grpc.server import GrpcServer
-from shared.utilities import logging
+from shared.utilities import logging as logging_config
 
 
 # ==============================
 # FUNCTIONS
 # ==============================
 
-async def main():
+async def main() -> None:
     """
     
     """
 
-    # Setup logging.
-    logging.setup_logging()
+    # Initializes logging configuration.
+    logging_config.setup()
 
-    # Creates async gRPC server.
-    server:GrpcServer = GrpcServer()
-    server.setup()
+    # Gets core application logger.
+    log:logging.Logger = logging.getLogger("app")
 
-    try:
-        # Starts server and awaits for termination.
-        await server.start_and_wait()
+    # Prints information.
+    log.info("Starting AI-Service ...")
 
-    except (KeyboardInterrupt, asyncio.CancelledError):
-
-        # Prints information.
-        print("\n[!] Keyboard interrupt detected (Ctrl+C). Closing server ...")
-    
-    finally:
-
-        # Close server.
-        await server.stop()
 
 # ==============================
 # MAIN
@@ -56,8 +42,5 @@ async def main():
 
 if __name__ == "__main__":
 
-    try:
-        # Run main with asyncio.
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        pass
+    # Runt async main.
+    asyncio.run(main=main())
