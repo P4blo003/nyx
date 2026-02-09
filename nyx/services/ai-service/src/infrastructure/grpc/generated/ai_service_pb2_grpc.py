@@ -47,12 +47,12 @@ class AIServiceStub(object):
                 _registered_method=True)
         self.load_model = channel.unary_unary(
                 '/ai_service.v1.AIService/load_model',
-                request_serializer=ai__service__pb2.ModelIdentifier.SerializeToString,
+                request_serializer=ai__service__pb2.LoadModelRequest.SerializeToString,
                 response_deserializer=ai__service__pb2.ModelStatus.FromString,
                 _registered_method=True)
         self.unload_model = channel.unary_unary(
                 '/ai_service.v1.AIService/unload_model',
-                request_serializer=ai__service__pb2.ModelIdentifier.SerializeToString,
+                request_serializer=ai__service__pb2.UnloadModelRequest.SerializeToString,
                 response_deserializer=ai__service__pb2.ModelStatus.FromString,
                 _registered_method=True)
         self.make_infer = channel.unary_unary(
@@ -122,12 +122,12 @@ def add_AIServiceServicer_to_server(servicer, server):
             ),
             'load_model': grpc.unary_unary_rpc_method_handler(
                     servicer.load_model,
-                    request_deserializer=ai__service__pb2.ModelIdentifier.FromString,
+                    request_deserializer=ai__service__pb2.LoadModelRequest.FromString,
                     response_serializer=ai__service__pb2.ModelStatus.SerializeToString,
             ),
             'unload_model': grpc.unary_unary_rpc_method_handler(
                     servicer.unload_model,
-                    request_deserializer=ai__service__pb2.ModelIdentifier.FromString,
+                    request_deserializer=ai__service__pb2.UnloadModelRequest.FromString,
                     response_serializer=ai__service__pb2.ModelStatus.SerializeToString,
             ),
             'make_infer': grpc.unary_unary_rpc_method_handler(
@@ -198,7 +198,7 @@ class AIService(object):
             request,
             target,
             '/ai_service.v1.AIService/load_model',
-            ai__service__pb2.ModelIdentifier.SerializeToString,
+            ai__service__pb2.LoadModelRequest.SerializeToString,
             ai__service__pb2.ModelStatus.FromString,
             options,
             channel_credentials,
@@ -225,7 +225,7 @@ class AIService(object):
             request,
             target,
             '/ai_service.v1.AIService/unload_model',
-            ai__service__pb2.ModelIdentifier.SerializeToString,
+            ai__service__pb2.UnloadModelRequest.SerializeToString,
             ai__service__pb2.ModelStatus.FromString,
             options,
             channel_credentials,

@@ -9,16 +9,28 @@ from typing import ClassVar as _ClassVar, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
-class ModelIdentifier(_message.Message):
-    __slots__ = ("model_id", "version") # type: ignore
-    MODEL_ID_FIELD_NUMBER: _ClassVar[int]
+class LoadModelRequest(_message.Message):
+    __slots__ = ("name", "version", "server") # type: ignore
+    NAME_FIELD_NUMBER: _ClassVar[int]
     VERSION_FIELD_NUMBER: _ClassVar[int]
-    model_id: str
+    SERVER_FIELD_NUMBER: _ClassVar[int]
+    name: str
     version: str
-    def __init__(self, model_id: _Optional[str] = ..., version: _Optional[str] = ...) -> None: ...
+    server: str
+    def __init__(self, name: _Optional[str] = ..., version: _Optional[str] = ..., server: _Optional[str] = ...) -> None: ...
+
+class UnloadModelRequest(_message.Message):
+    __slots__ = ("name", "version", "server") # type: ignore
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    VERSION_FIELD_NUMBER: _ClassVar[int]
+    SERVER_FIELD_NUMBER: _ClassVar[int]
+    name: str
+    version: str
+    server: str
+    def __init__(self, name: _Optional[str] = ..., version: _Optional[str] = ..., server: _Optional[str] = ...) -> None: ...
 
 class ModelStatus(_message.Message):
-    __slots__ = ("model_id", "state", "message") # type: ignore
+    __slots__ = ("name", "version", "server", "state", "message") # type: ignore
     class State(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
         __slots__ = ()
         UNKNOWN: _ClassVar[ModelStatus.State]
@@ -31,13 +43,17 @@ class ModelStatus(_message.Message):
     READY: ModelStatus.State
     UNLOADED: ModelStatus.State
     ERROR: ModelStatus.State
-    MODEL_ID_FIELD_NUMBER: _ClassVar[int]
+    NAME_FIELD_NUMBER: _ClassVar[int]
+    VERSION_FIELD_NUMBER: _ClassVar[int]
+    SERVER_FIELD_NUMBER: _ClassVar[int]
     STATE_FIELD_NUMBER: _ClassVar[int]
     MESSAGE_FIELD_NUMBER: _ClassVar[int]
-    model_id: str
+    name: str
+    version: str
+    server: str
     state: ModelStatus.State
     message: str
-    def __init__(self, model_id: _Optional[str] = ..., state: _Optional[_Union[ModelStatus.State, str]] = ..., message: _Optional[str] = ...) -> None: ...
+    def __init__(self, name: _Optional[str] = ..., version: _Optional[str] = ..., server: _Optional[str] = ..., state: _Optional[_Union[ModelStatus.State, str]] = ..., message: _Optional[str] = ...) -> None: ...
 
 class ListModelsRequest(_message.Message):
     __slots__ = ("filter",) # type: ignore
@@ -52,40 +68,48 @@ class ListModelsResponse(_message.Message):
     def __init__(self, models: _Optional[_Iterable[_Union[ModelMetadata, _Mapping]]] = ...) -> None: ...
 
 class ModelMetadata(_message.Message):
-    __slots__ = ("model_id", "version") # type: ignore
-    MODEL_ID_FIELD_NUMBER: _ClassVar[int]
+    __slots__ = ("name", "version", "server") # type: ignore
+    NAME_FIELD_NUMBER: _ClassVar[int]
     VERSION_FIELD_NUMBER: _ClassVar[int]
-    model_id: str
+    SERVER_FIELD_NUMBER: _ClassVar[int]
+    name: str
     version: str
-    def __init__(self, model_id: _Optional[str] = ..., version: _Optional[str] = ...) -> None: ...
+    server: str
+    def __init__(self, name: _Optional[str] = ..., version: _Optional[str] = ..., server: _Optional[str] = ...) -> None: ...
 
 class InferenceRequest(_message.Message):
-    __slots__ = ("data_input",) # type: ignore
-    DATA_INPUT_FIELD_NUMBER: _ClassVar[int]
-    data_input: _containers.RepeatedCompositeFieldContainer[DataInput]
-    def __init__(self, data_input: _Optional[_Iterable[_Union[DataInput, _Mapping]]] = ...) -> None: ...
+    __slots__ = ("text_batch", "image_batch") # type: ignore
+    TEXT_BATCH_FIELD_NUMBER: _ClassVar[int]
+    IMAGE_BATCH_FIELD_NUMBER: _ClassVar[int]
+    text_batch: TextBatch
+    image_batch: ImageBatch
+    def __init__(self, text_batch: _Optional[_Union[TextBatch, _Mapping]] = ..., image_batch: _Optional[_Union[ImageBatch, _Mapping]] = ...) -> None: ...
 
-class DataInput(_message.Message):
-    __slots__ = ("text", "binary_data") # type: ignore
-    TEXT_FIELD_NUMBER: _ClassVar[int]
-    BINARY_DATA_FIELD_NUMBER: _ClassVar[int]
-    text: str
-    binary_data: bytes
-    def __init__(self, text: _Optional[str] = ..., binary_data: _Optional[bytes] = ...) -> None: ...
+class TextBatch(_message.Message):
+    __slots__ = ("content",) # type: ignore
+    CONTENT_FIELD_NUMBER: _ClassVar[int]
+    content: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, content: _Optional[_Iterable[str]] = ...) -> None: ...
+
+class ImageBatch(_message.Message):
+    __slots__ = ("content",) # type: ignore
+    CONTENT_FIELD_NUMBER: _ClassVar[int]
+    content: _containers.RepeatedScalarFieldContainer[bytes]
+    def __init__(self, content: _Optional[_Iterable[bytes]] = ...) -> None: ...
 
 class InferenceResponse(_message.Message):
-    __slots__ = ("embedding",) # type: ignore
-    EMBEDDING_FIELD_NUMBER: _ClassVar[int]
-    embedding: _containers.RepeatedCompositeFieldContainer[DataOutput]
-    def __init__(self, embedding: _Optional[_Iterable[_Union[DataOutput, _Mapping]]] = ...) -> None: ...
+    __slots__ = ("text_batch", "embedding_batch") # type: ignore
+    TEXT_BATCH_FIELD_NUMBER: _ClassVar[int]
+    EMBEDDING_BATCH_FIELD_NUMBER: _ClassVar[int]
+    text_batch: TextBatch
+    embedding_batch: EmbeddingBatch
+    def __init__(self, text_batch: _Optional[_Union[TextBatch, _Mapping]] = ..., embedding_batch: _Optional[_Union[EmbeddingBatch, _Mapping]] = ...) -> None: ...
 
-class DataOutput(_message.Message):
-    __slots__ = ("text", "embedding") # type: ignore
-    TEXT_FIELD_NUMBER: _ClassVar[int]
-    EMBEDDING_FIELD_NUMBER: _ClassVar[int]
-    text: str
-    embedding: EmbeddingVector
-    def __init__(self, text: _Optional[str] = ..., embedding: _Optional[_Union[EmbeddingVector, _Mapping]] = ...) -> None: ...
+class EmbeddingBatch(_message.Message):
+    __slots__ = ("vectors",) # type: ignore
+    VECTORS_FIELD_NUMBER: _ClassVar[int]
+    vectors: _containers.RepeatedCompositeFieldContainer[EmbeddingVector]
+    def __init__(self, vectors: _Optional[_Iterable[_Union[EmbeddingVector, _Mapping]]] = ...) -> None: ...
 
 class EmbeddingVector(_message.Message):
     __slots__ = ("values",) # type: ignore

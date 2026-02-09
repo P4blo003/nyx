@@ -127,7 +127,10 @@ class AsyncClientService(IAsyncClientService, Generic[AsyncClient]):
 
         start_time:float = time.perf_counter()
 
-        # TODO: Startup.
+        for server, client in self._clients.items():
+            self._log.debug(f"Connecting to {server} at {client.get_server_url()} ...")
+            await client.connect()
+            self._log.info(f"Connected to {server} at {client.get_server_url()}.")
 
         duration:float = time.perf_counter() - start_time
 
@@ -140,7 +143,9 @@ class AsyncClientService(IAsyncClientService, Generic[AsyncClient]):
 
         start_time:float = time.perf_counter()
 
-        # TODO: Shutdown.
+        for server, client in self._clients.items():
+            await client.disconnect()
+            self._log.info(f"Disconnected from {server} at {client.get_server_url()}.")
 
         duration:float = time.perf_counter() - start_time
 

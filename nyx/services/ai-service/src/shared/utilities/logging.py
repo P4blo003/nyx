@@ -25,7 +25,7 @@ from typing import Dict
 
 # ---- Environment variables ---- #
 
-LOG_LEVEL:str = os.getenv("LOG_LEVEL", "INFO").upper()
+LOG_LEVEL:str = os.getenv("LOG_LEVEL", "DEBUG").upper()
 LOG_DIR:str = os.getenv("LOG_DIR", "./logs")
 APP_NAME:str = os.getenv("APP_NAME", "ai-service")
 

@@ -28,9 +28,9 @@ service AIService
     // List installed models.
     rpc list_models(ListModelsRequest) returns (ListModelsResponse);
     // Load a model in Triton.
-    rpc load_model(ModelIdentifier) returns (ModelStatus);
+    rpc load_model(LoadModelRequest) returns (ModelStatus);
     // Unload a model from Triton.
-    rpc unload_model(ModelIdentifier) returns (ModelStatus);
+    rpc unload_model(UnloadModelRequest) returns (ModelStatus);
 
 
     // ---- Inference ---- //
@@ -46,15 +46,26 @@ service AIService
 // MESSAGES
 // ==============================
 
-message ModelIdentifier
+message LoadModelRequest
 {
-    string model_id = 1;
+    string name = 1;
     string version = 2;
+    string server = 3;
+}
+
+message UnloadModelRequest
+{
+    string name = 1;
+    string version = 2;
+    string server = 3;
 }
 
 message ModelStatus
 {
-    string model_id = 1;
+    string name = 1;
+    string version = 2;
+    string server = 3;
+
     enum State
     {
         UNKNOWN = 0;
@@ -63,8 +74,8 @@ message ModelStatus
         UNLOADED = 3;
         ERROR = 4;
     }
-    State state = 2;
-    string message = 3;
+    State state = 4;
+    string message = 5;
 }
 
 message ListModelsRequest
@@ -80,36 +91,42 @@ message ListModelsResponse
 
 message ModelMetadata
 {
-    string model_id = 1;
+    string name = 1;
     string version = 2;
+    string server = 3;
 }
 
 message InferenceRequest
 {
-    repeated DataInput data_input = 1;
+    oneof batch
+    {
+        TextBatch text_batch = 1;
+        ImageBatch image_batch = 2;
+    }
 }
 
-message DataInput
+message TextBatch
 {
-    oneof payload
-    {
-        string text = 1;
-        bytes binary_data = 2;
-    }
+    repeated string content = 1;
+}
+
+message ImageBatch
+{
+    repeated bytes content = 1;
 }
 
 message InferenceResponse
 {
-    repeated DataOutput embedding = 1;
+    oneof result
+    {
+        TextBatch text_batch = 1;
+        EmbeddingBatch embedding_batch = 2;   
+    }
 }
 
-message DataOutput
+message EmbeddingBatch  
 {
-    oneof payload
-    {
-        string text = 1;
-        EmbeddingVector embedding = 2;
-    }
+    repeated EmbeddingVector vectors = 1;
 }
 
 message EmbeddingVector

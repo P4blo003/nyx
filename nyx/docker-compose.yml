@@ -155,3 +155,31 @@ services:
       timeout: 5s
       retries: 5
       start_period: 120s
+
+  ai-service:
+    build:
+      context: ./services/ai-service
+      dockerfile: Dockerfile
+    # Explicit container name for easier management and monitoring.
+    container_name: ai-service
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+
+    networks:
+      - common-net
+      - triton-net
+      - metrics-net
+
+    ports:
+      # Expose the AI-Service API on port 8080.
+      - "${AI_SERVICE_GRPC_PORT}:8002"
+
+    volumes:
+      # Mount development directories.
+      - ./services/ai-service/logs:/app/logs
+      - ./services/ai-service/src:/app/src
+      # Mount the application configuration directory (read-only).
+      - ./services/ai-service/config:/app/config:ro
+
+    command: >
+      python src/main.py

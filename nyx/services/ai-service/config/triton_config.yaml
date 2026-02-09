@@ -1,0 +1,26 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 09/02/2026
+# Last edited: 09/02/2026
+# ==========================================================================================
+
+
+# ==============================
+# ENDPOINTS
+# ==============================
+
+# This section defines the endpoints for the Triton Inference Server instances.
+endpoints:
+
+  triton-onnx:
+    # Host and port for the Triton Inference Server.
+    host: "triton-onnx"
+    # gRPC port for triton inference.
+    port: 8001
+
+    # Supported tasks and their associated model names.
+    tasks:
+
+      # Task for generating embeddings using the specified model.
+      embedding:
+        model_name: "bge_m3_ensemble"

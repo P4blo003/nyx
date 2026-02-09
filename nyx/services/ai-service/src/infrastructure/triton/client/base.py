@@ -12,6 +12,7 @@
 # Standard:
 from abc import ABC
 from abc import abstractmethod
+from typing import Optional
 
 # Internal:
 from domain.ports.client import ISyncClient, IAsyncClient
@@ -44,7 +45,8 @@ class TritonAsyncClient(IAsyncClient, ABC):
     # ---- Methods ---- #
 
     @abstractmethod
-    async def connect(self) -> None: ...
+    async def load_model(self, model_name:str, model_version:Optional[str]) -> None: ...
 
     @abstractmethod
-    async def disconnect(self) -> None: ...
+    async def unload_model(self, model_name:str, unload_dependents:bool = True) -> None: ...
+

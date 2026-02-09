@@ -13,6 +13,14 @@
 from abc import ABC
 from abc import abstractmethod
 from typing import Optional
+from typing import TypeVar, Generic
+
+
+# ==============================
+# TYPES
+# ==============================
+
+T = TypeVar("T", bound="IAsyncClient")
 
 
 # ==============================
@@ -41,6 +49,9 @@ class IAsyncClient(ABC):
     # ---- Methods ---- #
 
     @abstractmethod
+    def get_server_url(self) -> str: ...
+    
+    @abstractmethod
     async def connect(self) -> None: ...
 
     @abstractmethod
@@ -64,14 +75,14 @@ class ISyncClientService(ABC):
     def shutdown(self) -> None: ...
 
 
-class IAsyncClientService(ABC):
+class IAsyncClientService(ABC, Generic[T]):
     """
     
     """
 
     # ---- Default ---- #
     @abstractmethod
-    def get_client(self, key:str) -> Optional[IAsyncClient]: ...
+    def get_client(self, key:str) -> Optional[T]: ...
 
     @abstractmethod
     async def startup(self) -> None: ...

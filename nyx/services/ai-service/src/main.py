@@ -14,14 +14,18 @@ import sys
 import signal
 import asyncio
 import logging
-import threading
 from typing import Optional
+from typing import Dict
+from pathlib import Path
 
 # Internal:
 from application.services.client_service import AsyncClientService
-from domain.ports.client import IAsyncClientService
+from domain.ports.client import IAsyncClientService, IAsyncClient
 from infrastructure.grpc.server import GrpcServer
+from infrastructure.triton.config.base import TritonConfig
+from infrastructure.triton.client.grpc import GrpcAsyncClient
 from shared.utilities import logging as logging_config
+from shared.utilities import yaml
 
 
 # ==============================
@@ -52,23 +56,30 @@ async def main() -> None:
         loop.add_signal_handler(signal.SIGTERM, _signal_handler)
 
     # Prints information.
-    log.info("Starting AI-Service ...")
+    log.debug("Loading configuration ...")
+    
+    # Loads configuration.
+    triton_config:TritonConfig = TritonConfig(**yaml.load_data(path=Path("./config").joinpath("triton_config.yaml")))
 
-    client_service:IAsyncClientService = AsyncClientService(clients={})
-    grpc_server:GrpcServer = GrpcServer()
+    # Prints information.
+    log.debug("Initializing clients and services ...")
+
+    clients:Dict[str, IAsyncClient] = {}
+    for name, endpoint in triton_config.endpoints.items():
+        clients[name] = GrpcAsyncClient(
+            host=endpoint.host,
+            port=endpoint.port,
+        )
+
+    client_service:IAsyncClientService = AsyncClientService[IAsyncClient](clients=clients)
+    grpc_server:GrpcServer = GrpcServer(client_service=client_service)
     server_task:Optional[asyncio.Task] = None
 
     try:
 
-        await client_service.startup()
-
+        log.debug("Starting AI-Service ...")
+        
         server_task = asyncio.create_task(grpc_server.start())
-
-        if sys.platform == "win32":
-            def wait_forever():
-                threading.Event().wait()
-
-            threading.Thread(target=wait_forever, daemon=True).start()
 
         await stop_event.wait()
 
@@ -76,7 +87,7 @@ async def main() -> None:
 
     finally:
 
-        log.info("Shutting down ...")
+        log.debug("Shutting down ...")
 
         await grpc_server.stop()
         
@@ -85,10 +96,8 @@ async def main() -> None:
             try:
                 await server_task
             except asyncio.CancelledError: pass
-
-        await client_service.shutdown()
     
-    log.info("AI-Service stopped successfully.")
+    log.debug("AI-Service stopped successfully.")
 
 
 # ==============================
