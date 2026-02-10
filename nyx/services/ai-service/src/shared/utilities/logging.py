@@ -34,7 +34,11 @@ APP_NAME:str = os.getenv("APP_NAME", "ai-service")
 # FUNCTIONS
 # ==============================
 
-def get_config() -> Dict[str, Any]:
+def get_config(
+    log_level:str = LOG_LEVEL,
+    log_dir:str = LOG_DIR,
+    app_name:str = APP_NAME
+) -> Dict[str, Any]:
     """
     Generates a logging configuration dictionary following SOLID principles.
 
@@ -70,7 +74,7 @@ def get_config() -> Dict[str, Any]:
         "handlers": {
             # 1. Console: Targeted at developers and containers orchestrators (Docker/K8s).
             "console": {
-                "level": LOG_LEVEL,
+                "level": log_level,
                 "class": "logging.StreamHandler",
                 "formatter": "standard",
                 "stream": sys.stdout
@@ -80,7 +84,7 @@ def get_config() -> Dict[str, Any]:
                 "level": "INFO",
                 "class": "logging.handlers.RotatingFileHandler",
                 "formatter": "detailed",
-                "filename": os.path.join(LOG_DIR, f"{APP_NAME}.log"),
+                "filename": os.path.join(log_dir, f"{app_name}.log"),
                 "maxBytes": 10485760,          # 10MB
                 "backupCount": 10,              # Retain up to 100 MB of history.
                 "encoding": "utf-8"
@@ -90,7 +94,7 @@ def get_config() -> Dict[str, Any]:
                 "level": "ERROR",
                 "class": "logging.handlers.RotatingFileHandler",
                 "formatter": "detailed",
-                "filename": os.path.join(LOG_DIR, f"{APP_NAME}_error.log"),
+                "filename": os.path.join(log_dir, f"{app_name}_error.log"),
                 "maxBytes": 5242880,          # 5MB
                 "backupCount": 5,              # Retain up to 25 MB of history.
                 "encoding": "utf-8"
@@ -101,7 +105,7 @@ def get_config() -> Dict[str, Any]:
             # Root logger: Handlers everything not explicitly defined.
             "": {
                 "handlers": ["console", "file_main", "file_error"],
-                "level": LOG_LEVEL,
+                "level": log_level,
                 "propagate": True
             },
             # Explicit logger for the core application logic.

@@ -23,6 +23,7 @@ from application.services.client_service import AsyncClientService
 from domain.ports.client import IAsyncClientService, IAsyncClient
 from infrastructure.grpc.server import GrpcServer
 from infrastructure.triton.config.base import TritonConfig
+from infrastructure.triton.config.task import TritonTask
 from infrastructure.triton.client.grpc import GrpcAsyncClient
 from shared.utilities import logging as logging_config
 from shared.utilities import yaml
@@ -71,8 +72,17 @@ async def main() -> None:
             port=endpoint.port,
         )
 
+    tasks:Dict[str, TritonTask] = {}
+    for name, task in triton_config.tasks.items():
+        if task.endpoint not in clients:
+            log.error(f"Endpoint '{task.endpoint}' for task '{name}' not found in the configured endpoints. Task '{name}' will be skipped.")
+        
+        else:
+            tasks[name] = task
+            log.debug(f"Task '{name}' assigned to endpoint '{task.endpoint}' with model '{task.model_name}'.")
+
     client_service:IAsyncClientService = AsyncClientService[IAsyncClient](clients=clients)
-    grpc_server:GrpcServer = GrpcServer(client_service=client_service)
+    grpc_server:GrpcServer = GrpcServer(client_service=client_service, tasks=tasks)
     server_task:Optional[asyncio.Task] = None
 
     try:

@@ -11,10 +11,11 @@
 
 # Standard:
 from typing import Any, Optional
-from typing import Dict
+from typing import Dict, List
 
 # External:
 from tritonclient.grpc.aio import InferenceServerClient
+from tritonclient.grpc.aio import InferInput, InferResult, InferRequestedOutput
 
 # Internal:
 from infrastructure.triton.client.base import TritonAsyncClient
@@ -89,6 +90,8 @@ class GrpcAsyncClient(TritonAsyncClient):
         
         """
 
+        model_version = model_version.strip() if model_version and model_version and model_version.strip() else None
+
         try:
             
             config:Optional[Dict[str, Any]] = None
@@ -102,7 +105,8 @@ class GrpcAsyncClient(TritonAsyncClient):
                     }
                 }
             
-            await self._cli.load_model(model_name=model_name, config=config)
+            if config: await self._cli.load_model(model_name=model_name, config=config)
+            else: await self._cli.load_model(model_name=model_name)
 
         except Exception as e:
             raise RuntimeError(f"Failed to load model '{model_name}': {e}") from e
@@ -125,3 +129,25 @@ class GrpcAsyncClient(TritonAsyncClient):
 
         except Exception as e:
             raise RuntimeError(f"Failed to load model '{model_name}': {e}") from e
+        
+    async def make_infer(
+        self,
+        model_name: str,
+        model_version:Optional[str],
+        input_data:List[InferInput],
+        output_data:List[InferRequestedOutput]
+    ) -> Optional[InferResult]:
+        """
+        """
+
+        try:
+
+            return await self._cli.infer(
+                model_name=model_name,
+                model_version=model_version if model_version is not None else "",
+                inputs=input_data,
+                outputs=output_data
+            )
+
+        except Exception as e:
+            raise RuntimeError(f"Failed to make inference on model '{model_name}': {e}") from e

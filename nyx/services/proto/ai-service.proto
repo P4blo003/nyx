@@ -98,10 +98,12 @@ message ModelMetadata
 
 message InferenceRequest
 {
+    string task = 1;
+
     oneof batch
     {
-        TextBatch text_batch = 1;
-        ImageBatch image_batch = 2;
+        TextBatch text_batch = 2;
+        ImageBatch image_batch = 3;
     }
 }
 
@@ -117,10 +119,12 @@ message ImageBatch
 
 message InferenceResponse
 {
+    string task = 1;
+
     oneof result
     {
-        TextBatch text_batch = 1;
-        EmbeddingBatch embedding_batch = 2;   
+        TextBatch text_batch = 2;
+        EmbeddingBatch embedding_batch = 3;   
     }
 }
 

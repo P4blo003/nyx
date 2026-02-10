@@ -26,7 +26,7 @@ from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x61i-service.proto\x12\rai_service.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"A\n\x10LoadModelRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x0e\n\x06server\x18\x03 \x01(\t\"C\n\x12UnloadModelRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x0e\n\x06server\x18\x03 \x01(\t\"\xc5\x01\n\x0bModelStatus\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x0e\n\x06server\x18\x03 \x01(\t\x12/\n\x05state\x18\x04 \x01(\x0e\x32 .ai_service.v1.ModelStatus.State\x12\x0f\n\x07message\x18\x05 \x01(\t\"E\n\x05State\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0b\n\x07LOADING\x10\x01\x12\t\n\x05READY\x10\x02\x12\x0c\n\x08UNLOADED\x10\x03\x12\t\n\x05\x45RROR\x10\x04\"#\n\x11ListModelsRequest\x12\x0e\n\x06\x66ilter\x18\x01 \x01(\t\"B\n\x12ListModelsResponse\x12,\n\x06models\x18\x01 \x03(\x0b\x32\x1c.ai_service.v1.ModelMetadata\">\n\rModelMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x0e\n\x06server\x18\x03 \x01(\t\"}\n\x10InferenceRequest\x12.\n\ntext_batch\x18\x01 \x01(\x0b\x32\x18.ai_service.v1.TextBatchH\x00\x12\x30\n\x0bimage_batch\x18\x02 \x01(\x0b\x32\x19.ai_service.v1.ImageBatchH\x00\x42\x07\n\x05\x62\x61tch\"\x1c\n\tTextBatch\x12\x0f\n\x07\x63ontent\x18\x01 \x03(\t\"\x1d\n\nImageBatch\x12\x0f\n\x07\x63ontent\x18\x01 \x03(\x0c\"\x87\x01\n\x11InferenceResponse\x12.\n\ntext_batch\x18\x01 \x01(\x0b\x32\x18.ai_service.v1.TextBatchH\x00\x12\x38\n\x0f\x65mbedding_batch\x18\x02 \x01(\x0b\x32\x1d.ai_service.v1.EmbeddingBatchH\x00\x42\x08\n\x06result\"A\n\x0e\x45mbeddingBatch\x12/\n\x07vectors\x18\x01 \x03(\x0b\x32\x1e.ai_service.v1.EmbeddingVector\"!\n\x0f\x45mbeddingVector\x12\x0e\n\x06values\x18\x01 \x03(\x02\x32\xa4\x03\n\tAIService\x12R\n\x0blist_models\x12 .ai_service.v1.ListModelsRequest\x1a!.ai_service.v1.ListModelsResponse\x12I\n\nload_model\x12\x1f.ai_service.v1.LoadModelRequest\x1a\x1a.ai_service.v1.ModelStatus\x12M\n\x0cunload_model\x12!.ai_service.v1.UnloadModelRequest\x1a\x1a.ai_service.v1.ModelStatus\x12O\n\nmake_infer\x12\x1f.ai_service.v1.InferenceRequest\x1a .ai_service.v1.InferenceResponse\x12X\n\x11make_infer_stream\x12\x1f.ai_service.v1.InferenceRequest\x1a .ai_service.v1.InferenceResponse0\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10\x61i-service.proto\x12\rai_service.v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"A\n\x10LoadModelRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x0e\n\x06server\x18\x03 \x01(\t\"C\n\x12UnloadModelRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x0e\n\x06server\x18\x03 \x01(\t\"\xc5\x01\n\x0bModelStatus\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x0e\n\x06server\x18\x03 \x01(\t\x12/\n\x05state\x18\x04 \x01(\x0e\x32 .ai_service.v1.ModelStatus.State\x12\x0f\n\x07message\x18\x05 \x01(\t\"E\n\x05State\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0b\n\x07LOADING\x10\x01\x12\t\n\x05READY\x10\x02\x12\x0c\n\x08UNLOADED\x10\x03\x12\t\n\x05\x45RROR\x10\x04\"#\n\x11ListModelsRequest\x12\x0e\n\x06\x66ilter\x18\x01 \x01(\t\"B\n\x12ListModelsResponse\x12,\n\x06models\x18\x01 \x03(\x0b\x32\x1c.ai_service.v1.ModelMetadata\">\n\rModelMetadata\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x0e\n\x06server\x18\x03 \x01(\t\"\x8b\x01\n\x10InferenceRequest\x12\x0c\n\x04task\x18\x01 \x01(\t\x12.\n\ntext_batch\x18\x02 \x01(\x0b\x32\x18.ai_service.v1.TextBatchH\x00\x12\x30\n\x0bimage_batch\x18\x03 \x01(\x0b\x32\x19.ai_service.v1.ImageBatchH\x00\x42\x07\n\x05\x62\x61tch\"\x1c\n\tTextBatch\x12\x0f\n\x07\x63ontent\x18\x01 \x03(\t\"\x1d\n\nImageBatch\x12\x0f\n\x07\x63ontent\x18\x01 \x03(\x0c\"\x95\x01\n\x11InferenceResponse\x12\x0c\n\x04task\x18\x01 \x01(\t\x12.\n\ntext_batch\x18\x02 \x01(\x0b\x32\x18.ai_service.v1.TextBatchH\x00\x12\x38\n\x0f\x65mbedding_batch\x18\x03 \x01(\x0b\x32\x1d.ai_service.v1.EmbeddingBatchH\x00\x42\x08\n\x06result\"A\n\x0e\x45mbeddingBatch\x12/\n\x07vectors\x18\x01 \x03(\x0b\x32\x1e.ai_service.v1.EmbeddingVector\"!\n\x0f\x45mbeddingVector\x12\x0e\n\x06values\x18\x01 \x03(\x02\x32\xa4\x03\n\tAIService\x12R\n\x0blist_models\x12 .ai_service.v1.ListModelsRequest\x1a!.ai_service.v1.ListModelsResponse\x12I\n\nload_model\x12\x1f.ai_service.v1.LoadModelRequest\x1a\x1a.ai_service.v1.ModelStatus\x12M\n\x0cunload_model\x12!.ai_service.v1.UnloadModelRequest\x1a\x1a.ai_service.v1.ModelStatus\x12O\n\nmake_infer\x12\x1f.ai_service.v1.InferenceRequest\x1a .ai_service.v1.InferenceResponse\x12X\n\x11make_infer_stream\x12\x1f.ai_service.v1.InferenceRequest\x1a .ai_service.v1.InferenceResponse0\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -47,18 +47,18 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_LISTMODELSRESPONSE']._serialized_end=536
   _globals['_MODELMETADATA']._serialized_start=538
   _globals['_MODELMETADATA']._serialized_end=600
-  _globals['_INFERENCEREQUEST']._serialized_start=602
-  _globals['_INFERENCEREQUEST']._serialized_end=727
-  _globals['_TEXTBATCH']._serialized_start=729
-  _globals['_TEXTBATCH']._serialized_end=757
-  _globals['_IMAGEBATCH']._serialized_start=759
-  _globals['_IMAGEBATCH']._serialized_end=788
-  _globals['_INFERENCERESPONSE']._serialized_start=791
-  _globals['_INFERENCERESPONSE']._serialized_end=926
-  _globals['_EMBEDDINGBATCH']._serialized_start=928
-  _globals['_EMBEDDINGBATCH']._serialized_end=993
-  _globals['_EMBEDDINGVECTOR']._serialized_start=995
-  _globals['_EMBEDDINGVECTOR']._serialized_end=1028
-  _globals['_AISERVICE']._serialized_start=1031
-  _globals['_AISERVICE']._serialized_end=1451
+  _globals['_INFERENCEREQUEST']._serialized_start=603
+  _globals['_INFERENCEREQUEST']._serialized_end=742
+  _globals['_TEXTBATCH']._serialized_start=744
+  _globals['_TEXTBATCH']._serialized_end=772
+  _globals['_IMAGEBATCH']._serialized_start=774
+  _globals['_IMAGEBATCH']._serialized_end=803
+  _globals['_INFERENCERESPONSE']._serialized_start=806
+  _globals['_INFERENCERESPONSE']._serialized_end=955
+  _globals['_EMBEDDINGBATCH']._serialized_start=957
+  _globals['_EMBEDDINGBATCH']._serialized_end=1022
+  _globals['_EMBEDDINGVECTOR']._serialized_start=1024
+  _globals['_EMBEDDINGVECTOR']._serialized_end=1057
+  _globals['_AISERVICE']._serialized_start=1060
+  _globals['_AISERVICE']._serialized_end=1480
 # @@protoc_insertion_point(module_scope)

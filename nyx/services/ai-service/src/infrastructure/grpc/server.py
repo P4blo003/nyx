@@ -11,7 +11,7 @@
 
 # Standard:
 import logging
-from typing import List
+from typing import Dict, List
 
 # External:
 from grpc import aio
@@ -21,6 +21,7 @@ from domain.ports.client import IAsyncClientService
 import infrastructure.grpc.generated.ai_service_pb2_grpc as pb2_grpc
 from infrastructure.grpc.service import AIServiceServicer
 from infrastructure.grpc.interceptor import RequestLogInterceptor
+from infrastructure.triton.config.task import TritonTask
 
 
 # ==============================
@@ -37,6 +38,7 @@ class GrpcServer:
     def __init__(
         self,
         client_service:IAsyncClientService,
+        tasks:Dict[str, TritonTask],
         host:str = "[::]",
         port:int = 8002,
     ) -> None:
@@ -59,7 +61,10 @@ class GrpcServer:
         self._server.add_insecure_port(address=self._url)
 
         self._client_service:IAsyncClientService = client_service
-        pb2_grpc.add_AIServiceServicer_to_server(servicer=AIServiceServicer(client_service=self._client_service), server=self._server)
+        pb2_grpc.add_AIServiceServicer_to_server(servicer=AIServiceServicer(
+            client_service=self._client_service,tasks=tasks),
+            server=self._server
+        )
 
 
 

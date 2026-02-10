@@ -78,12 +78,14 @@ class ModelMetadata(_message.Message):
     def __init__(self, name: _Optional[str] = ..., version: _Optional[str] = ..., server: _Optional[str] = ...) -> None: ...
 
 class InferenceRequest(_message.Message):
-    __slots__ = ("text_batch", "image_batch") # type: ignore
+    __slots__ = ("task", "text_batch", "image_batch") # type: ignore
+    TASK_FIELD_NUMBER: _ClassVar[int]
     TEXT_BATCH_FIELD_NUMBER: _ClassVar[int]
     IMAGE_BATCH_FIELD_NUMBER: _ClassVar[int]
+    task: str
     text_batch: TextBatch
     image_batch: ImageBatch
-    def __init__(self, text_batch: _Optional[_Union[TextBatch, _Mapping]] = ..., image_batch: _Optional[_Union[ImageBatch, _Mapping]] = ...) -> None: ...
+    def __init__(self, task: _Optional[str] = ..., text_batch: _Optional[_Union[TextBatch, _Mapping]] = ..., image_batch: _Optional[_Union[ImageBatch, _Mapping]] = ...) -> None: ...
 
 class TextBatch(_message.Message):
     __slots__ = ("content",) # type: ignore
@@ -98,12 +100,14 @@ class ImageBatch(_message.Message):
     def __init__(self, content: _Optional[_Iterable[bytes]] = ...) -> None: ...
 
 class InferenceResponse(_message.Message):
-    __slots__ = ("text_batch", "embedding_batch") # type: ignore
+    __slots__ = ("task", "text_batch", "embedding_batch") # type: ignore
+    TASK_FIELD_NUMBER: _ClassVar[int]
     TEXT_BATCH_FIELD_NUMBER: _ClassVar[int]
     EMBEDDING_BATCH_FIELD_NUMBER: _ClassVar[int]
+    task: str
     text_batch: TextBatch
     embedding_batch: EmbeddingBatch
-    def __init__(self, text_batch: _Optional[_Union[TextBatch, _Mapping]] = ..., embedding_batch: _Optional[_Union[EmbeddingBatch, _Mapping]] = ...) -> None: ...
+    def __init__(self, task: _Optional[str] = ..., text_batch: _Optional[_Union[TextBatch, _Mapping]] = ..., embedding_batch: _Optional[_Union[EmbeddingBatch, _Mapping]] = ...) -> None: ...
 
 class EmbeddingBatch(_message.Message):
     __slots__ = ("vectors",) # type: ignore

@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 09/02/2026
-# Last edited: 09/02/2026
+# Last edited: 10/02/2026
 # ==========================================================================================
 
 
@@ -21,14 +21,6 @@ from pydantic import Field
 # CLASSES
 # ==============================
 
-class TritonTask(BaseModel):
-    """
-    """
-
-    # ---- Attributes ---- #
-
-    model_name:str = Field(..., description="")
-
 class TritonEndpoint(BaseModel):
     """
     
@@ -38,4 +30,3 @@ class TritonEndpoint(BaseModel):
 
     host:str = Field(..., description="")
     port:int = Field(..., description="")
-    tasks:Dict[str, TritonTask] = Field(..., description="")

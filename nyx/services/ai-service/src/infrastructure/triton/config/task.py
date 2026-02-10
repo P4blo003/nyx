@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 09/02/2026
-# Last edited: 09/02/2026
+# Last edited: 10/02/2026
 # ==========================================================================================
 
 
@@ -9,28 +9,21 @@
 # IMPORTS
 # ==============================
 
-# Standard:
-from typing import Dict
-
 # External:
 from pydantic import BaseModel
 from pydantic import Field
-
-# Internal:
-from infrastructure.triton.config.endpoint import TritonEndpoint
-from infrastructure.triton.config.task import TritonTask
 
 
 # ==============================
 # CLASSES
 # ==============================
 
-class TritonConfig(BaseModel):
+class TritonTask(BaseModel):
     """
     
     """
 
     # ---- Attributes ---- #
 
-    endpoints:Dict[str, TritonEndpoint] = Field(..., description="")
-    tasks:Dict[str, TritonTask] = Field(..., description="")
+    endpoint:str = Field(..., description="")
+    model_name:str = Field(..., description="")
