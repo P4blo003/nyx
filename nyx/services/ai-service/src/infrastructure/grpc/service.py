@@ -139,10 +139,10 @@ class AIServiceServicer(pb2_grpc.AIServiceServicer):
                 raise ValueError("InferenceRequest contains an empty batch")
             
 
-            task:Optional[TritonTask] = self._tasks[request.task]
+            task:Optional[TritonTask] = self._tasks.get(request.task)
             if task is None: raise ValueError(f"No task configured for '{request.task}'")
     
-            server:Optional[str] = self._tasks[request.task].endpoint
+            server:Optional[str] = task.endpoint
             if server is None: raise ValueError(f"Endpoint for task '{request.task}' not found.")
 
             client:Optional[TritonAsyncClient] = self._client_service.get_client(key=server)
