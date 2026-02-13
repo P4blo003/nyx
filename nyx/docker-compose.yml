@@ -40,57 +40,77 @@ networks:
 
 services:
 
-  # Qdrant vector database service.
-  # Used for storing and querying embeddings for semantic search and RAG workflow.
-  qdrant:
-    # Default configuration.
-    image: qdrant/qdrant:v1.16.3
-    # Explicit container name for easier management and monitoring.
-    container_name: qdrant
-    # Automatically restart the container unless it is explicitly stopped.
-    restart: unless-stopped
+  dcgm-exporter:
+    build:
+      context: ./third-party/dcgm-exporter
+      dockerfile: Dockerfile
+    
+    container_name: dcgm-exporter
 
-    # Environment variables for service configuration.
     environment:
-      # API key used to authenticate client requests.
-      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
-      # Enable or disable TLS support (true / false).
-      - QDRANT__SERVICE__ENABLE_TLS=${QDRANT_ENABLE_TLS}
+      - DCGM_EXPORTER_INTERVAL=1000
 
-    # Attach the service to the shared internal networks.
     networks:
-      - common-net
+      - metrics-net
 
-    # Expose HTTP and gRPC ports to the host.
     ports:
-      # 6333: REST / HTTP API.
-      - "6333:6333"
-      # 6334: gRPC API.
-      - "6334:6334"
+      - "9400:9400"
 
-    # Persistent storage and configuration.
-    volumes:
-      # Persistent data directory for collections, indexes and WAL.
-      - ./third-party/qdrant/data:/qdrant/storage
-      #    Production configuration file (read-only).
-      - ./third-party/qdrant/config/production.yaml:/qdrant/config/production.yaml:ro
-
-    # Health check to ensure the service is alive and responsive.
-    # Uses the built-in Qdrant healthcheck endpoint.
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-
-    # Resource limits to prevent the service from exhausting host resources.
     deploy:
       resources:
-        limits:
-          cpus: "2"
-          memory: 4g
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  prometheus:
+    build:
+      context: ./third-party/prometheus
+      dockerfile: Dockerfile
+    container_name: prometheus
+
+    environment:
+      - name=value
+
+    restart: unless-stopped
+
+    networks:
+      - metrics-net
+
+    volumes:
+      - ./third-party/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./third-party/prometheus/data:/prometheus
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=6h'
+      - '--web.enable-lifecycle'
   
+  grafana:
+    build:
+      context: ./third-party/grafana
+      dockerfile: Dockerfile
+    container_name: grafana
+
+    restart: unless-stopped
+
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=1s
+
+    networks:
+      - metrics-net
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - ./third-party/grafana/provisioning:/etc/grafana/provisioning
+      - ./third-party/grafana/data:/var/lib/grafana
+
   # Triton Inference Server for embedding and classification models.
   triton-onnx:
 
@@ -171,7 +191,7 @@ services:
       - metrics-net
 
     ports:
-      # Expose the AI-Service API on port 8080.
+      # Expose the AI-Service API.
       - "${AI_SERVICE_GRPC_PORT}:8002"
 
     volumes:

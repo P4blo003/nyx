@@ -15,6 +15,7 @@
         "cuda",
         "cython",
         "datefmt",
+        "dcgm",
         "DCMAKE",
         "distilbert",
         "dmypy",

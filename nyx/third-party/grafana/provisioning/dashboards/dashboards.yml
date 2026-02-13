@@ -1,0 +1,21 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 13/02/2026
+# Last edited: 13/02/2026
+# ==========================================================================================
+
+# ==============================
+# CONFIGURATION
+# ==============================
+
+apiVersion: 1
+
+providers:
+  - name: "Default"
+    orgId: 1
+    folder: ""
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards

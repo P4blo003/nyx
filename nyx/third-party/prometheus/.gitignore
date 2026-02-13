@@ -1,0 +1,31 @@
+# ==========================================
+# Prometheus GitIgnore
+# ==========================================
+
+# --- Time Series Database (TSDB) ---
+# This directory contains the actual metric data.
+# NEVER commit this to source control.
+data/
+prometheus_data/
+
+# --- Write-Ahead Log (WAL) & Checkpoints ---
+# These are temporary files used to prevent data loss during crashes
+wal/
+checkpoint.*/
+chunks_head/
+
+# --- Remote Write Storage ---
+# If using remote storage queues
+remote_storage/
+
+# --- Logs & Snapshots ---
+*.log
+snapshots/
+
+# --- OS & Temp Files ---
+.DS_Store
+*.tmp
+
+# --- Keep directory structure ---
+# Optional: keep the data folder but empty
+!data/.gitkeep

@@ -1,0 +1,33 @@
+# ==========================================
+# Grafana & Prometheus Docker GitIgnore
+# ==========================================
+
+# --- Storage & Persistence ---
+# Ignore the internal Grafana SQLite database, sessions, and plugins
+data/
+logs/
+plugins/
+
+# Ignore the Prometheus Time Series Database (TSDB)
+# This folder can grow to several GBs and contains binary data
+prometheus_data/
+
+# --- Operating System Files ---
+.DS_Store
+*.swp
+thumbs.db
+
+# --- Docker & Environment ---
+# Ignore local environment variables that might contain secrets
+.env
+.docker-compose.override.yml
+*.log
+
+# --- Specific Configs ---
+# If you map a local grafana.ini that contains plain-text passwords
+# grafana.ini
+
+# --- Keep empty directories ---
+# Allow keeping the directory structure if needed, but not the content
+!data/.gitkeep
+!prometheus_data/.gitkeep

@@ -1,0 +1,20 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 13/02/2026
+# Last edited: 13/02/2026
+# ==========================================================================================
+
+
+# ==============================
+# CONFIGURATION
+# ==============================
+
+global:
+  scrape_interval: 1s
+  scrape_timeout: 1s
+  evaluation_interval: 1s
+
+scrape_configs:
+  - job_name: "gpu-metrics"
+    static_configs:
+      - targets: ["dcgm-exporter:9400"]
