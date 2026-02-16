@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 09/02/2026
-# Last edited: 09/02/2026
+# Last edited: 16/02/2026
 # ==========================================================================================
 
 
@@ -17,6 +17,11 @@ endpoints:
     host: "triton-onnx"
     # gRPC port for triton inference.
     port: 8001
+
+
+# ==============================
+# TASKS
+# ==============================
 
 # This section defines the tasks that the AI Service will handle, mapping them to the corresponding endpoints and models.
 tasks:

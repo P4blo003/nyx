@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 23/01/2026
-# Last edited: 03/02/2026
+# Last edited: 16/02/2026
 # ==========================================================================================
 
 
@@ -60,7 +60,7 @@ async def main() -> None:
     log.debug("Loading configuration ...")
     
     # Loads configuration.
-    triton_config:TritonConfig = TritonConfig(**yaml.load_data(path=Path("./config").joinpath("triton_config.yaml")))
+    triton_config:TritonConfig = TritonConfig(**yaml.load_data(path=Path("./config").joinpath("triton.config.yaml")))
 
     # Prints information.
     log.debug("Initializing clients and services ...")

@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
 # Created: 09/02/2026
-# Last edited: 09/02/2026
+# Last edited: 16/02/2026
 # ==========================================================================================
 
 
@@ -10,11 +10,8 @@
 # ==============================
 
 # Standard:
-import asyncio
-import time
 import logging
 from typing import Dict, List, Optional
-from urllib import request
 
 # External:
 import grpc
