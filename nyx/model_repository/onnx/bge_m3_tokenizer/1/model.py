@@ -53,7 +53,8 @@ class TritonPythonModel:
         self._tokenizer:AutoTokenizer = AutoTokenizer.from_pretrained(
             tokenizer_path,
             local_files_only=True,
-            trust_remote_code=True
+            trust_remote_code=True,
+            use_fast=True
         )
 
     def execute(self, requests):
@@ -73,8 +74,9 @@ class TritonPythonModel:
             # Tokenization.
             enc = self._tokenizer(
                 texts,
-                padding=True,
+                padding="max_length",
                 truncation=True,
+                max_length=512,
                 return_tensors="np"
             )
 

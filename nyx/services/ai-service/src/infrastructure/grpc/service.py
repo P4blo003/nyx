@@ -145,7 +145,7 @@ class AIServiceServicer(pb2_grpc.AIServiceServicer):
             client:Optional[TritonAsyncClient] = self._client_service.get_client(key=server)
             if client is None: raise ValueError(f"Client for server '{server}' not found.")
     
-            input_data:np.ndarray = np.array(inputs, dtype=object).reshape([len(inputs), 1])
+            input_data:np.ndarray = np.array(inputs, dtype=object).reshape([-1, 1])
             
             infer_input:InferInput = InferInput(
                 name=name,
@@ -173,9 +173,7 @@ class AIServiceServicer(pb2_grpc.AIServiceServicer):
                 raise RuntimeError("Unexpected embedding tensor shape")
 
             for row in embeddings:
-                embedding_batch.vectors.add().values.extend(
-                    float(v) for v in row
-                )
+                embedding_batch.vectors.add().values.extend(row.tolist())
 
             result:pb2.InferenceResponse = pb2.InferenceResponse(task=request.task)
             result.embedding_batch.CopyFrom(embedding_batch)
