@@ -14,10 +14,18 @@ import sys
 import asyncio
 import logging
 from pathlib import Path
+from typing import Optional
+from typing import Dict
 
 # Internal:
+from application.services.worker_service import WorkerService
+from infrastructure.ai_service.client.base import AIServiceAsyncClient
+from infrastructure.ai_service.grpc.client import AIServiceGrpcAsyncClient
 from infrastructure.config.base import RunningConfig
-from infrastructure.processor.worker_manager import WorkerManager
+from infrastructure.config.connection import ConnectionConfig
+from infrastructure.grpc.server import GrpcServer
+from infrastructure.qdrant.client.base import QdrantAsyncClient
+from infrastructure.qdrant.client.qdrant import QdrantGrpcAsyncClient
 from shared.utilities import logging as logging_config
 from shared.utilities import yaml
 
@@ -57,19 +65,57 @@ async def main():
     # Prints information.
     log.debug("Initializing clients and services ...")
 
-    workerManager:WorkerManager = WorkerManager(running_config=running_config)
+    ai_connections_config:Optional[ConnectionConfig] = running_config.connections.get("ai-service", None)
+    if ai_connections_config is None:
+        raise ValueError("Unable to find ai-service connection configuration")
+
+    if ai_connections_config.grpc_port is None:
+        raise ValueError("Unable to find ai-service grpc port configuration")
+    
+    ai_cli:AIServiceAsyncClient = AIServiceGrpcAsyncClient(
+        host=ai_connections_config.host, 
+        port=ai_connections_config.grpc_port)
+
+    qdrant_connection_config:Optional[ConnectionConfig] = running_config.connections.get("qdrant", None)
+    if qdrant_connection_config is None:
+        raise ValueError("Unable to find qdrant connection configuration")
+    
+    if qdrant_connection_config.http_port is None:
+        raise ValueError("Unable to find qdrant http port configuration")
+    if qdrant_connection_config.grpc_port is None:
+        raise ValueError("Unable to find qdrant grpc port configuration")
+
+    qdrant_cli:QdrantAsyncClient = QdrantGrpcAsyncClient(
+        host=qdrant_connection_config.host,
+        port=qdrant_connection_config.http_port,
+        grpc_port=qdrant_connection_config.grpc_port
+    )
+
+    worker_service:WorkerService = WorkerService(running_config=running_config)
+    grpc_server:GrpcServer = GrpcServer(worker_service=worker_service, ai_client=ai_cli, qdrant_client=qdrant_cli)
+    server_task:Optional[asyncio.Task] = None
 
     try:
 
         log.debug("Starting RAG-Service ...")
+        
+        server_task = asyncio.create_task(grpc_server.start())
 
-        await workerManager.startup()
+        await stop_event.wait()
+
+    except (KeyboardInterrupt, asyncio.CancelledError): pass
 
     finally:
 
         log.debug("Shutting down ...")
 
-        await workerManager.shutdown() 
+        await grpc_server.stop()
+        
+        if server_task:
+            server_task.cancel()
+            try:
+                await server_task
+            except asyncio.CancelledError: pass 
 
     log.debug("RAG-Service stopped successfully.")
 

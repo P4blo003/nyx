@@ -1,7 +1,7 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 03/02/2026
-# Last edited: 03/02/2026
+# Created: 16/02/2026
+# Last edited: 16/02/2026
 # ==========================================================================================
 
 
@@ -17,11 +17,12 @@ from typing import Dict, List
 from grpc import aio
 
 # Internal:
-from domain.ports.client import IAsyncClientService
-import infrastructure.grpc.generated.ai_service_pb2_grpc as pb2_grpc
-from infrastructure.grpc.service import AIServiceServicer
+from application.services.worker_service import WorkerService
+from infrastructure.ai_service.client.base import AIServiceAsyncClient
 from infrastructure.grpc.interceptor import RequestLogInterceptor
-from infrastructure.triton.config.task import TritonTask
+import infrastructure.grpc.generated.rag_service_pb2_grpc as pb2_grpc
+from infrastructure.grpc.service import RagServiceServicer
+from infrastructure.qdrant.client.base import QdrantAsyncClient
 
 
 # ==============================
@@ -37,10 +38,11 @@ class GrpcServer:
 
     def __init__(
         self,
-        client_service:IAsyncClientService,
-        tasks:Dict[str, TritonTask],
+        worker_service:WorkerService,
+        ai_client:AIServiceAsyncClient,
+        qdrant_client:QdrantAsyncClient,
         host:str = "[::]",
-        port:int = 8002,
+        port:int = 8001,
     ) -> None:
         """
         Initializes the server.
@@ -60,23 +62,34 @@ class GrpcServer:
         self._server:aio.Server = aio.server(interceptors=self._interceptors)
         self._server.add_insecure_port(address=self._url)
 
-        self._client_service:IAsyncClientService = client_service
-        pb2_grpc.add_AIServiceServicer_to_server(servicer=AIServiceServicer(
-            client_service=self._client_service,tasks=tasks),
+        self._worker_service:WorkerService = worker_service
+        self._ai_client:AIServiceAsyncClient = ai_client
+        self._qdrant_client:QdrantAsyncClient = qdrant_client
+        pb2_grpc.add_RAGServiceServicer_to_server(
+            servicer=RagServiceServicer(
+                worker_service=self._worker_service,
+                ai_client=self._ai_client,
+                qdrant_client=self._qdrant_client
+            ),
             server=self._server
         )
-
 
 
     # ---- Methods ---- #
 
     async def start(self) -> None:
         """
-        
+
         """
 
-        await self._client_service.startup()
-        
+        await self._ai_client.connect()
+        self._log.info(f"Connected to AI Service at {self._ai_client.get_server_url()}")
+
+        await self._qdrant_client.connect()
+        self._log.info(f"Connected to Qdrant at {self._qdrant_client.get_server_url()}")
+
+        await self._worker_service.startup()
+
         await self._server.start()
 
         self._log.info(f"Running server at {self._url}")
@@ -93,4 +106,6 @@ class GrpcServer:
 
         self._log.info(f"Server stopped")
 
-        await self._client_service.shutdown()
+        await self._worker_service.shutdown()
+        await self._ai_client.disconnect()
+        await self._qdrant_client.disconnect()

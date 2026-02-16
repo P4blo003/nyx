@@ -18,6 +18,7 @@ from pydantic import Field
 
 # Internal:
 from infrastructure.config.worker import WorkersConfig
+from infrastructure.config.connection import ConnectionConfig
 
 
 # ==============================
@@ -32,3 +33,4 @@ class RunningConfig(BaseModel):
     # ---- Attributes ---- #
 
     workers:WorkersConfig = Field(..., description="")
+    connections:Dict[str, ConnectionConfig] = Field(..., description="")

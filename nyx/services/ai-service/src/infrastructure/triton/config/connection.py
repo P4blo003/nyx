@@ -21,7 +21,7 @@ from pydantic import Field
 # CLASSES
 # ==============================
 
-class TritonEndpoint(BaseModel):
+class TritonConnection(BaseModel):
     """
     
     """

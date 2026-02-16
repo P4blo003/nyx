@@ -11,3 +11,19 @@
 
 workers:
   max_workers: 4
+
+
+# ==============================
+# CONNECTIONS
+# ==============================
+
+connections:
+
+  ai-service:
+    host: localhost
+    grpc_port: 8002
+
+  qdrant:
+    host: localhost
+    http_port: 6333
+    grpc_port: 6334

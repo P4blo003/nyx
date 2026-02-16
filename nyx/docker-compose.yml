@@ -110,6 +110,58 @@ services:
     volumes:
       - ./third-party/grafana/provisioning:/etc/grafana/provisioning
       - ./third-party/grafana/data:/var/lib/grafana
+  
+  # Qdrant vector database service.
+  # Used for storing and querying embeddings for semantic search and RAG workflow.
+  qdrant:
+    build:
+      context: ./third-party/qdrant
+      dockerfile: Dockerfile
+    # Explicit container name for easier management and monitoring.
+    container_name: qdrant
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+
+    # Environment variables for service configuration.
+    environment:
+      # API key used to authenticate client requests.
+      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
+      # Enable or disable TLS support (true / false).
+      - QDRANT__SERVICE__ENABLE_TLS=${QDRANT_ENABLE_TLS}
+
+    # Attach the service to the shared internal networks.
+    networks:
+      - common-net
+
+    # Expose HTTP and gRPC ports to the host.
+    ports:
+      # 6333: REST / HTTP API.
+      - "6333:6333"
+      # 6334: gRPC API.
+      - "6334:6334"
+
+    # Persistent storage and configuration.
+    volumes:
+      # Persistent data directory for collections, indexes and WAL.
+      - ./third-party/qdrant/data:/qdrant/storage
+      #    Production configuration file (read-only).
+      - ./third-party/qdrant/config/production.yaml:/qdrant/config/production.yaml:ro
+
+    # Health check to ensure the service is alive and responsive.
+    # Uses the built-in Qdrant healthcheck endpoint.
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+    # Resource limits to prevent the service from exhausting host resources.
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4g
 
   # Triton Inference Server for embedding and classification models.
   triton-onnx:
@@ -176,6 +228,75 @@ services:
       retries: 5
       start_period: 120s
 
+  # Triton server dedicated to LLM inference using vLLM.
+  # This service is expected to run on a GPU with sufficient memory and compute
+  # capability to host Large Language Models efficiently.
+  triton-vllm:
+
+    # Build image for this service using Dockerfile.
+    build:
+      context: ./third-party/triton/vllm
+      dockerfile: Dockerfile
+    # Explicit container name for easier management and monitoring.
+    container_name: triton-vllm
+    # Enable NVIDIA Container runtime for GPU access.
+    runtime: nvidia
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+
+    # Increase shared memory size inside the container.
+    # Triton, CUDA, TensorRt, ONNX Runtime and vLLM rely heavily on /dev/shm.
+    # For inter-process communication, tensor exchange and dynamic batching.
+    # The default Docker value (64 MB) is insufficient for ML inference workloads.
+    shm_size: '8gb'
+    ulimits:
+      # Allows the container to lock unlimited amounts of memory.
+      # This is required by CUDA and TensorRT to pin memory and prevent it
+      # from being swapped out by the OS.
+      memlock: -1
+      # Increase the maximum stack size per thread to 64 MB.
+      # Deep C++ call stacks used by Triton, TensorRT and ONNX Runtime
+      # can overflow the default Linux stack limit (usually 8MB).
+      stack: 67108864
+    
+    # Environment variables specific to the vLLM workload.
+    # See https://docs.vllm.ai/en/latest/configuration/env_vars/ for details.
+    environment:
+      # GPU device(s) visible to this container.
+      # Typically a single, dedicated GPU is assigned to the LLM service.
+      - CUDA_VISIBLE_DEVICES=0
+      # Attention backend used by vLLM.
+      # XFORMERS is broadly compatible and stable across GPU generations.
+      - VLLM_ATTENTION_BACKEND=XFORMERS
+
+    # Attach the container to the internal networks.
+    networks:
+      - triton-net
+      - metrics-net
+
+    # Mount the model repository for vLLM-backend models.
+    volumes:
+      - ./model_repository/vllm:/models:ro
+
+    # Start Triton with explicit runtime options.
+    # Metrics are enabled for observability and capacity planning.
+    command: >
+      tritonserver
+      --model-repository=/models
+      --model-control-mode=explicit
+      --log-info=true
+      --allow-metrics=true
+      --allow-gpu-metrics=true
+
+    # Health check to ensure the Triton server is fully ready
+    # before traffic is sent to this service.
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+
   ai-service:
     build:
       context: ./services/ai-service
@@ -203,3 +324,10 @@ services:
 
     command: >
       python src/main.py
+
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=:8002"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s

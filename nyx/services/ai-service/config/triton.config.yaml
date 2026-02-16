@@ -6,15 +6,21 @@
 
 
 # ==============================
-# ENDPOINTS
+# CONNECTIONS
 # ==============================
 
-# This section defines the endpoints for the Triton Inference Server instances.
-endpoints:
+# This section defines the connections for the Triton Inference Server instances.
+connections:
 
   triton-onnx:
     # Host and port for the Triton Inference Server.
     host: "triton-onnx"
+    # gRPC port for triton inference.
+    port: 8001
+  
+  triton-vllm:
+    # Host and port for the Triton Inference Server.
+    host: "triton-vllm"
     # gRPC port for triton inference.
     port: 8001
 
@@ -23,11 +29,17 @@ endpoints:
 # TASKS
 # ==============================
 
-# This section defines the tasks that the AI Service will handle, mapping them to the corresponding endpoints and models.
+# This section defines the tasks that the AI Service will handle, mapping them to the corresponding connections and models.
 tasks:
 
   embedding-inference:
-    # The endpoint to which this task is assigned.
-    endpoint: triton-onnx
+    # The connection to which this task is assigned.
+    connection: triton-onnx
     # The model name to be used for this task.
     model_name: "bge_m3_ensemble"
+
+  text-generation:
+    # The connection to which this task is assigned.
+    connection: triton-vllm
+    # The model name to be used for this task.
+    model_name: "qwen2.5_3b_instruct"

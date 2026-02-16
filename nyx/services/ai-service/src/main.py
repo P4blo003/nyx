@@ -66,20 +66,20 @@ async def main() -> None:
     log.debug("Initializing clients and services ...")
 
     clients:Dict[str, IAsyncClient] = {}
-    for name, endpoint in triton_config.endpoints.items():
+    for name, connection in triton_config.connections.items():
         clients[name] = GrpcAsyncClient(
-            host=endpoint.host,
-            port=endpoint.port,
+            host=connection.host,
+            port=connection.port,
         )
 
     tasks:Dict[str, TritonTask] = {}
     for name, task in triton_config.tasks.items():
-        if task.endpoint not in clients:
-            log.error(f"Endpoint '{task.endpoint}' for task '{name}' not found in the configured endpoints. Task '{name}' will be skipped.")
+        if task.connection not in clients:
+            log.error(f"Endpoint '{task.connection}' for task '{name}' not found in the configured endpoints. Task '{name}' will be skipped.")
         
         else:
             tasks[name] = task
-            log.debug(f"Task '{name}' assigned to endpoint '{task.endpoint}' with model '{task.model_name}'.")
+            log.debug(f"Task '{name}' assigned to endpoint '{task.connection}' with model '{task.model_name}'.")
 
     client_service:IAsyncClientService = AsyncClientService[IAsyncClient](clients=clients)
     grpc_server:GrpcServer = GrpcServer(client_service=client_service, tasks=tasks)

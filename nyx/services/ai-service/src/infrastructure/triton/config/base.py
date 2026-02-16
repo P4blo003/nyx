@@ -17,7 +17,7 @@ from pydantic import BaseModel
 from pydantic import Field
 
 # Internal:
-from infrastructure.triton.config.endpoint import TritonEndpoint
+from infrastructure.triton.config.connection import TritonConnection
 from infrastructure.triton.config.task import TritonTask
 
 
@@ -32,5 +32,5 @@ class TritonConfig(BaseModel):
 
     # ---- Attributes ---- #
 
-    endpoints:Dict[str, TritonEndpoint] = Field(..., description="")
+    connections:Dict[str, TritonConnection] = Field(..., description="")
     tasks:Dict[str, TritonTask] = Field(..., description="")

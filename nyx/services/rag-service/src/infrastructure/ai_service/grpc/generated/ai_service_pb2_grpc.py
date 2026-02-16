@@ -4,7 +4,7 @@ import grpc
 import grpc.experimental
 import warnings
 
-import infrastructure.grpc.generated.ai_service_pb2 as ai__service__pb2
+import infrastructure.ai_service.grpc.generated.ai_service_pb2 as ai__service__pb2
 
 GRPC_GENERATED_VERSION = '1.78.0'
 GRPC_VERSION = grpc.__version__

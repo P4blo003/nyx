@@ -1,0 +1,253 @@
+syntax = "proto3";
+
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 16/02/2026
+// Last edited: 16/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// DEFAULT
+// ==============================
+
+package rag_service.v1;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+
+// ==============================
+// SERVICES
+// ==============================
+
+service RAGService
+{
+    // ---- Document ingestion ---- //
+
+    // Upload a document for processing. Client streams binary chunks to handle
+    // arbitrarily large files without loading them entirely into memory.
+    rpc upload_document(stream UploadDocumentRequest) returns (DocumentReceipt);
+
+    // Cancel an in-progress document processing job.
+    rpc cancel_processing(CancelProcessingRequest) returns (google.protobuf.Empty);
+
+
+    // ---- Document management ---- //
+
+    // Get the current processing status of a document.
+    rpc get_document_status(GetDocumentStatusRequest) returns (DocumentStatus);
+
+    // List documents with optional filtering and pagination.
+    rpc list_documents(ListDocumentsRequest) returns (ListDocumentsResponse);
+
+    // Delete a document and all its associated chunks and embeddings.
+    rpc delete_document(DeleteDocumentRequest) returns (google.protobuf.Empty);
+
+
+    // ---- Retrieval ---- //
+
+    // Retrieve relevant chunks for a query. Server streams results to allow
+    // progressive rendering and to handle large result sets efficiently.
+    rpc search(SearchRequest) returns (stream SearchResult);
+}
+
+
+// ==============================
+// ENUMS
+// ==============================
+
+// The type of content extracted from a document during processing.
+enum ContentType
+{
+    CONTENT_TYPE_UNSPECIFIED = 0;
+    CONTENT_TYPE_TEXT        = 1;
+    CONTENT_TYPE_IMAGE       = 2;
+    CONTENT_TYPE_TABLE       = 3;
+    CONTENT_TYPE_DIAGRAM     = 4;
+}
+
+// The current state of a document in the processing pipeline.
+enum ProcessingState
+{
+    PROCESSING_STATE_UNSPECIFIED  = 0;
+    PROCESSING_STATE_QUEUED      = 1;
+    PROCESSING_STATE_PARTITIONING = 2;
+    PROCESSING_STATE_CHUNKING    = 3;
+    PROCESSING_STATE_EMBEDDING   = 4;
+    PROCESSING_STATE_STORING     = 5;
+    PROCESSING_STATE_COMPLETED   = 6;
+    PROCESSING_STATE_FAILED      = 7;
+    PROCESSING_STATE_CANCELLED   = 8;
+}
+
+
+// ==============================
+// MESSAGES
+// ==============================
+
+// Streamed request for uploading a document. The first message in the stream
+// MUST contain metadata; subsequent messages carry raw file bytes.
+message UploadDocumentRequest
+{
+    oneof payload
+    {
+        // First message: document metadata and processing options.
+        DocumentMetadata metadata = 1;
+        // Subsequent messages: raw binary data of the file.
+        bytes data = 2;
+    }
+}
+
+// Metadata sent as the first message of an upload stream.
+message DocumentMetadata
+{
+    // Original file name (e.g. "report.pdf").
+    string file_name = 1;
+    // MIME type (e.g. "application/pdf", "text/plain").
+    string mime_type = 2;
+    // Logical collection to group documents (e.g. "project-alpha").
+    string collection = 3;
+    // User-defined tags for filtering and organization.
+    repeated string tags = 4;
+    // Configuration for the chunking pipeline.
+    ChunkingConfig chunking_config = 5;
+}
+
+// Configuration that controls how a document is split into chunks.
+message ChunkingConfig
+{
+    // Maximum number of characters per chunk.
+    uint32 max_chunk_size = 1;
+    // Number of overlapping characters between consecutive chunks.
+    uint32 chunk_overlap = 2;
+    // Content types to extract. Empty means all types.
+    repeated ContentType content_types = 3;
+}
+
+// Acknowledgement returned once the full document has been received.
+message DocumentReceipt
+{
+    // Server-assigned unique identifier for the document.
+    string document_id = 1;
+    // Total bytes received.
+    uint64 bytes_received = 2;
+    // Timestamp when the document was accepted.
+    google.protobuf.Timestamp accepted_at = 3;
+}
+
+message CancelProcessingRequest
+{
+    string document_id = 1;
+}
+
+message GetDocumentStatusRequest
+{
+    string document_id = 1;
+}
+
+// Detailed processing status of a document.
+message DocumentStatus
+{
+    string document_id = 1;
+    string file_name = 2;
+    string collection = 3;
+    ProcessingState state = 4;
+
+    // Progress tracking.
+    uint32 total_chunks = 5;
+    uint32 processed_chunks = 6;
+
+    // Error details, populated only when state is FAILED.
+    string error_message = 7;
+
+    google.protobuf.Timestamp created_at = 8;
+    google.protobuf.Timestamp updated_at = 9;
+}
+
+message ListDocumentsRequest
+{
+    // Filter by collection name. Empty returns all.
+    string collection = 1;
+    // Filter by processing state. UNSPECIFIED returns all states.
+    ProcessingState state = 2;
+    // Filter by tags (AND logic: documents must have all listed tags).
+    repeated string tags = 3;
+    // Maximum number of documents to return per page.
+    uint32 page_size = 4;
+    // Opaque token for cursor-based pagination.
+    string page_token = 5;
+}
+
+message ListDocumentsResponse
+{
+    repeated DocumentStatus documents = 1;
+    // Token for retrieving the next page. Empty if no more results.
+    string next_page_token = 2;
+}
+
+message DeleteDocumentRequest
+{
+    string document_id = 1;
+}
+
+message SearchRequest
+{
+    // The natural-language query text.
+    string query = 1;
+    // Restrict search to a specific collection. Empty searches all.
+    string collection = 2;
+    // Maximum number of results to return.
+    uint32 top_k = 3;
+    // Minimum similarity score threshold (0.0 - 1.0).
+    float score_threshold = 4;
+    // Filter results by content type. Empty allows all types.
+    repeated ContentType content_types = 5;
+    // Filter results by tags (AND logic).
+    repeated string tags = 6;
+}
+
+// A single search result, streamed back to the client.
+message SearchResult
+{
+    // The matching chunk.
+    DocumentChunk chunk = 1;
+    // Cosine similarity score (0.0 - 1.0).
+    float score = 2;
+}
+
+// A processed chunk extracted from a document.
+message DocumentChunk
+{
+    // Unique identifier for this chunk.
+    string chunk_id = 1;
+    // Parent document identifier.
+    string document_id = 2;
+    // Zero-based position of this chunk within the document.
+    uint32 chunk_index = 3;
+    // The type of content this chunk represents.
+    ContentType content_type = 4;
+
+    // The extracted content.
+    oneof content
+    {
+        // Textual content (for TEXT, TABLE as markdown/HTML).
+        string text_content = 5;
+        // Binary content (for IMAGE, DIAGRAM as raw bytes).
+        bytes binary_content = 6;
+    }
+
+    // Source location within the original document.
+    ChunkOrigin origin = 7;
+}
+
+// Provenance information linking a chunk back to its source in the document.
+message ChunkOrigin
+{
+    // Page number (1-based, 0 if not applicable).
+    uint32 page_number = 1;
+    // Character offset from the start of the page/section.
+    uint32 start_offset = 2;
+    // Character offset marking the end of the chunk.
+    uint32 end_offset = 3;
+}

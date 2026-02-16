@@ -25,7 +25,7 @@ from infrastructure.config.base import RunningConfig
 # CLASSES
 # ==============================
 
-class WorkerManager:
+class WorkerService:
     """
     
     """
@@ -41,7 +41,7 @@ class WorkerManager:
         self._running_config:RunningConfig = running_config
         self._executor:Optional[ProcessPoolExecutor] = None
 
-        self._log:logging.Logger = logging.getLogger("WorkerManager")
+        self._log:logging.Logger = logging.getLogger("WorkerService")
         
     
     # ---- Methods ---- #

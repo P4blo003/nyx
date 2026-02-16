@@ -1,13 +1,16 @@
 # ==========================================================================================
 # Author: Pablo González García.
-# Created: 09/02/2026
-# Last edited: 10/02/2026
+# Created: 16/02/2026
+# Last edited: 16/02/2026
 # ==========================================================================================
 
 
 # ==============================
 # IMPORTS
 # ==============================
+
+# Standard:
+from typing import Optional
 
 # External:
 from pydantic import BaseModel
@@ -18,12 +21,13 @@ from pydantic import Field
 # CLASSES
 # ==============================
 
-class TritonTask(BaseModel):
+class ConnectionConfig(BaseModel):
     """
     
     """
 
     # ---- Attributes ---- #
 
-    connection:str = Field(..., description="")
-    model_name:str = Field(..., description="")
+    host:str = Field(..., description="")
+    http_port:Optional[int] = Field(None, description="")
+    grpc_port:Optional[int] = Field(None, description="")
