@@ -30,7 +30,7 @@ networks:
   metrics-net:
     driver: bridge
   
-  cache-net:
+  auth-net:
     driver: bridge
 
 
@@ -40,12 +40,16 @@ networks:
 
 services:
 
+  # ---- Metrics ---- #
+
   dcgm-exporter:
     build:
       context: ./third-party/dcgm-exporter
       dockerfile: Dockerfile
-    
+    # Explicit container name for easier management and monitoring.
     container_name: dcgm-exporter
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
 
     environment:
       - DCGM_EXPORTER_INTERVAL=1000
@@ -68,11 +72,9 @@ services:
     build:
       context: ./third-party/prometheus
       dockerfile: Dockerfile
+    # Explicit container name for easier management and monitoring.
     container_name: prometheus
-
-    environment:
-      - name=value
-
+    # Automatically restart the container unless it is explicitly stopped.
     restart: unless-stopped
 
     networks:
@@ -92,8 +94,9 @@ services:
     build:
       context: ./third-party/grafana
       dockerfile: Dockerfile
+    # Explicit container name for easier management and monitoring.
     container_name: grafana
-
+    # Automatically restart the container unless it is explicitly stopped.
     restart: unless-stopped
 
     environment:
@@ -111,6 +114,29 @@ services:
       - ./third-party/grafana/provisioning:/etc/grafana/provisioning
       - ./third-party/grafana/data:/var/lib/grafana
   
+
+  # ---- Data Bases ---- #
+
+  auth-db:
+    build:
+      context: ./third-party/postgres/auth
+      dockerfile: Dockerfile
+    # Explicit container name for easier management and monitoring.
+    container_name: auth-db
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+
+    environment:
+      - POSTGRES_DB=${AUTH_POSTGRES_DB}
+      - POSTGRES_USER=${AUTH_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${AUTH_POSTGRES_PASSWORD}
+    
+    networks:
+      - auth-net
+
+    volumes:
+      - ./third-party/postgres/auth/data:/var/lib/postgresql/data
+
   # Qdrant vector database service.
   # Used for storing and querying embeddings for semantic search and RAG workflow.
   qdrant:
@@ -162,6 +188,9 @@ services:
         limits:
           cpus: "2"
           memory: 4g
+
+
+  # ---- AI ---- #
 
   # Triton Inference Server for embedding and classification models.
   triton-onnx:
@@ -296,38 +325,38 @@ services:
       timeout: 5s
       retries: 5
       start_period: 120s
+  
 
-  ai-service:
+  # ---- Edge ---- #
+
+  keycloak:
+
     build:
-      context: ./services/ai-service
+      context: ./third-party/keycloak
       dockerfile: Dockerfile
+    
     # Explicit container name for easier management and monitoring.
-    container_name: ai-service
+    container_name: keycloak
     # Automatically restart the container unless it is explicitly stopped.
     restart: unless-stopped
 
+    environment:
+      - KC_DB_URL_HOST=${KC_DB_URL_HOST}
+      - KC_DB_URL_DATABASE=${KC_DB_URL_DATABASE}
+      - KC_DB_USERNAME=${KC_DB_USERNAME}
+      - KC_DB_PASSWORD=${KC_DB_PASSWORD}
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KC_HTTP_ENABLED=${KC_HTTP_ENABLED}
+
     networks:
-      - common-net
-      - triton-net
+      - auth-net
       - metrics-net
 
     ports:
-      # Expose the AI-Service API.
-      - "${AI_SERVICE_GRPC_PORT}:8002"
+     - ${KC_PORT}:8080
 
-    volumes:
-      # Mount development directories.
-      - ./services/ai-service/logs:/app/logs
-      - ./services/ai-service/src:/app/src
-      # Mount the application configuration directory (read-only).
-      - ./services/ai-service/config:/app/config:ro
+    depends_on:
+      - auth-db
 
-    command: >
-      python src/main.py
-
-    healthcheck:
-      test: ["CMD", "grpc_health_probe", "-addr=:8002"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
+    command: start --optimized

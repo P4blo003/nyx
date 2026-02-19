@@ -13,9 +13,6 @@ syntax = "proto3";
 
 package ai_service.v1;
 
-import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
-
 
 // ==============================
 // SERVICES
@@ -26,25 +23,44 @@ service AIService
     // ---- Models ---- //
 
     // List installed models.
-    rpc list_models(ListModelsRequest) returns (ListModelsResponse);
+    rpc list_models() returns (ListModelResponse);
+
     // Load a model in Triton.
     rpc load_model(LoadModelRequest) returns (ModelStatus);
+
     // Unload a model from Triton.
     rpc unload_model(UnloadModelRequest) returns (ModelStatus);
 
 
     // ---- Inference ---- //
 
-    // Make normal inference.
-    rpc make_infer(InferenceRequest) returns (InferenceResponse);
-    // Make streamed inference.
-    rpc make_infer_stream(InferenceRequest) returns (stream InferenceResponse);
+    // Normal inference.
+    rpc make_inference(InferenceRequest) returns (InferenceResponse);
+
+    // Streamed inference.
+    rpc make_streamed_inference(InferenceRequest) returns (stream InferenceResponse);
+}
+
+
+// ==============================
+// ENUMS
+// ==============================
+
+enum ModelState
+{
+    UNKNOWN = 0;
+    LOADING = 1;
+    READY = 2;
+    UNLOADED = 3;
+    ERROR = 4;
 }
 
 
 // ==============================
 // MESSAGES
 // ==============================
+
+// ---- Models ---- //
 
 message LoadModelRequest
 {
@@ -60,35 +76,6 @@ message UnloadModelRequest
     string server = 3;
 }
 
-message ModelStatus
-{
-    string name = 1;
-    string version = 2;
-    string server = 3;
-
-    enum State
-    {
-        UNKNOWN = 0;
-        LOADING = 1;
-        READY = 2;
-        UNLOADED = 3;
-        ERROR = 4;
-    }
-    State state = 4;
-    string message = 5;
-}
-
-message ListModelsRequest
-{
-    // Optional.
-    string filter = 1;
-}
-
-message ListModelsResponse
-{
-    repeated ModelMetadata models = 1;
-}
-
 message ModelMetadata
 {
     string name = 1;
@@ -96,44 +83,17 @@ message ModelMetadata
     string server = 3;
 }
 
-message InferenceRequest
+message ListModelResponse
 {
-    string task = 1;
-
-    oneof batch
-    {
-        TextBatch text_batch = 2;
-        ImageBatch image_batch = 3;
-    }
+    repeated ModelMetadata models = 1;
 }
 
-message TextBatch
+message ModelStatus
 {
-    repeated string content = 1;
-}
+    string name = 1;
+    string version = 2;
+    string server = 3;
 
-message ImageBatch
-{
-    repeated bytes content = 1;
-}
-
-message InferenceResponse
-{
-    string task = 1;
-
-    oneof result
-    {
-        TextBatch text_batch = 2;
-        EmbeddingBatch embedding_batch = 3;   
-    }
-}
-
-message EmbeddingBatch  
-{
-    repeated EmbeddingVector vectors = 1;
-}
-
-message EmbeddingVector
-{
-    repeated float values = 1;
+    ModelState state = 4;
+    string message = 5;
 }

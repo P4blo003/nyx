@@ -1,0 +1,35 @@
+# =========================
+# PostgreSQL / Database
+# =========================
+
+data/
+pgdata/
+*.pgdata/
+*.db
+*.sqlite
+*.sqlite3
+
+pg_wal/
+pg_xlog/
+
+postgresql.conf
+pg_hba.conf
+pg_ident.conf
+
+*.tmp
+*.swp
+*.swo
+*.bak
+
+*.sql
+*.dump
+*.backup
+*.tar
+*.gz
+*.zip
+
+docker/volumes/postgres_data/
+docker/volumes/*-postgres/
+
+*.log
+pg_log/
