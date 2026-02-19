@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
         try
         {
-            const authenticated = await keycloak.init({ onLoad: "login-required" });
+            const authenticated = await keycloak.init({ onLoad: "check-sso" });
 
             if (authenticated)
             {
@@ -69,6 +69,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     logout: () =>
     {
-        keycloak.logout();
+        keycloak.logout({redirectUri: window.location.origin});
+        set({ authUser: null });
     }
 }))
