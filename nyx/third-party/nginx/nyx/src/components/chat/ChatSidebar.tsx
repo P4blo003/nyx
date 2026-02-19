@@ -18,20 +18,19 @@ const ChatSidebar = () =>
         <PageSidebarLayout
             title="Chat"
             searchInput={<SearchInput/>}
+            actions={
+                <div className="tooltip tooltip-bottom" data-tip="Nuevo chat">
+                    <button
+                        className="btn btn-ghost btn-circle"
+                        onClick={createChat}
+                    >
+                        <MessageSquarePlus size={20}/>
+                    </button>
+                </div>
+            }
         >
-            {/* New chat */}
-            <SidebarSection isFirst>
-                <button
-                    className="btn btn-primary w-full"
-                    onClick={createChat}
-                >
-                    <MessageSquarePlus size={18}/>
-                    Nuevo chat
-                </button>
-            </SidebarSection>
-
             {/* Chat list */}
-            <SidebarSection>
+            <SidebarSection isFirst>
                 {chats.length === 0 ? (
                     <div className="flex flex-col items-center justify-center text-base-content/40">
                         <p className="text-sm">No hay conversaciones</p>

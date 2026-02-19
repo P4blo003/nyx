@@ -16,29 +16,35 @@ const Navbar = ({username}: NavbarProps) =>
             items-center py-4">
             {/* Top icons */}
             <div className="flex flex-col items-center gap-4">
-                <button 
-                    className="btn btn-ghost btn-circle"
-                    onClick={() => navigate("/")}
-                >
-                    <MessageCircle size={24}/>
-                </button>
+                <div className="tooltip tooltip-right" data-tip="Chat">
+                    <button
+                        className="btn btn-ghost btn-circle"
+                        onClick={() => navigate("/")}
+                    >
+                        <MessageCircle size={24}/>
+                    </button>
+                </div>
             </div>
             {/* Bottom section */}
             <div className="flex flex-col items-center gap-4">
-                <button
-                    className="btn btn-ghost btn-circle"
-                    onClick={() => navigate("/settings")}
-                >
+                <div className="tooltip tooltip-right" data-tip="Ajustes">
+                    <button
+                        className="btn btn-ghost btn-circle"
+                        onClick={() => navigate("/settings")}
+                    >
                         <Settings />
-                </button>
-                <button 
-                    className="btn btn-ghost btn-circle avatar"
-                    onClick={() => navigate("/profile")}
-                >
-                    <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
-                        {firstLetter}
-                    </div>
-                </button>
+                    </button>
+                </div>
+                <div className="tooltip tooltip-right" data-tip="Perfil">
+                    <button
+                        className="btn btn-ghost btn-circle avatar"
+                        onClick={() => navigate("/profile")}
+                    >
+                        <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+                            {firstLetter}
+                        </div>
+                    </button>
+                </div>
             </div>
         </div>
     )
