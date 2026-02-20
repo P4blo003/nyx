@@ -1,10 +1,22 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// External:
 import ChatSidebar from "../components/chat/ChatSidebar";
 import ChatPanel from "../components/chat/ChatPanel";
 import { useChatStore } from "../store/chat/useChatStore";
 
 
 // ==============================
-// Component
+// COMPONENTS
 // ==============================
 
 const HomePage = () =>
@@ -26,5 +38,10 @@ const HomePage = () =>
         </div>
     );
 };
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default HomePage;

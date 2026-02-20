@@ -1,10 +1,24 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// Standard:
 import { useEffect, useRef } from "react";
+
+// Internal:
 import type { Message } from "../../store/chat/types";
 import MessageBubble from "./MessageBubble";
 
 
 // ==============================
-// Props
+// PROPERTIES
 // ==============================
 
 interface MessageListProps
@@ -14,7 +28,7 @@ interface MessageListProps
 
 
 // ==============================
-// Component
+// COMPONENTS
 // ==============================
 
 const MessageList = ({ messages }:MessageListProps) =>
@@ -36,7 +50,7 @@ const MessageList = ({ messages }:MessageListProps) =>
     }
 
     return (
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3" style={{ scrollbarGutter: "stable" }}>
+        <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-3" style={{ scrollbarGutter: "stable" }}>
             {messages.map((message) => (
                 <MessageBubble key={message.id} message={message}/>
             ))}
@@ -44,5 +58,10 @@ const MessageList = ({ messages }:MessageListProps) =>
         </div>
     );
 };
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default MessageList;

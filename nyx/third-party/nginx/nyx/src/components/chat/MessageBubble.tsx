@@ -1,9 +1,23 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// Standard:
 import { memo } from "react";
+
+// Internal:
 import type { Message } from "../../store/chat/types";
 
 
 // ==============================
-// Props
+// PROPERTIES
 // ==============================
 
 interface MessageBubbleProps
@@ -13,7 +27,7 @@ interface MessageBubbleProps
 
 
 // ==============================
-// Component
+// COMPONENTS
 // ==============================
 
 const MessageBubble = memo(({ message }:MessageBubbleProps) =>
@@ -39,5 +53,10 @@ const MessageBubble = memo(({ message }:MessageBubbleProps) =>
         </div>
     );
 });
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default MessageBubble;

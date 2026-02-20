@@ -1,8 +1,20 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// Standard:
 import type { ReactNode } from "react";
 
 
 // ==============================
-// Props
+// PROPERTIES
 // ==============================
 
 interface SidebarSectionProps
@@ -13,7 +25,7 @@ interface SidebarSectionProps
 
 
 // ==============================
-// Component
+// COMPONENTS
 // ==============================
 
 const SidebarSection = ({ children, isFirst = false }:SidebarSectionProps) =>
@@ -24,5 +36,10 @@ const SidebarSection = ({ children, isFirst = false }:SidebarSectionProps) =>
         </div>
     );
 };
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default SidebarSection;

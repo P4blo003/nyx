@@ -1,6 +1,20 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// Internal:
+import { useEffect } from "react";
 
 // External:
 import { Route, Routes } from "react-router-dom";
+import { Loader } from "lucide-react";
 
 // Internal:
 import Navbar from "./components/global/Navbar";
@@ -10,9 +24,12 @@ import ProfilePage from "./pages/ProfilePage";
 import ConnectionErrorPage from "./pages/ConnectionErrorPage";
 import LandingPage from "./pages/LandingPage";
 import { useAuthStore } from "./store/auth/useAuthStore";
-import { useEffect } from "react";
-import { Loader } from "lucide-react";
 import DocumentsPage from "./pages/DocumentsPage";
+
+
+// ==============================
+// COMPONENTS
+// ==============================
 
 const App = () =>
 {
@@ -50,5 +67,9 @@ const App = () =>
   )
 }
 
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default App;

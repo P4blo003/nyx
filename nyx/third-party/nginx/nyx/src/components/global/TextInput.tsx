@@ -1,7 +1,22 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// Standard:
 import type { ReactNode } from "react";
 import type React from "react";
 
 
+// ==============================
+// PROPERTIES
+// ==============================
 
 interface TextInputProps
 {
@@ -11,6 +26,11 @@ interface TextInputProps
     placeholder?:string,
     icon?: ReactNode
 }
+
+
+// ==============================
+// COMPONENTS
+// ==============================
 
 const TextInput = ({type, value, onChange, placeholder, icon}:TextInputProps) =>
 {
@@ -36,5 +56,10 @@ const TextInput = ({type, value, onChange, placeholder, icon}:TextInputProps) =>
         </div>
     )
 }
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default TextInput

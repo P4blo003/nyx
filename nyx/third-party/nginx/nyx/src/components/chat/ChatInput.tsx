@@ -1,9 +1,23 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// Standard:
 import { useCallback, useRef, useState } from "react";
+
+// Internal:
 import { Paperclip, Mic, SendHorizontal } from "lucide-react";
 
 
 // ==============================
-// Props
+// PROPERTIES
 // ==============================
 
 interface ChatInputProps
@@ -13,7 +27,7 @@ interface ChatInputProps
 
 
 // ==============================
-// Component
+// COMPONENTS
 // ==============================
 
 const ChatInput = ({ onSendMessage }:ChatInputProps) =>
@@ -107,5 +121,10 @@ const ChatInput = ({ onSendMessage }:ChatInputProps) =>
         </div>
     );
 };
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default ChatInput;

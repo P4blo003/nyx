@@ -1,9 +1,27 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// External:
 import { LogOut } from "lucide-react";
+
+// Internal:
 import PageSidebarLayout from "../../layouts/PageSidebarLayout";
 import SidebarSection from "../global/SidebarSection";
 import { useAuthStore } from "../../store/auth/useAuthStore";
 import SearchInput from "../global/SearchInput";
 
+
+// ==============================
+// COMPONENTS
+// ==============================
 
 const SettingsSidebar = () =>
 {
@@ -27,5 +45,10 @@ const SettingsSidebar = () =>
         </PageSidebarLayout>
     );
 };
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default SettingsSidebar;

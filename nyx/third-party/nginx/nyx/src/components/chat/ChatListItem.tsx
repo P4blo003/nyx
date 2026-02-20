@@ -1,10 +1,26 @@
-import { EllipsisVertical, Pin, Pencil, Trash2 } from "lucide-react";
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// Standard:
 import { memo, useCallback, useEffect, useRef, useState } from "react";
+
+// External:
+import { EllipsisVertical, Pin, Pencil, Trash2 } from "lucide-react";
+
+// Internal:
 import type { Chat } from "../../store/chat/types";
 
 
 // ==============================
-// Props
+// PROPERTIES
 // ==============================
 
 interface ChatListItemProps
@@ -19,7 +35,7 @@ interface ChatListItemProps
 
 
 // ==============================
-// Component
+// COMPONENTS
 // ==============================
 
 const ChatListItem = memo(({ chat, isSelected, onSelect, onPin, onRename, onDelete }:ChatListItemProps) =>
@@ -138,5 +154,10 @@ const ChatListItem = memo(({ chat, isSelected, onSelect, onPin, onRename, onDele
         </div>
     );
 });
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default ChatListItem;

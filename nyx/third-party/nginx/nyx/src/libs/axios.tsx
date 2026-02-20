@@ -1,6 +1,24 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// External:
 import axios from "axios";
+
+// Internal:
 import keycloak, { getTokenMinValidity } from "./keycloak";
 
+
+// ==============================
+// INSTANCES
+// ==============================
 
 const axiosInstance = axios.create(
 {
@@ -20,5 +38,10 @@ axiosInstance.interceptors.request.use(async (config) =>
 
     return config;
 })
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default axiosInstance;

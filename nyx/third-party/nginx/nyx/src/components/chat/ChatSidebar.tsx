@@ -1,4 +1,18 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// External:
 import { MessageSquarePlus } from "lucide-react";
+
+// Internal:
 import PageSidebarLayout from "../../layouts/PageSidebarLayout";
 import SidebarSection from "../global/SidebarSection";
 import ChatListItem from "./ChatListItem";
@@ -7,7 +21,7 @@ import SearchInput from "../global/SearchInput";
 
 
 // ==============================
-// Component
+// COMPONENTS
 // ==============================
 
 const ChatSidebar = () =>
@@ -60,5 +74,10 @@ const ChatSidebar = () =>
         </PageSidebarLayout>
     );
 };
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default ChatSidebar;

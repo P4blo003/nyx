@@ -1,5 +1,13 @@
+# ==========================================================================================
+# Author: Pablo González García.
+# Created: 20/02/2026
+# Last edited: 20/02/2026
+# ==========================================================================================
 
 
+# ==============================
+# CONFIGURATION
+# ==============================
 
 static_resources:
   listeners:
@@ -24,11 +32,22 @@ static_resources:
                           remote_jwks:
                             http_uri:
                               uri: "http://keycloak:8080/realms/assistant/protocol/openid-connect/certs"
-                              cluster: keycloak_cluster
-                          
+                              cluster: keycloak
                           forward: true
                           from_headers:
                             - name: Authorization
+                      rules:
+                        - match:
+                            prefix: "/admin/"
+                          requires:
+                            provider_name: keycloak
+                            payload_includes:
+                              realm_access.roles: ["admin"]
+                        - match:
+                            prefix: "/api/"
+                          requires:
+                            provider_name: keycloak
+
                   - name: envoy.filters.http.router
                 
                 route_config:
@@ -93,5 +112,5 @@ admin:
   access_log_path: "/dev/null"
   address:
     socket_address:
-      address: 0.0.0.0
+      address: 127.0.0.1
       port_value: 8091

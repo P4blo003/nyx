@@ -1,16 +1,38 @@
-import type { LucideIcon } from "lucide-react";
-import { FileText, MessageCircle, Settings } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { memo, useCallback } from "react";
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
 
 
 // ==============================
-// Types
+// IMPORTS
+// ==============================
+
+// Standard:
+import { memo, useCallback } from "react";
+
+// External:
+import { useNavigate, useLocation } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
+import { FileText, MessageCircle, Settings } from "lucide-react";
+
+
+// ==============================
+// PROPERTIES
 // ==============================
 
 interface NavbarProps
 {
     username: string;
+}
+
+interface NavButtonProps
+{
+    route: NavRoute;
+    isActive: boolean;
+    withTooltip: boolean;
+    onNavigate: (path:string) => void;
 }
 
 interface NavRoute
@@ -22,7 +44,7 @@ interface NavRoute
 
 
 // ==============================
-// Navigation config
+// CONFIGURATION
 // ==============================
 
 const topRoutes:NavRoute[] = [
@@ -38,16 +60,8 @@ const allRoutes:NavRoute[] = [...topRoutes, ...bottomRoutes];
 
 
 // ==============================
-// NavButton
+// COMPONENTS
 // ==============================
-
-interface NavButtonProps
-{
-    route: NavRoute;
-    isActive: boolean;
-    withTooltip: boolean;
-    onNavigate: (path:string) => void;
-}
 
 const NavButton = memo(({ route, isActive, withTooltip, onNavigate }:NavButtonProps) =>
 {
@@ -71,11 +85,6 @@ const NavButton = memo(({ route, isActive, withTooltip, onNavigate }:NavButtonPr
         </div>
     );
 });
-
-
-// ==============================
-// Navbar
-// ==============================
 
 const Navbar = ({ username }:NavbarProps) =>
 {
@@ -151,5 +160,11 @@ const Navbar = ({ username }:NavbarProps) =>
         </>
     );
 };
+
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default Navbar;

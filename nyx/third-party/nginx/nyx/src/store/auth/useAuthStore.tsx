@@ -1,10 +1,32 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
 
 
+// ==============================
+// INTERFACES
+// ==============================
+
+// External:
 import { create } from "zustand";
+
+// Internal:
 import type { AuthState } from "./types";
 import keycloak, { getTokenMinValidity } from "../../libs/keycloak";
 
+
+// ==============================
+// PROPERTIES
+// ==============================
+
 let initCalled = false;
+
+
+// ==============================
+// INSTANCES
+// ==============================
 
 export const useAuthStore = create<AuthState>((set) => ({
 

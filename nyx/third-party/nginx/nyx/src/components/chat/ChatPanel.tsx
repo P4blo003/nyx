@@ -1,12 +1,28 @@
-import { ArrowLeft } from "lucide-react";
-import { useChatStore } from "../../store/chat/useChatStore";
-import MessageList from "./MessageList";
-import ChatInput from "./ChatInput";
-import { useCallback, useMemo } from "react";
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
 
 
 // ==============================
-// Component
+// IMPORTS
+// ==============================
+
+// Standard:
+import { useCallback, useMemo } from "react";
+
+// External:
+import { ArrowLeft } from "lucide-react";
+
+// Internal:
+import { useChatStore } from "../../store/chat/useChatStore";
+import MessageList from "./MessageList";
+import ChatInput from "./ChatInput";
+
+
+// ==============================
+// COMPONENTS
 // ==============================
 
 const ChatPanel = () =>
@@ -55,5 +71,10 @@ const ChatPanel = () =>
         </div>
     );
 };
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default ChatPanel;

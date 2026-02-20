@@ -1,5 +1,22 @@
+// ==========================================================================================
+// Author: Pablo González García.
+// Created: 19/02/2026
+// Last edited: 20/02/2026
+// ==========================================================================================
+
+
+// ==============================
+// IMPORTS
+// ==============================
+
+// Standard:
 import type { ReactNode } from "react";
 
+
+
+// ==============================
+// PROPERTIES
+// ==============================
 
 interface PageLayoutProps
 {
@@ -9,6 +26,11 @@ interface PageLayoutProps
     children:ReactNode;
 }
 
+
+
+// ==============================
+// COMPONENTS
+// ==============================
 
 const PageSidebarLayout = ({title, actions, searchInput, children}:PageLayoutProps) =>
 {
@@ -30,5 +52,10 @@ const PageSidebarLayout = ({title, actions, searchInput, children}:PageLayoutPro
         </div>
     );
 }
+
+
+// ==============================
+// EXPORTS
+// ==============================
 
 export default PageSidebarLayout;
