@@ -7,12 +7,7 @@ import SearchInput from "../global/SearchInput";
 
 const SettingsSidebar = () =>
 {
-    const {logout} = useAuthStore();
-
-    const handleLogout = () =>
-    {
-        logout();
-    }
+    const logout = useAuthStore((s) => s.logout);
 
     return (
         <PageSidebarLayout
@@ -23,7 +18,7 @@ const SettingsSidebar = () =>
                 <div
                     className="flex items-center gap-3 p-3 rounded-lg cursor-pointer
                     hover:bg-base-300 transition-colors duration-200 text-red-400"
-                    onClick={handleLogout}
+                    onClick={logout}
                 >
                     <LogOut size={20}/>
                     <span className="font-medium">Log out</span>

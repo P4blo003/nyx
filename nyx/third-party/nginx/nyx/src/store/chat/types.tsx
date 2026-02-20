@@ -13,6 +13,15 @@ export interface Chat
     isPinned: boolean;
 }
 
+export interface Message
+{
+    id: string;
+    chatId: string;
+    content: string;
+    role: "user" | "assistant";
+    createdAt: string;
+}
+
 
 // ==============================
 // State
@@ -24,13 +33,15 @@ export interface ChatState
 
     chats: Chat[];
     selectedChatId: string | null;
+    messages: Message[];
 
 
     // ---- Methods ---- //
 
-    selectChat: (id: string) => void;
+    selectChat: (id: string | null) => void;
     createChat: () => void;
     deleteChat: (id: string) => void;
     pinChat: (id: string) => void;
     renameChat: (id: string, title: string) => void;
+    sendMessage: (chatId: string, content: string) => void;
 }

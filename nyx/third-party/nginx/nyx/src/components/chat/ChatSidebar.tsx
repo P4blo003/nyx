@@ -12,7 +12,13 @@ import SearchInput from "../global/SearchInput";
 
 const ChatSidebar = () =>
 {
-    const { chats, selectChat, createChat, deleteChat, pinChat, renameChat } = useChatStore();
+    const chats = useChatStore((s) => s.chats);
+    const selectedChatId = useChatStore((s) => s.selectedChatId);
+    const selectChat = useChatStore((s) => s.selectChat);
+    const createChat = useChatStore((s) => s.createChat);
+    const deleteChat = useChatStore((s) => s.deleteChat);
+    const pinChat = useChatStore((s) => s.pinChat);
+    const renameChat = useChatStore((s) => s.renameChat);
 
     return (
         <PageSidebarLayout
@@ -41,6 +47,7 @@ const ChatSidebar = () =>
                             <ChatListItem
                                 key={chat.id}
                                 chat={chat}
+                                isSelected={chat.id === selectedChatId}
                                 onSelect={selectChat}
                                 onPin={pinChat}
                                 onRename={renameChat}

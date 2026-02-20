@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import type { AuthState } from "./types";
-import keycloak, { getTokenMinValidity } from "../../lib/keycloak";
+import keycloak, { getTokenMinValidity } from "../../libs/keycloak";
 
 let initCalled = false;
 

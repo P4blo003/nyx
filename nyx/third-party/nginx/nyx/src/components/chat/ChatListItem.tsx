@@ -10,6 +10,7 @@ import type { Chat } from "../../store/chat/types";
 interface ChatListItemProps
 {
     chat: Chat;
+    isSelected: boolean;
     onSelect: (id:string) => void;
     onPin: (id:string) => void;
     onRename: (id:string, title:string) => void;
@@ -21,7 +22,7 @@ interface ChatListItemProps
 // Component
 // ==============================
 
-const ChatListItem = memo(({ chat, onSelect, onPin, onRename, onDelete }:ChatListItemProps) =>
+const ChatListItem = memo(({ chat, isSelected, onSelect, onPin, onRename, onDelete }:ChatListItemProps) =>
 {
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState(chat.title);
@@ -80,7 +81,7 @@ const ChatListItem = memo(({ chat, onSelect, onPin, onRename, onDelete }:ChatLis
         <div
             onClick={() => !isEditing && onSelect(chat.id)}
             className={`group w-full text-left p-3 h-12 rounded-lg transition-colors duration-200 cursor-pointer flex items-center gap-2
-                hover:bg-base-300 text-base-content ${isEditing ? "bg-base-300" : ""}`}
+                hover:bg-base-300 text-base-content ${isEditing || isSelected ? "bg-base-300" : ""}`}
         >
             <div className="flex-1 min-w-0">
                 <input
@@ -114,22 +115,22 @@ const ChatListItem = memo(({ chat, onSelect, onPin, onRename, onDelete }:ChatLis
 
                     <ul tabIndex={0} className="dropdown-content menu bg-base-200 rounded-box w-48 shadow-lg z-10 p-2">
                         <li>
-                            <a onClick={(e) => handleAction(e, () => onPin(chat.id))}>
+                            <button onClick={(e) => handleAction(e, () => onPin(chat.id))}>
                                 <Pin size={16}/> Fijar chat
-                            </a>
+                            </button>
                         </li>
                         <li>
-                            <a onClick={(e) => handleAction(e, startEditing)}>
+                            <button onClick={(e) => handleAction(e, startEditing)}>
                                 <Pencil size={16}/> Editar nombre
-                            </a>
+                            </button>
                         </li>
                         <li>
-                            <a
+                            <button
                                 onClick={(e) => handleAction(e, () => onDelete(chat.id))}
-                                className="text-red-400 hover:!text-red-400"
+                                className="text-red-400 hover:text-red-400!"
                             >
                                 <Trash2 size={16}/> Eliminar
-                            </a>
+                            </button>
                         </li>
                     </ul>
                 </div>

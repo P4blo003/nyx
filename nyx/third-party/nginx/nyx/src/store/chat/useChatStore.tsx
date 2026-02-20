@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Chat, ChatState } from "./types";
+import type { Chat, ChatState, Message } from "./types";
 
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -8,11 +8,12 @@ export const useChatStore = create<ChatState>((set) => ({
 
     chats: [],
     selectedChatId: null,
+    messages: [],
 
 
     // ---- Methods ---- //
 
-    selectChat: (id:string) =>
+    selectChat: (id:string | null) =>
     {
         set({ selectedChatId: id });
     },
@@ -37,6 +38,7 @@ export const useChatStore = create<ChatState>((set) => ({
     {
         set((state) => ({
             chats: state.chats.filter((chat) => chat.id !== id),
+            messages: state.messages.filter((msg) => msg.chatId !== id),
             selectedChatId: state.selectedChatId === id ? null : state.selectedChatId
         }));
     },
@@ -55,6 +57,26 @@ export const useChatStore = create<ChatState>((set) => ({
         set((state) => ({
             chats: state.chats.map((chat) =>
                 chat.id === id ? { ...chat, title } : chat
+            )
+        }));
+    },
+
+    sendMessage: (chatId:string, content:string) =>
+    {
+        const newMessage:Message = {
+            id: crypto.randomUUID(),
+            chatId,
+            content,
+            role: "user",
+            createdAt: new Date().toISOString()
+        };
+
+        set((state) => ({
+            messages: [...state.messages, newMessage],
+            chats: state.chats.map((chat) =>
+                chat.id === chatId
+                    ? { ...chat, lastMessage: content, updatedAt: newMessage.createdAt }
+                    : chat
             )
         }));
     }
