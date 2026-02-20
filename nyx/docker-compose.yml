@@ -360,3 +360,27 @@ services:
       - auth-db
 
     command: start --optimized
+
+  envoy:
+    build:
+      context: ./third-party/envoy
+      dockerfile: Dockerfile
+    
+    # Explicit container name for easier management and monitoring.
+    container_name: envoy
+    # Automatically restart the container unless it is explicitly stopped.
+    restart: unless-stopped
+
+    networks:
+      - auth-net
+      - common-net
+
+    ports:
+      - "${ENVOY_PORT}:8090"
+      - "${ENVOY_ADMIN_PORT}:8091"
+
+    volumes:
+      - ./third-party/envoy/envoy.yml:/etc/envoy/envoy.yml
+
+    depends_on:
+      - keycloak
